@@ -1,5 +1,3 @@
-/*Created by Steve Feuerstein*/
-
 CREATE OR REPLACE PROCEDURE intab (table_in          IN VARCHAR2, 
                                    where_in          IN VARCHAR2 DEFAULT NULL, 
                                    colname_like_in   IN VARCHAR2 := '%') 
