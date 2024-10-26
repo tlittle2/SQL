@@ -34,8 +34,8 @@ BEGIN
     END LOOP;
 
 	
-	DBMS_OUTPUT.put_line('Report Name: ' || reportName);
-	DBMS_OUTPUT.put_line('Date of Report: ' || to_char(sysdate, 'MM/DD/YYYY HH:MI:SS') || CHR(10));
+    DBMS_OUTPUT.put_line('Report Name: ' || reportName);
+    DBMS_OUTPUT.put_line('Date of Report: ' || to_char(sysdate, 'MM/DD/YYYY HH:MI:SS') || CHR(10));
         
     -- Print column headers
     FOR i IN 1 .. col_cnt LOOP
