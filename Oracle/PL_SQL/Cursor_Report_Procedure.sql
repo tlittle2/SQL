@@ -3,8 +3,8 @@ Usage:
 DECLARE
     cursorContainer SYS_REFCURSOR;
 BEGIN
-    OPEN cursorContainer FOR SELECT employee_id, first_name, last_name FROM employees;
-    generate_report_from_ref_cursor(cursorContainer);
+    OPEN cursorContainer FOR SELECT deptno, dname FROM scott.dept;
+    generate_report_from_ref_cursor(cursorContainer, 'Dept Rpt');
 END;
 /
 
