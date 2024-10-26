@@ -7,6 +7,11 @@ BEGIN
     generate_report_from_ref_cursor(cursorContainer);
 END;
 /
+
+Things to fix in below code:
+1. Find a way to line up column with data in a straight line for each column
+2. Find a way to dynamically allocate header separation (by '-')
+
 */
 
 CREATE OR REPLACE PROCEDURE generate_report_from_ref_cursor (input_cursor IN OUT SYS_REFCURSOR) IS
