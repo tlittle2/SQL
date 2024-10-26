@@ -1,3 +1,14 @@
+/*
+Usage:
+DECLARE
+    cursorContainer SYS_REFCURSOR;
+BEGIN
+    OPEN cursorContainer FOR SELECT employee_id, first_name, last_name FROM employees;
+    generate_report_from_ref_cursor(cursorContainer);
+END;
+/
+*/
+
 CREATE OR REPLACE PROCEDURE generate_report_from_ref_cursor (input_cursor IN SYS_REFCURSOR) IS
     cursor_number INTEGER;
     col_cnt INTEGER;
