@@ -14,7 +14,7 @@ Things to fix in below code:
 
 */
 
-CREATE OR REPLACE PROCEDURE generate_report_from_ref_cursor (input_cursor IN OUT SYS_REFCURSOR) IS
+CREATE OR REPLACE PROCEDURE generate_report_from_ref_cursor (input_cursor IN OUT SYS_REFCURSOR, reportName IN VARCHAR2) IS
     cursor_number INTEGER;
     col_cnt INTEGER;
     col_descriptions DBMS_SQL.DESC_TAB;
@@ -33,6 +33,10 @@ BEGIN
         DBMS_SQL.define_column(cursor_number, i, col_value, max_int);  -- Adjust max size
     END LOOP;
 
+	
+	DBMS_OUTPUT.put_line('Report Name: ' || reportName);
+	DBMS_OUTPUT.put_line('Date of Report: ' || to_char(sysdate, 'MM/DD/YYYY HH:MI:SS') || CHR(10));
+        
     -- Print column headers
     FOR i IN 1 .. col_cnt LOOP
         DBMS_OUTPUT.put(col_descriptions(i).col_name || CHR(9));  -- Tab-separated
@@ -58,7 +62,7 @@ BEGIN
     DBMS_SQL.close_cursor(cursor_number);
 
     -- Display row count
-    DBMS_OUTPUT.put_line('Total Rows: ' || row_count);
+    --DBMS_OUTPUT.put_line('Total Rows: ' || row_count);
 EXCEPTION
     WHEN OTHERS THEN
         -- Ensure the cursor is closed in case of an exception
