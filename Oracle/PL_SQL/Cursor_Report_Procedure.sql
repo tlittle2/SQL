@@ -9,7 +9,7 @@ END;
 /
 */
 
-CREATE OR REPLACE PROCEDURE generate_report_from_ref_cursor (input_cursor IN SYS_REFCURSOR) IS
+CREATE OR REPLACE PROCEDURE generate_report_from_ref_cursor (input_cursor IN OUT SYS_REFCURSOR) IS
     cursor_number INTEGER;
     col_cnt INTEGER;
     col_descriptions DBMS_SQL.DESC_TAB;
