@@ -31,7 +31,10 @@ BEGIN
     FOR i IN 1 .. col_cnt LOOP
         DBMS_OUTPUT.put(col_descriptions(i).col_name || CHR(9));  -- Tab-separated
     END LOOP;
-    DBMS_OUTPUT.put_line('');
+    
+	DBMS_OUTPUT.put_line(chr(10) 
+        || '----------------------------------------------------------------------------------------------------'
+    );
 
     -- Fetch each row and output the column values
     WHILE DBMS_SQL.fetch_rows(cursor_number) > 0 LOOP
@@ -58,4 +61,3 @@ EXCEPTION
         END IF;
         RAISE;
 END generate_report_from_ref_cursor;
-/
