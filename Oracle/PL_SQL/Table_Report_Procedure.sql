@@ -1,7 +1,4 @@
-CREATE OR REPLACE PROCEDURE intab (table_in          IN VARCHAR2, 
-                                   where_in          IN VARCHAR2 DEFAULT NULL, 
-                                   colname_like_in   IN VARCHAR2 := '%') 
-   /* 
+ /* 
    | Demonstration of method 4 dynamic SQL with DBMS_SQL: 
    |   Show the contents "in" a "tab"le - intab. 
    |   Only supports number, date, string column types. 
@@ -11,6 +8,10 @@ CREATE OR REPLACE PROCEDURE intab (table_in          IN VARCHAR2,
    | 
    | Author: Steven Feuerstein, steven.feuerstein@oracle.com 
    */ 
+
+CREATE OR REPLACE PROCEDURE intab (table_in          IN VARCHAR2, 
+                                   where_in          IN VARCHAR2 DEFAULT NULL, 
+                                   colname_like_in   IN VARCHAR2 := '%') 
    AUTHID CURRENT_USER 
 IS 
    -- Avoid repetitive "maximum size" declarations for VARCHAR2 variables. 
