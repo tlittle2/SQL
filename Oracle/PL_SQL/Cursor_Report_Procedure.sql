@@ -20,9 +20,9 @@ CREATE OR REPLACE PROCEDURE generate_report_from_ref_cursor (input_cursor IN OUT
     col_descriptions DBMS_SQL.DESC_TAB;
     col_value VARCHAR2(4000);  -- Adjust size as needed for longer column values
     row_count INTEGER := 0;
-    max_int INTEGER := 32767;
-    g_row_length INTEGER := 0;
-    --SUBTYPE max_varchar2_t IS VARCHAR2 (32767); 
+	max_int INTEGER := 32767;
+	g_row_length INTEGER := 0;
+	--SUBTYPE max_varchar2_t IS VARCHAR2 (32767); 
 BEGIN
     -- Convert REF CURSOR to a DBMS_SQL cursor number
     cursor_number := DBMS_SQL.to_cursor_number(input_cursor);
@@ -35,8 +35,6 @@ BEGIN
         DBMS_SQL.define_column(cursor_number, i, col_value, max_int);  -- Adjust max size
     END LOOP;
 
-	
-	DBMS_OUTPUT.put_line('Length: ' || g_row_length);	
 	DBMS_OUTPUT.put_line('Report Name: ' || reportName);
 	DBMS_OUTPUT.put_line('Date of Report: ' || to_char(sysdate, 'MM/DD/YYYY HH:MI:SS') || CHR(10));
         
