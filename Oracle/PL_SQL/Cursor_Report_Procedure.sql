@@ -20,7 +20,9 @@ CREATE OR REPLACE PROCEDURE generate_report_from_ref_cursor (input_cursor IN OUT
     col_descriptions DBMS_SQL.DESC_TAB;
     col_value VARCHAR2(4000);  -- Adjust size as needed for longer column values
     row_count INTEGER := 0;
-	max_int INTEGER := 32767;
+    max_int INTEGER := 32767;
+    g_row_length INTEGER := 0;
+    --SUBTYPE max_varchar2_t IS VARCHAR2 (32767); 
 BEGIN
     -- Convert REF CURSOR to a DBMS_SQL cursor number
     cursor_number := DBMS_SQL.to_cursor_number(input_cursor);
@@ -34,17 +36,17 @@ BEGIN
     END LOOP;
 
 	
+	DBMS_OUTPUT.put_line('Length: ' || g_row_length);	
 	DBMS_OUTPUT.put_line('Report Name: ' || reportName);
 	DBMS_OUTPUT.put_line('Date of Report: ' || to_char(sysdate, 'MM/DD/YYYY HH:MI:SS') || CHR(10));
         
     -- Print column headers
     FOR i IN 1 .. col_cnt LOOP
-        DBMS_OUTPUT.put(col_descriptions(i).col_name || CHR(9));  -- Tab-separated
+        DBMS_OUTPUT.put(col_descriptions(i).col_name || RPAD(' ', length(col_descriptions(i).col_name))); --pad by length of the column
+		g_row_length:= g_row_length + length(RPAD(' ', length(col_descriptions(i).col_name)));
     END LOOP;
     
-	DBMS_OUTPUT.put_line(chr(10) 
-        || '----------------------------------------------------------------------------------------------------'
-    );
+	DBMS_OUTPUT.put_line(chr(10) || RPAD('-', g_row_length*2, '-'));
 
     -- Fetch each row and output the column values
     WHILE DBMS_SQL.fetch_rows(cursor_number) > 0 LOOP
@@ -52,7 +54,7 @@ BEGIN
         
         FOR i IN 1 .. col_cnt LOOP
             DBMS_SQL.column_value(cursor_number, i, col_value);
-            DBMS_OUTPUT.put(col_value || CHR(9));  -- Tab-separated
+            DBMS_OUTPUT.put(col_value || RPAD(' ', length(col_descriptions(i).col_name)));  --pad by length of the column
         END LOOP;
         
         DBMS_OUTPUT.put_line('');  -- New line for each row
