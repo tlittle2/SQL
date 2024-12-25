@@ -1,30 +1,24 @@
---runs out of PGA memory
 DECLARE
-	ip varchar2(1000) := 'GNU is Not Unix';
-	
-	type collection_t is table of varchar2(1000);
-	v_collection collection_t;
+    type v_arr is table of char(1);
+	arr v_arr := v_arr();
 
-	space_pos pls_integer;
-	start_pos pls_integer:=1;
-	word varchar2(1000);
+	ip varchar2(100) := 'Forritunarkeppni Framhaldsskolanna'; --user input
+	ans varchar(100);
+
 BEGIN
-	loop
-    space_pos := INSTR(ip, ' ', start_pos);
-    if space_pos = 0 then
-            word := substr(ip, start_pos);
-    		v_collection.EXTEND;
-    		v_collection(v_collection.LAST) := word;
-		else
-        word := SUBSTR(ip, start_pos, space_pos - start_pos);
-        v_collection.EXTEND;
-    		v_collection(v_collection.LAST) := word;
-        start_pos := space_pos + 1;
-    end if;
-	end loop;
+    for i in 1..length(ip) loop
+    	arr.EXTEND;
+		arr(arr.LAST) := substr(ip, i, 1);
+    end loop;
 
-	for i in v_collection.FIRST..v_collection.LAST loop
-        dbms_output.put_line(substr(v_collection(i),1,1));
-	end loop;
+	ans:= arr(1);
+	for i in 1..arr.COUNT LOOP
+        if arr(i) = ' ' then
+        	if arr(i+1) = upper(arr(i+1)) then
+        	ans:= ans || arr(i+1);
+		end if;
+        end if;
+    END LOOP;
 
+	dbms_output.put_line(ans);
 END;
