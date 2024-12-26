@@ -44,10 +44,8 @@ DECLARE
 
 
 BEGIN
-    
-  getSetOfCharacters(c_arr);
+  	getSetOfCharacters(c_arr);
 	getCharactersfromInput(ip,c_arr,ip_arr);
 	computeMissing(c_arr,ip_arr, missing);
 	dbms_output.put_line(isPanagram(missing));
-
 END;
