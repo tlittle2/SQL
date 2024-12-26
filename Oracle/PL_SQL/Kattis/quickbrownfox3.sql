@@ -30,8 +30,9 @@ function computeMissing(p_c_arr IN char_arr_t, p_ip_arr IN char_arr_t) return va
         if p_c_arr(i) not member of p_ip_arr then
         p_outString:= p_outString || p_c_arr(i);
         end if;
-		end loop;
-		return p_outString;
+	end loop;
+	
+	return p_outString;
     END;
 
 function isPanagram(p_ip_string VARCHAR2) RETURN VARCHAR2 IS
