@@ -37,9 +37,9 @@ function computeMissing(p_c_arr IN char_arr_t, p_ip_arr IN char_arr_t) return va
 function isPanagram(p_ip_string VARCHAR2) RETURN VARCHAR2 IS
     BEGIN
         if length(p_ip_string) is null then
-			RETURN 'pangram';
+	RETURN 'pangram';
     	else
-            RETURN 'missing ' || p_ip_string;
+        RETURN 'missing ' || p_ip_string;
 	end if;
     END;
 
