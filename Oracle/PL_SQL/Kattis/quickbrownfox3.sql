@@ -1,4 +1,3 @@
-
 DECLARE
 	type char_arr_t is table of char(1);
 	c_arr char_arr_t:= char_arr_t();
