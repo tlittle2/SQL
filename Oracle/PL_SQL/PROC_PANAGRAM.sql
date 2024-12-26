@@ -1,3 +1,4 @@
+--Given some input string, print out if the string is a panagram (all 26 letters exist). If not, print out the letters that are missing
 CREATE OR REPLACE PROCEDURE PROC_PANAGRAM(p_inputString VARCHAR2) as
 	type char_arr_t is table of char(1);
 	c_arr char_arr_t:= char_arr_t();
