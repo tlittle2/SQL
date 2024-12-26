@@ -5,7 +5,7 @@ DECLARE
 	ip_arr char_arr_t:= char_arr_t();
 	ip varchar2(100) := '.,?!" 92384 abcde FGHIJ';
 
-	procedure getSetOfCharacters(p_chrset IN OUT char_arr_t) is
+procedure getSetOfCharacters(p_chrset IN OUT char_arr_t) is
     begin
         for i in ascii('a')..ascii('z') loop --97-122
     	p_chrset.EXTEND;
@@ -13,7 +13,7 @@ DECLARE
 		end loop;
     end;
 
-	procedure getCharactersfromInput(p_ipString IN VARCHAR2, p_c_arr IN char_arr_t, p_ip_arr IN OUT char_arr_t) is 
+procedure getCharactersfromInput(p_ipString IN VARCHAR2, p_c_arr IN char_arr_t, p_ip_arr IN OUT char_arr_t) is 
     begin
         for i in 1..length(p_ipString) loop
         if lower(substr(p_ipString, i, 1)) member of p_c_arr then
@@ -23,7 +23,7 @@ DECLARE
 	end loop;
     end;
 
-	function computeMissing(p_c_arr IN char_arr_t, p_ip_arr IN char_arr_t) return varchar2 is
+function computeMissing(p_c_arr IN char_arr_t, p_ip_arr IN char_arr_t) return varchar2 is
     p_outString varchar2(26);
     BEGIN    
         for i in 1..p_c_arr.COUNT loop
@@ -34,7 +34,7 @@ DECLARE
 		return p_outString;
     END;
 
-	function isPanagram(p_ip_string VARCHAR2) RETURN VARCHAR2 IS
+function isPanagram(p_ip_string VARCHAR2) RETURN VARCHAR2 IS
     BEGIN
         if length(p_ip_string) is null then
 			RETURN 'pangram';
