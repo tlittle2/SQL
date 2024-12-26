@@ -1,4 +1,3 @@
---Given some input string, print out if the string is a panagram (all 26 letters exist). If not, print out the letters that are missing
 CREATE OR REPLACE PROCEDURE PROC_PANAGRAM(p_inputString VARCHAR2) as
 	type char_arr_t is table of char(1);
 	c_arr char_arr_t:= char_arr_t();
@@ -25,7 +24,7 @@ procedure processInput(p_ipString IN VARCHAR2, p_c_arr IN char_arr_t, p_ip_arr I
 function computeMissing(p_c_arr IN char_arr_t, p_ip_arr IN char_arr_t) return varchar2 is
     p_outString varchar2(26);
     BEGIN    
-        for i in 1..p_c_arr.COUNT loop
+        for i in p_c_arr.FIRST..p_c_arr.LAST loop
         if p_c_arr(i) not member of p_ip_arr then
         p_outString:= p_outString || p_c_arr(i);
         end if;
