@@ -9,8 +9,8 @@ procedure getSetOfCharacters(p_chrset IN OUT char_arr_t) is
     begin
         for i in ascii('a')..ascii('z') loop --97-122
     	p_chrset.EXTEND;
-		p_chrset(i - ascii('a') + 1):= chr(i); --indices 1-26
-		end loop;
+	p_chrset(i - ascii('a') + 1):= chr(i); --indices 1-26
+	end loop;
     end;
 
 procedure getCharactersfromInput(p_ipString IN VARCHAR2, p_c_arr IN char_arr_t, p_ip_arr IN OUT char_arr_t) is 
@@ -41,9 +41,8 @@ function isPanagram(p_ip_string VARCHAR2) RETURN VARCHAR2 IS
 			RETURN 'pangram';
     	else
             RETURN 'missing ' || p_ip_string;
-		end if;
+	end if;
     END;
-
 
 BEGIN
   	getSetOfCharacters(c_arr);
