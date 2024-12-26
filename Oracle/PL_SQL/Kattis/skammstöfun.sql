@@ -15,7 +15,7 @@ BEGIN
         if arr(i) = ' ' then
         	if arr(i+1) = upper(arr(i+1)) then
         	ans:= ans || arr(i+1);
-			end if;
+		end if;
         end if;
     END LOOP;
 
