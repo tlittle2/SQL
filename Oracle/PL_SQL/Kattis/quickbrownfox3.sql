@@ -2,7 +2,7 @@ DECLARE
 	type char_arr_t is table of char(1);
 	c_arr char_arr_t:= char_arr_t();
 	ip_arr char_arr_t:= char_arr_t();
-	ip varchar2(100) := 'the quick brown fox jumped over the lazy dog';
+	ip varchar2(100) := 'the quick brown foxes jumped over the lazy dog';
 
 procedure getSetOfCharacters(p_chrset IN OUT char_arr_t) is
     begin
