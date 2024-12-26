@@ -2,7 +2,7 @@ DECLARE
 	type char_arr_t is table of char(1);
 	c_arr char_arr_t:= char_arr_t();
 	ip_arr char_arr_t:= char_arr_t();
-	ip varchar2(100) := '.,?!" 92384 abcde FGHIJ';
+	ip varchar2(100) := 'the quick brown fox jumped over the lazy dog';
 
 procedure getSetOfCharacters(p_chrset IN OUT char_arr_t) is
     begin
@@ -12,7 +12,7 @@ procedure getSetOfCharacters(p_chrset IN OUT char_arr_t) is
 	end loop;
     end;
 
-procedure getCharactersfromInput(p_ipString IN VARCHAR2, p_c_arr IN char_arr_t, p_ip_arr IN OUT char_arr_t) is 
+procedure processInput(p_ipString IN VARCHAR2, p_c_arr IN char_arr_t, p_ip_arr IN OUT char_arr_t) is 
     begin
         for i in 1..length(p_ipString) loop
         if lower(substr(p_ipString, i, 1)) member of p_c_arr then
@@ -45,6 +45,6 @@ function isPanagram(p_ip_string VARCHAR2) RETURN VARCHAR2 IS
 
 BEGIN
   	getSetOfCharacters(c_arr);
-	getCharactersfromInput(ip,c_arr,ip_arr);
+	processInput(ip,c_arr,ip_arr);
 	dbms_output.put_line(isPanagram(computeMissing(c_arr, ip_arr)));
 END;
