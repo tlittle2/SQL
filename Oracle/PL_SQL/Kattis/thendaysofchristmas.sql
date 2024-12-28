@@ -8,7 +8,7 @@ DECLARE
     		for i in 1..ip loop
         		arr(i):= i;
         	end loop;
-    end;
+    	end;
 
 	FUNCTION calculateOutput1(a IN t_arr) return INTEGER IS
     	out1 integer:= 0;
@@ -18,7 +18,7 @@ DECLARE
 		end loop;
 		
 		return out1;
-    end;
+    	end;
 
 	FUNCTION calculateOutput2(a IN t_arr) return INTEGER IS
     	out2 integer:= 0;
@@ -30,7 +30,6 @@ DECLARE
     		end loop;
 		return out2;
     	end;
-    
 BEGIN
 	processInput;
 	dbms_output.put_line(calculateOutput1(arr) || ' ' || calculateOutput2(arr));
