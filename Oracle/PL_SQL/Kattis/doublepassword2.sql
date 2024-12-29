@@ -9,13 +9,13 @@ DECLARE
 	c integer:= 0;
 
 	procedure appendToCollection(p_collection IN OUT arr_t, p_str IN VARCHAR2) is 
-    begin
-        for i in 1..length(p_str) loop
-    	p_collection.EXTEND;
-		p_collection(i):= substr(p_str, i, 1);
-    end loop;
+    	begin
+	        for i in 1..length(p_str) loop
+	    	p_collection.EXTEND;
+			p_collection(i):= substr(p_str, i, 1);
+	    	end loop;
 
-    end;
+    	end;
         
 
 BEGIN
