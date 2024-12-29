@@ -19,15 +19,13 @@ DECLARE
         
 
 BEGIN
-  appendToCollection(arr1, ip1);
+	appendToCollection(arr1, ip1);
 	appendToCollection(arr2, ip2);
-
 	for i in 1..arr1.COUNT loop
         if arr1(i) <> arr2(i) then
         c:= c + 1;
 		end if;
-    end loop;
+    	end loop;
 
 	dbms_output.put_line(power(2,c));
-
 END;
