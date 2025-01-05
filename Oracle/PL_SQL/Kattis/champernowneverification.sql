@@ -1,6 +1,5 @@
 DECLARE
     type t_arr is table of integer index by pls_integer;
-	ans boolean:= True;
 	ip_str integer := 1000000000; --user input
 	
 	function createMasterList return t_arr is
@@ -25,9 +24,7 @@ DECLARE
         
 
 BEGIN
-	ans := findDifference(createMasterList);
-	
-	if ans then
+	if findDifference(createMasterList) then
     	dbms_output.put_line(substr(ip_str, length(ip_str)));
     else
         dbms_output.put_line(-1);
