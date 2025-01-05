@@ -32,7 +32,7 @@ DECLARE
     END;
 
 	function findAnswer(occurArray IN c_arr) return ipLength is
-    	tmpKey ipLength := occur.FIRST;
+    	tmpKey ipLength := occurArray.FIRST;
     begin
     	while tmpKey is not null loop
             if occurArray(tmpKey) > 1 then
