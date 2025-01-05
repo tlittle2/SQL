@@ -3,7 +3,7 @@ DECLARE
   type t_arr is table of ipLength index by pls_integer;
 	arr t_arr := t_arr();
 
-	type c_arr is table of integer index by ipLength;
+	type c_arr is table of pls_integer index by ipLength;
 	occur c_arr := c_arr();
 
 	function processInput(a IN OUT t_arr) return t_arr is
