@@ -1,31 +1,31 @@
 DECLARE
-  type t_arr is table of integer index by pls_integer;
-	mstr t_arr := t_arr();
-
-	ip_str integer := 1000000000; --user input
+    type t_arr is table of integer index by pls_integer;
 	ans boolean:= True;
-
-	procedure createMasterList is
+	ip_str integer := 1000000000; --user input
+	
+	function createMasterList return t_arr is
+        mstr t_arr := t_arr();
     begin
         for i in 1..length(ip_str) loop
 		      mstr(i):= i;
 		    end loop;
+		return mstr;
     end;
 
-	procedure findDifference is --this could be a function...need to further investigate why it didn't work
+	function findDifference(p_mstr t_arr) return BOOLEAN is
     begin
         for i in 1..length(ip_str) loop
-        if substr(ip_str, i, 1) <> mstr(i) then
-        	ans:= False;
+        if substr(ip_str, i, 1) <> p_mstr(i) then
+        	return False;
           exit;
         end if;
 	end loop;
+	return True;
     end;
         
 
 BEGIN
-  createMasterList;
-	findDifference;
+	ans := findDifference(createMasterList);
 	
 	if ans then
     	dbms_output.put_line(substr(ip_str, length(ip_str)));
