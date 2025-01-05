@@ -31,12 +31,12 @@ DECLARE
     	end loop;
     END;
 
-	procedure findAnswer(occurArray IN c_arr) is
+	function findAnswer(occurArray IN c_arr) return ipLength is
     	tmpKey ipLength := occur.FIRST;
     begin
     	while tmpKey is not null loop
             if occurArray(tmpKey) > 1 then
-            dbms_output.put_line(tmpKey);
+            return tmpKey;
     		exit;
             end if;
     		tmpKey := occurArray.NEXT(tmpKey);
@@ -45,5 +45,5 @@ DECLARE
 
 BEGIN
 	createOccurrenceArray(processInput, occur);
-	findAnswer(occur);
+	dbms_output.put_line(findAnswer(occur));
 END;
