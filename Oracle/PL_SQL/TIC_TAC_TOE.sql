@@ -30,8 +30,8 @@ CREATE OR REPLACE PROCEDURE TIC_TAC_TOE AS
         if (p_board(1).cell1 = p_letter and p_board(2).cell1 = p_letter and p_board(3).cell1 = p_letter)
         or (p_board(1).cell2 = p_letter and p_board(2).cell2 = p_letter and p_board(3).cell2 = p_letter)
         or (p_board(1).cell3 = p_letter and p_board(2).cell3 = p_letter and p_board(3).cell3 = p_letter)
-        	then
-        		return TRUE;
+        then
+	    return TRUE;
     	end if;
     	
     	return FALSE;
