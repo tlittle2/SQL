@@ -10,7 +10,7 @@ DECLARE
 
 	lowerNumber PLS_INTEGER:= 0;
 	upperNumber PLS_INTEGER:= 0;
-	whiteSpacesNumber PLS_INTEGER:= 0;
+	whiteNumber PLS_INTEGER:= 0;
 	symbols PLS_INTEGER:= 0;
 
 	
@@ -66,14 +66,14 @@ BEGIN
 	        case
 	        	when isMember(ipLetters(i), upperLetters) then upperNumber:= upperNumber + 1;
 			when isMember(ipLetters(i), lowerLetters) then lowerNumber:= lowerNumber + 1;
-			when isMember(ipLetters(i), t_chars('_')) then whiteSpacesNumber:= whiteSpacesNumber + 1;
+			when isMember(ipLetters(i), t_chars('_')) then whiteNumber:= whiteNumber + 1;
 			
 			else symbols:= symbols + 1;
 			
 		end case;
     	end loop;
 
-	printAnswer(whiteSpacesNumber);
+	printAnswer(whiteNumber);
 	printAnswer(lowerNumber);
 	printAnswer(upperNumber);
 	printAnswer(symbols);
