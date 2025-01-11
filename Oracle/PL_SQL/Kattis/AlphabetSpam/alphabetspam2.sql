@@ -58,7 +58,7 @@ DECLARE
 BEGIN
 
     	populateStaticCollections(upperLetters, TRUE);
-	populateStaticCollections(lowerLetters,FALSE);
+	populateStaticCollections(lowerLetters, FALSE);
 	populateIPTable(ipString,ipLetters);
 	
 
