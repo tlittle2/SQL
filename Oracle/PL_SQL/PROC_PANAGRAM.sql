@@ -36,7 +36,7 @@ CREATE OR REPLACE PROCEDURE PROC_PANAGRAM(p_inputString VARCHAR2) as
     function isPanagram(p_ip_string VARCHAR2) RETURN VARCHAR2 IS
         BEGIN
             if nvl(length(p_ip_string),0) = 0 then
-    	RETURN 'pangram';
+    		RETURN 'pangram';
         	else
             RETURN 'missing ' || p_ip_string;
     	end if;
@@ -46,4 +46,5 @@ BEGIN
   	getSetOfCharacters(c_arr);
 	processInput(p_inputString,c_arr,ip_arr);
 	dbms_output.put_line(isPanagram(computeMissing(c_arr, ip_arr)));
-END;
+
+END PROC_PANAGRAM;
