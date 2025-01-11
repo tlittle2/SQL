@@ -87,13 +87,19 @@ CREATE OR REPLACE PROCEDURE TIC_TAC_TOE AS
         end loop;
     end;
 
-BEGIN
-    for i in 1..3 loop
-      board(i).cell1 := randomLetter;
-    	board(i).cell2 := randomLetter;
-    	board(i).cell3 := randomLetter;
-    end loop;
+	procedure populateBoard(p_board IN OUT t_board) is 
+    begin
+        for i in 1..3 loop
+            p_board(i).cell1 := randomLetter;
+        	p_board(i).cell2 := randomLetter;
+        	p_board(i).cell3 := randomLetter;
+    	end loop;
+    end;
 
+
+BEGIN
+	populateBoard(board);
+	
 	viewBoard(board);
 
 	processPlayer(board, x);
