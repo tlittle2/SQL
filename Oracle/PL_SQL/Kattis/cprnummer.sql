@@ -1,33 +1,48 @@
 DECLARE
   type v_arr is table of integer;
 	compare v_arr := v_arr(4,3,2,7,6,5,4,3,2,1);
-	ip_arr v_arr := v_arr();
-	ans_arr v_arr := v_arr();
+	ip_arr v_arr;
+	ans_arr v_arr;
 
-	ip varchar2(11):= '051002-4321'; --user input
-	final integer := 0;
+	ip varchar2(11):= '310111-0469'; --user input
+
+procedure processInput(p_ipString VARCHAR2, p_ipArr IN OUT v_arr) is
+begin
+    p_ipArr := v_arr();
+    for i in 1..length(p_ipString) loop
+    	if substr(p_ipString, i, 1) <> '-' then
+	    p_ipArr.EXTEND;
+	    p_ipArr(p_ipArr.LAST) := cast(substr(p_ipString, i, 1) as integer);
+	end if;
+    end loop;
+end;
+
+procedure processAnswer(p_ipArr IN v_arr, p_ansArr IN OUT v_arr) is
+begin
+    p_ansArr := v_arr();
+    for i in 1..p_ipArr.COUNT loop
+	p_ansArr.EXTEND;
+	p_ansArr(p_ansArr.LAST) := p_ipArr(i) * compare(i);
+    end loop;
+end;
+
+function findFinal(p_ansArr IN v_arr) return integer is
+    final integer := 0;
+begin
+	for i in 1..ans_arr.COUNT LOOP
+        	final:= final +p_ansArr(i);
+    	end loop;
+	return mod(final, 11);
+end;
 	
 BEGIN
-     for i in 1..length(ip) loop
-    	if substr(ip, i, 1) <> '-' then
-        	ip_arr.EXTEND;
-    		ip_arr(ip_arr.LAST) := cast(substr(ip, i, 1) as integer);
-		end if;
-    end loop;
+	processInput(ip, ip_arr);
+	processAnswer(ip_arr, ans_arr);
 
-	for i in 1..ip_arr.COUNT loop
-		ans_arr.EXTEND;
-		ans_arr(ans_arr.LAST) := ip_arr(i) * compare(i);
-    end loop;
-
-	for i in 1..ans_arr.COUNT LOOP
-        final:= final +ans_arr(i);
-    end loop;
-
-	if mod(final, 11) = 0 then
+	if findFinal(ans_arr) = 0 then
         dbms_output.put_line(1);
 	else
         dbms_output.put_line(0);
-    end if;
+   	 end if;
 
 END;
