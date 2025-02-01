@@ -96,7 +96,7 @@ cost_map CONSTANT T_COST_MAP := T_COST_MAP(
 ,'|' => 12
 ,'}' => 18
 ,'~' => 9
-, ' ' => 0
+,' ' => 0
 );
 
 ip varchar2(100) := 'THIS IS A LONGER, MORE EXPENSIVE LINE.';
