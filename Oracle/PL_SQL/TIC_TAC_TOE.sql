@@ -1,16 +1,18 @@
 CREATE OR REPLACE PROCEDURE TIC_TAC_TOE AS 
+    subtype cellLength is char(1);
+
     type t_cell_rec is record (
-        cell1 char(1),
-        cell2 char(1),
-        cell3 char(1)
+        cell1 cellLength,
+        cell2 cellLength,
+        cell3 cellLength
     );
     
     
     type t_board is table of t_cell_rec index by pls_integer;
     board t_board;
     
-    x CHAR(1) := 'X';
-    o CHAR(1) := 'O';
+    x cellLength := 'X';
+    o cellLength := 'O';
     
     
     function checkHorizontals(p_board t_board, p_letter CHAR) return BOOLEAN is
