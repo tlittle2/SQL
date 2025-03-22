@@ -5,5 +5,5 @@ DECLARE
 	ans integer:= power((power(2, ip1)+1),2);
 
 BEGIN    
-    dbms_output.put_line(ans);
+	dbms_output.put_line(ans);
 END;
