@@ -6,7 +6,8 @@ DECLARE
 
   	title_length INTEGER := LENGTH(ip_title);	
 BEGIN
-	IF ip_cost < title_length THEN
+	IF ip_cost < title_length
+	THEN
         	DBMS_OUTPUT.PUT_LINE(ip_cost);
     	ELSE
         	DBMS_OUTPUT.PUT_LINE(title_length);
