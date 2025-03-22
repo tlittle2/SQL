@@ -7,7 +7,8 @@ BEGIN
 	if ip member of vowels then
     		dbms_output.put_line('Jebb');
 	else
-    		if ip = 'Y' then
+    		if ip = 'Y'
+		then
       			dbms_output.put_line('Kannski');
     		else
       			dbms_output.put_line('Neibb');
