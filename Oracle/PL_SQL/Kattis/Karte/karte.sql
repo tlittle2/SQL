@@ -84,12 +84,14 @@ DECLARE
 	procedure printInputCollection(p_collection in t_arr) is
 	v_idx st_keylength := p_collection.FIRST;
     	begin
-	        while v_idx is not null loop
+	        while v_idx is not null
+		loop
 			for i in p_collection(v_idx).FIRST..p_collection(v_idx).LAST
 			loop
 				dbms_output.put_line(v_idx || ' ' || p_collection(v_idx)(i));
 	        	end loop;
-        	v_idx := p_collection.NEXT(v_idx);
+
+        		v_idx := p_collection.NEXT(v_idx);
     		end loop;
 	end;
 
