@@ -1,5 +1,5 @@
 DECLARE
-  type t_arr is table of char(1) index by pls_integer;
+	type t_arr is table of char(1) index by pls_integer;
 	positions t_arr := t_arr();
 
 	subtype max_str_length is varchar2(1000);
@@ -12,8 +12,8 @@ DECLARE
 	
 
 	function getCurrentChar(p_ip_str IN VARCHAR2, idx IN integer) return CHAR is
-    begin
-        return substr(p_ip_str,idx,1);
+    	begin
+        	return substr(p_ip_str,idx,1);
 	end;
 	
 BEGIN
