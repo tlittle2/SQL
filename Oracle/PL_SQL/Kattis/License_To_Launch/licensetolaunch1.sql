@@ -1,16 +1,17 @@
 DECLARE
 	type t_nums is table of PLS_INTEGER index by PLS_INTEGER;
-	t_arr t_nums;
+	t_arr constant t_nums:= t_nums(
+        1 => 3,
+        2 => 4,
+        3 => 1,
+        4 => 7,
+        5 => 2
+    );
 
 	minNum PLS_INTEGER;
 	minKey PLS_INTEGER;
 
 BEGIN
-    	t_arr(1) := 3;
-    	t_arr(2) := 4;
-	t_arr(3) := 1;
-	t_arr(4) := 7;
-	t_arr(5) := 2;
 
 	minNum := t_arr(t_arr.FIRST);
 	minKey := t_arr.FIRST;
