@@ -6,4 +6,4 @@ Kattis doesn't have SQL as a supported language. However, for practice on querie
 | ------------- | ------------- |
 | Connect By Substr | |
 | Windowing Functions | |
-| LISTAGG | |
+| LISTAGG |Apaxiaaans|
