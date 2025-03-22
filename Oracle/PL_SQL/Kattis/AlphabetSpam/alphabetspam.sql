@@ -71,13 +71,13 @@ BEGIN
 	
 
 	for i in ipLetters.FIRST..ipLetters.LAST loop		
-        case
-        	when isMember(ipLetters(i), upperLetters) then upperNumber:= upperNumber + 1;
+	        case
+	        	when isMember(ipLetters(i), upperLetters) then upperNumber:= upperNumber + 1;
 			when isMember(ipLetters(i), lowerLetters) then lowerNumber:= lowerNumber + 1;
 			when isMember(ipLetters(i), t_chars('_')) then whiteSpacesNumber:= whiteSpacesNumber + 1;
 			else symbols:= symbols + 1;
 		end case;
-    end loop;
+    	end loop;
 
 	printAnswer(whiteSpacesNumber, ipString);
 	printAnswer(lowerNumber, ipString);
