@@ -4,10 +4,11 @@ DECLARE
 	saying char(10) := 'Simon says';
 
 BEGIN
-    for i in 1..arr.COUNT loop
-    	if instr(arr(i), saying) > 0
-	then
-		dbms_output.put_line(substr(arr(i), instr(arr(i) , saying) + length(saying), length(arr(i))));
-    	end if;
-    end loop;
+	for i in 1..arr.COUNT
+	loop
+		if instr(arr(i), saying) > 0
+		then
+			dbms_output.put_line(substr(arr(i), instr(arr(i) , saying) + length(saying), length(arr(i))));
+    		end if;
+    	end loop;
 END;
