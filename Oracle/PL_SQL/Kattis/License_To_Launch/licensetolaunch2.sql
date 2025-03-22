@@ -1,5 +1,5 @@
 DECLARE
-    type t_nums is table of PLS_INTEGER index by PLS_INTEGER;
+	type t_nums is table of PLS_INTEGER index by PLS_INTEGER;
 	t_arr t_nums;
 	
 	type t_input is table of PLS_INTEGER;
@@ -23,18 +23,17 @@ begin
 	minKey := p_arr.FIRST;
 
 	for i in p_arr.FIRST..p_arr.LAST
-    loop
-        if p_arr(i) < minNum then
-        	minNum := t_arr(i);
-        	minKey := i;
+	loop
+        	if p_arr(i) < minNum then
+	        	minNum := t_arr(i);
+	        	minKey := i;
 		end if;
-    end loop;
-
+    	end loop;
 	return minKey-1;
 end;
 
 BEGIN
-    populateMap(t_ip, t_arr);
+	populateMap(t_ip, t_arr);
 	dbms_output.put_line(returnAnswer(t_arr));
 
 END;
