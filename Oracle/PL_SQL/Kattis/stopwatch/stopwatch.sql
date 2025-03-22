@@ -7,8 +7,9 @@ DECLARE
 	lastTime integer:= t_values(t_values.FIRST);
 
 BEGIN
-	for i in t_values.FIRST..t_values.LAST loop
-	    	if not running then
+	for i in t_values.FIRST..t_values.LAST
+	loop
+		if not running then
 			running := True;
 			lastTime:= t_values(i);
 		else
