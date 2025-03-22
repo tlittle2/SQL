@@ -69,17 +69,17 @@ DECLARE
 	end;
 	
 	procedure displayOutput is
-	cursor cur_createOutput is
-	select LISTAGG(cardsLeft, ' ') WITHIN GROUP (ORDER BY rownum) as answer from (
-		select suit, 13-cnt as cardsLeft from (
-		select dim.suit
-		,count(distinct k.card_num) as cnt
-		from karte_dim dim
-		left outer join karte k
-		on dim.suit = k.suit
-		group by dim.suit
-		)
-	);
+		cursor cur_createOutput is
+		select LISTAGG(cardsLeft, ' ') WITHIN GROUP (ORDER BY rownum) as answer from (
+			select suit, 13-cnt as cardsLeft from (
+				select dim.suit
+				,count(distinct k.card_num) as cnt
+				from karte_dim dim
+				left outer join karte k
+				on dim.suit = k.suit
+				group by dim.suit
+			)
+		);
 	begin
 	for rec in cur_createOutput
 	loop
