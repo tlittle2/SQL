@@ -25,23 +25,22 @@ COMMIT;
 
 
 DECLARE
-ip varchar2(6)               := '5 May';
-dy ASTROLOGY.DAY_CUTOFF%TYPE := substr(ip, 1, instr(ip, ' '));
-mth ASTROLOGY.MONTH%TYPE     := substr(ip, instr(ip, ' ') + 1, length(ip));
-
-RW ASTROLOGY%ROWTYPE;
+      ip varchar2(6)               := '5 May';
+      dy ASTROLOGY.DAY_CUTOFF%TYPE := substr(ip, 1, instr(ip, ' '));
+      mth ASTROLOGY.MONTH%TYPE     := substr(ip, instr(ip, ' ') + 1, length(ip));
+      
+      RW ASTROLOGY%ROWTYPE;
 
 BEGIN
-    select *
-    INTO RW
-    FROM ASTROLOGY
-    WHERE MONTH = mth;
+      select *
+      INTO RW
+      FROM ASTROLOGY
+      WHERE MONTH = mth;
 
-     if dy < rw.DAY_CUTOFF
-    then
-        dbms_output.put_line(rw.EARLY_SIGN);
-    else
-        dbms_output.put_line(rw.LATE_SIGN);
-    end if;
-
+      if dy < rw.DAY_CUTOFF
+      then
+            dbms_output.put_line(rw.EARLY_SIGN);
+      else
+            dbms_output.put_line(rw.LATE_SIGN);
+      end if;
 END;
