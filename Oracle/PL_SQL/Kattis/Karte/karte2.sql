@@ -31,27 +31,25 @@ DECLARE
     v_key KARTE.SUIT%TYPE;
     v_value varchar2(2);
     begin
-        EXECUTE IMMEDIATE 'TRUNCATE TABLE KARTE';
-        loop
-		    if v_Idx > length(p_ipString)
+	    EXECUTE IMMEDIATE 'TRUNCATE TABLE KARTE';
+		loop
+			if v_Idx > length(p_ipString)
 			then
-			    exit;
-	    	end if;
-	
-	    	v_word := substr(p_ipString, v_Idx, const_sublength);
-	    	v_key := substr(v_word, 1,1);
-	    	v_value := to_number(substr(v_word, 2,2));
+				exit;
+	    		end if;
+			
+			v_word := substr(p_ipString, v_Idx, const_sublength);
+			v_key := substr(v_word, 1,1);
+	    		v_value := to_number(substr(v_word, 2,2));
 
-            INSERT INTO KARTE VALUES(v_key, v_value);
-	    	v_Idx:= v_Idx + const_sublength;
+            		INSERT INTO KARTE VALUES(v_key, v_value);
+	    		v_Idx:= v_Idx + const_sublength;
 		end loop;
-        commit;
+        	commit;
     end;
-	
-	
-	
+
 	function isGreska return boolean is
-	cursor cur_checkGreska is
+		cursor cur_checkGreska is
 		select dim.suit
 		, count(nvl(k.card_num,0)) as cnt
 		, count(distinct nvl(k.card_num,0)) as cnt_distinct
@@ -65,7 +63,7 @@ DECLARE
 			if rec_greska.cnt_distinct < rec_greska.cnt
 			then
 				return True;
-            end if;
+            		end if;
 		end loop;
 		return False;
 	end;
@@ -90,11 +88,11 @@ DECLARE
 	end;
 
 BEGIN
-    processInput(ip);
-    if isGreska
-    THEN
-      dbms_output.put_line('GRESKA');
-	  else
-		  displayOutput;
-    end if;
+	processInput(ip);
+	if isGreska
+	THEN
+		dbms_output.put_line('GRESKA');
+	else
+		displayOutput;
+	end if;
 END;
