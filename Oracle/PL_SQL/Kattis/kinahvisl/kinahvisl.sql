@@ -18,7 +18,7 @@ DECLARE
 	end;
 	
 	function findDiffs(p_ip1 IN t_input, p_ip2 IN t_input) return PLS_INTEGER is
-	    diff PLS_INTEGER := 1;
+	diff PLS_INTEGER := 1;
 	begin
 		for i in p_ip1.FIRST..p_ip1.LAST
 		loop
@@ -26,7 +26,7 @@ DECLARE
 	        		diff := diff+1;
 			end if;
 	    	end loop;
-	
+
 		return diff;
 	end;
 
