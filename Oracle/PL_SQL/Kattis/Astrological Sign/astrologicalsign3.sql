@@ -23,22 +23,17 @@ INSERT INTO ASTROLOGY VALUES('Feb',20, 'Aquarius', 'Pisces');
 COMMIT;
 
 DECLARE
-ip varchar2(6)               := '5 May';
-dy ASTROLOGY.DAY_CUTOFF%TYPE := to_number(substr(ip, 1, instr(ip, ' ')-1));
-mth ASTROLOGY.MONTH%TYPE     := substr(ip, instr(ip, ' ') + 1, length(ip));
-
-answer ASTROLOGY.EARLY_SIGN%TYPE;
+      ip varchar2(6)               := '5 May';
+      dy ASTROLOGY.DAY_CUTOFF%TYPE := to_number(substr(ip, 1, instr(ip, ' ')-1));
+      mth ASTROLOGY.MONTH%TYPE     := substr(ip, instr(ip, ' ') + 1, length(ip));
+      
+      answer ASTROLOGY.EARLY_SIGN%TYPE;
 
 BEGIN
-    select 
-        CASE 
-               WHEN dy < a.DAY_CUTOFF THEN a.EARLY_SIGN 
-               ELSE a.LATE_SIGN 
-        END
-        into answer
+    select CASE  WHEN dy < a.DAY_CUTOFF THEN a.EARLY_SIGN  ELSE a.LATE_SIGN END
+      into answer
     FROM ASTROLOGY a
     WHERE a.MONTH = mth;
 
     dbms_output.put_line(answer);
-
 END;
