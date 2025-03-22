@@ -1,5 +1,5 @@
 DECLARE
-  type t_arr is table of char(1);
+	type t_arr is table of char(1);
 	vowels t_arr := t_arr('a','e','i','o','u');
 	word varchar2(50):= 'asdfiy';
 	ans integer:= 0;
