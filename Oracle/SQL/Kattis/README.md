@@ -6,5 +6,5 @@ Kattis doesn't have SQL as a supported language. However, for practice on querie
 | ------------- | ------------- |
 | Connect By Substr | Triple Texting,Kornislav,Kinahvisl,IsYaVowel,Champernowne Verification |
 | Windowing Functions | Apaxiaaans |
-| LISTAGG | Apaxiaaans |
+| LISTAGG | Apaxiaaans,Mæting |
 | Joins | Triple Texting, Mæting | 
