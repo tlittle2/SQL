@@ -24,7 +24,8 @@ IS
         PRAGMA AUTONOMOUS_TRANSACTION; --ensures that we don't commit changes in callback program
         c_code CONSTANT INTEGER := SQLCODE;
     BEGIN
-        INSERT INTO ERROR_LOG(LOG_ID
+        INSERT INTO ERROR_LOG(
+          LOG_ID
         , CREATE_TS
         , CREATED_BY
         , ERROR_CODE
