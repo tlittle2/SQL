@@ -1,4 +1,5 @@
-CREATE OR REPLACE PROCEDURE TIC_TAC_TOE AS 
+CREATE OR REPLACE PROCEDURE TIC_TAC_TOE
+AS 
 	subtype cellLength is char(1);
 	type t_cell_rec is record (
 		cell1 cellLength,
