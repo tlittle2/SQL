@@ -9,10 +9,10 @@ CREATE OR REPLACE PROCEDURE TIC_TAC_TOE AS
 	type t_board is table of t_cell_rec index by pls_integer;
     	board t_board;
     
-    	x cellLength := 'X';
-    	o cellLength := 'O';
+    	player1 cellLength := 'X';
+    	player2 cellLength := 'O';
 
-	function checkHorizontals(p_board t_board, p_letter CHAR) return BOOLEAN is
+	function checkHorizontals(p_board t_board, p_letter cellLength) return BOOLEAN is
     	begin
 		for i in p_board.FIRST..p_board.LAST
 		loop
@@ -24,7 +24,7 @@ CREATE OR REPLACE PROCEDURE TIC_TAC_TOE AS
     		return FALSE;
     	end;
 
-	function checkVerticals(p_board t_board, p_letter CHAR) return BOOLEAN is
+	function checkVerticals(p_board t_board, p_letter cellLength) return BOOLEAN is
     	begin
 	        if (p_board(1).cell1 = p_letter and p_board(2).cell1 = p_letter and p_board(3).cell1 = p_letter)
 	        or (p_board(1).cell2 = p_letter and p_board(2).cell2 = p_letter and p_board(3).cell2 = p_letter)
@@ -36,7 +36,7 @@ CREATE OR REPLACE PROCEDURE TIC_TAC_TOE AS
 	    	return FALSE;
 	end;
 
-	function checkDiagonals(p_board t_board, p_letter CHAR) return boolean is
+	function checkDiagonals(p_board t_board, p_letter cellLength) return boolean is
 	begin
 		if (p_board(1).cell1 = p_letter and p_board(2).cell2 = p_letter and p_board(3).cell3 = p_letter)
 		or (p_board(1).cell3 = p_letter and p_board(2).cell2 = p_letter and p_board(3).cell1 = p_letter)
@@ -51,19 +51,19 @@ CREATE OR REPLACE PROCEDURE TIC_TAC_TOE AS
 	begin
 		IF ROUND(DBMS_RANDOM.VALUE(0,1)) = 0
 		then
-			return x;
+			return player1;
     		else
-        		RETURN o;
+        	RETURN player2;
     
     		end if;
     	end;
 
-	procedure printOutput(p_letter CHAR, p_direction VARCHAR2) is
+	procedure printOutput(p_letter cellLength, p_direction VARCHAR2) is
 	begin
         	dbms_output.put_line(p_letter || ' won ' || p_direction);
     	end;
 
-	procedure processPlayer(p_board t_board, p_player CHAR) is 
+	procedure processPlayer(p_board t_board, p_player cellLength) is 
     	begin
 		if checkHorizontals(p_board, p_player)
 		then
@@ -96,7 +96,7 @@ CREATE OR REPLACE PROCEDURE TIC_TAC_TOE AS
 BEGIN
 	populateBoard(board);
 	viewBoard(board);
-	processPlayer(board, x);
-	processPlayer(board, o);
+	processPlayer(board, player1);
+	processPlayer(board, player2);
 
 END TIC_TAC_TOE;
