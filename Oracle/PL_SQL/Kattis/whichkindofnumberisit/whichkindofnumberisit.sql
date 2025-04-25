@@ -2,7 +2,7 @@ DECLARE
 	type t_arr is table of integer;
 	numbers t_arr := t_arr(1,7,20,9);
 	sqrt_value number;
-	ans varchar(2);
+	ans varchar2(2);
 
 	FUNCTION isSquare(n INTEGER) RETURN BOOLEAN IS
     	sqrt_value number:= sqrt(n);
