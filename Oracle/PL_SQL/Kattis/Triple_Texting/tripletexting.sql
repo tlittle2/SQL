@@ -11,7 +11,9 @@ DECLARE
 	occur c_arr := c_arr();
 
 	tmpKey ipLength;
-	procedure processInput(a IN OUT t_arr) is
+	
+	procedure processInput(a IN OUT t_arr)
+	is
     	begin
 		for i in 1..3
 		loop
@@ -20,8 +22,9 @@ DECLARE
     		end loop;
     	end;
 
-	procedure createOccurrenceArray(a IN t_arr, occurArray IN OUT c_arr) IS
-	BEGIN
+	procedure createOccurrenceArray(a IN t_arr, occurArray IN OUT c_arr)
+	is
+	begin
 	        for i in a.FIRST..a.LAST
 		loop
 		        if occurArray.EXISTS(arr(i))then
@@ -30,9 +33,10 @@ DECLARE
 		        	occurArray(arr(i)) := 1;
 			end if;
 	    	end loop;
-    	END;
+    	end;
 
-	procedure findAnswer(occurArray IN c_arr) is
+	procedure findAnswer(occurArray IN c_arr)
+	is
 	begin
 		tmpKey := occur.FIRST;
 		while tmpKey is not null
