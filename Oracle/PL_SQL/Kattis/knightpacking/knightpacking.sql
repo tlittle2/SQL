@@ -1,4 +1,4 @@
-DECLARE    
+DECLARE
 	ip number := 1;
 
 	function answer(p_ip number)
@@ -12,5 +12,5 @@ DECLARE
 	    	end if;
     	end;
 BEGIN
-    dbms_output.put_line(answer(ip));
+	dbms_output.put_line(answer(ip));
 END;
