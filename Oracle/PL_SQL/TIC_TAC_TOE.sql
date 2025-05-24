@@ -13,7 +13,7 @@ AS
     	player1 cellLength := 'X';
     	player2 cellLength := 'O';
 
-	function checkHorizontals(p_board t_board, p_letter cellLength)
+	function checkHorizontals(p_board IN t_board, p_letter IN cellLength)
 	return BOOLEAN
 	is
     	begin
@@ -27,7 +27,7 @@ AS
     		return FALSE;
     	end;
 
-	function checkVerticals(p_board t_board, p_letter cellLength)
+	function checkVerticals(p_board IN t_board, p_letter IN cellLength)
 	return BOOLEAN
 	is
     	begin
@@ -41,7 +41,7 @@ AS
 	    	return FALSE;
 	end;
 
-	function checkDiagonals(p_board t_board, p_letter cellLength)
+	function checkDiagonals(p_board IN t_board, p_letter IN cellLength)
 	return boolean
 	is
 	begin
@@ -68,7 +68,7 @@ AS
     		end if;
     	end;
 
-	procedure printOutput(p_letter cellLength, p_direction VARCHAR2)
+	procedure printOutput(p_letter IN cellLength, p_direction IN VARCHAR2)
 	is
 	begin
         	dbms_output.put_line(p_letter || ' won ' || p_direction);
@@ -89,7 +89,7 @@ AS
     		end if;
     	end;
 	
-	procedure viewBoard(p_board t_board)
+	procedure viewBoard(p_board IN t_board)
 	is
 	begin
 	        for i in p_board.FIRST..p_board.LAST loop
