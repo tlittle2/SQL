@@ -68,9 +68,11 @@ DECLARE
 		distinctCards t_cardNumber;
 		mx CONSTANT number := 13;
 	begin
-        	while v_idx is not null loop
+        	while v_idx is not null
+		loop
 			p_ans.EXTEND;
             		distinctCards := t_cardNumber() multiset union distinct p_collection(v_idx); -- get the distinct values out of the nested table
+			
 			if distinctCards.COUNT < p_collection(v_idx).COUNT
 			then
                 		p_ans(p_ans.COUNT) := greska;
