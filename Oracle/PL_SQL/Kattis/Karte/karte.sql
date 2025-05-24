@@ -74,9 +74,11 @@ DECLARE
 			if distinctCards.COUNT < p_collection(v_idx).COUNT
 			then
                 		p_ans(p_ans.COUNT) := greska;
+			
 			elsif p_collection(v_idx).EXISTS(0)
 			then
                 		p_ans(p_ans.COUNT) := cast(mx as varchar2);
+			
 			else
                 		p_ans(p_ans.COUNT) := cast(mx - p_collection(v_idx).LAST as varchar2);
 			end if;
