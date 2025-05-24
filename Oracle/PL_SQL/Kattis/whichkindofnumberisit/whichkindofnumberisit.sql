@@ -4,8 +4,10 @@ DECLARE
 	sqrt_value number;
 	ans varchar2(2);
 
-	FUNCTION isSquare(n INTEGER) RETURN BOOLEAN IS
-    	sqrt_value number:= sqrt(n);
+	FUNCTION isSquare(n INTEGER)
+	RETURN BOOLEAN
+	IS
+    		sqrt_value number:= sqrt(n);
     	begin
 	        if trunc(sqrt_value) = sqrt_value
 		then
@@ -14,7 +16,9 @@ DECLARE
 	    	return False;
     	end;
 
-	FUNCTION isOdd(n INTEGER) RETURN BOOLEAN IS
+	FUNCTION isOdd(n INTEGER)
+	RETURN BOOLEAN
+	IS
     	begin
 	        if mod(n,2) = 1
 		then
@@ -23,7 +27,8 @@ DECLARE
 	    	return False;
     	end;
 
-	PROCEDURE displayAnswer(str VARCHAR2) is
+	PROCEDURE displayAnswer(str VARCHAR2)
+	is
     	begin
 		if length(str) > 0 then
 	        	dbms_output.put_line(ans);
@@ -45,6 +50,8 @@ BEGIN
 		if isSquare(numbers(i)) then
 			ans:= ans || 'S';
         	end if;	
+		
 		displayAnswer(ans);
-    	end loop;
+    	
+	end loop;
 END;
