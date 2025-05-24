@@ -84,8 +84,10 @@ DECLARE
 			else
                 		p_ans(p_ans.COUNT) := cast(mx - p_collection(v_idx).LAST as varchar2);
 			end if;
+			
 			v_idx := p_collection.NEXT(v_idx);
-    		end loop;
+    		
+		end loop;
     	end;
 
 	procedure printInputCollection(p_collection in t_arr)
