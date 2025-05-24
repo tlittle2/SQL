@@ -19,4 +19,5 @@ Kattis doesn't have Oracle PL/SQL as a supported language. However, for practice
 | Answering Questions in DECLARE section | planina, slatkisi, stopwatch, titlecost
 | "While" Loops | Karte, Triple_Texting, titlecost
 | Other Oracle Packages | quickestimate
+| Case | apaxianparent
 
