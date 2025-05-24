@@ -31,11 +31,11 @@ DECLARE
 	function findFinal(p_ansArr IN v_arr)
 	return integer
 	is
-	final integer := 0;
+		final integer := 0;
 	begin
 		for i in 1..ans_arr.COUNT
 		LOOP
-		final:= final +p_ansArr(i);
+			final:= final +p_ansArr(i);
 	    	end loop;
 		return mod(final, 11);
 	end;
