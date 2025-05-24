@@ -17,7 +17,7 @@ COMMIT;
 --=========================================================================================================
 
 DECLARE
-	ip varchar2(1000) := 'P10K10H10T01'; --user input
+	ip varchar2(1000) := 'H02H10P11H02'; --user input
 	subtype st_ansLength is varchar2(6);
 
 	procedure processInput(p_ipString IN VARCHAR2)
@@ -50,23 +50,26 @@ DECLARE
 	function isGreska
 	return boolean
 	is
-		cursor cur_checkGreska is
-		select dim.suit
-		, count(nvl(k.card_num,0)) as cnt
-		, count(distinct nvl(k.card_num,0)) as cnt_distinct
-		from karte_dim dim
-		left outer join karte k
-		on dim.suit = k.suit
-		group by dim.suit;
+        	isGreska NUMBER;
 	begin
-		for rec_greska in cur_checkGreska
-		loop
-			if rec_greska.cnt_distinct < rec_greska.cnt
-			then
-				return True;
-            		end if;
-		end loop;
-		return False;
+	        select count(1)
+	        into isGreska
+	        from (
+	        	select dim.suit
+			, count(nvl(k.card_num,0)) as cnt
+			, count(distinct nvl(k.card_num,0)) as cnt_distinct
+			from karte_dim dim
+			left outer join karte k
+			on dim.suit = k.suit
+			group by dim.suit
+	        ) where cnt_distinct < cnt;
+
+        if isGreska > 0
+        then
+            return True;
+        end if;
+
+        return False;
 	end;
 	
 	procedure displayOutput
