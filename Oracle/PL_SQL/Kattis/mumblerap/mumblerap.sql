@@ -7,7 +7,8 @@ DECLARE
 	num_match max_varchar2;
 	currMax integer:= -1;
 
-	procedure processInput is
+	procedure processInput
+	is
 	begin
 	        for i in 1..REGEXP_COUNT(ip_str, '\d+')
 		loop
