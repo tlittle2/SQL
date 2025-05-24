@@ -14,7 +14,8 @@ DECLARE
 	symbols PLS_INTEGER:= 0;
 
 	
-	procedure populateStaticCollections(p_letters IN OUT t_chars, p_isUpper IN BOOLEAN DEFAULT TRUE) is 
+	procedure populateStaticCollections(p_letters IN OUT t_chars, p_isUpper IN BOOLEAN DEFAULT TRUE)
+	is 
     	begin
 	        if p_isUpper then
 	            for i in ascii('A')..ascii('Z') loop
@@ -31,7 +32,8 @@ DECLARE
         
 	end;
 
-	procedure populateIPTable(p_ipString IN VARCHAR2, p_ipLetters IN OUT t_chars) is
+	procedure populateIPTable(p_ipString IN VARCHAR2, p_ipLetters IN OUT t_chars)
+	is
     	begin
         	for i in 1..length(p_ipString) loop
 	        	p_ipLetters.EXTEND;
@@ -41,7 +43,9 @@ DECLARE
     	end;
 
 
-	function isMember(p_chr IN CHAR, p_collection IN t_chars) return BOOLEAN is
+	function isMember(p_chr IN CHAR, p_collection IN t_chars)
+	return BOOLEAN
+	is
     	begin
         	if p_chr member of p_collection then
         	return true;
@@ -50,9 +54,10 @@ DECLARE
     	end;
 
 
-	procedure printAnswer(p_ipNumber IN PLS_INTEGER, p_ipString VARCHAR2 DEFAULT ipString) is
+	procedure printAnswer(p_ipNumber IN PLS_INTEGER, p_ipString VARCHAR2 DEFAULT ipString)
+	is
     	begin
-        dbms_output.put_line(round(p_ipNumber / length(ipString),15));
+        	dbms_output.put_line(round(p_ipNumber / length(ipString),15));
     	end;
 	
 BEGIN
