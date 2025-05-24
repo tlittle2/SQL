@@ -18,7 +18,8 @@ BEGIN
 		end if;
 	end loop;
 
-	if running then
+	if running
+	then
 		dbms_output.put_line('still running');
   	else
 		dbms_output.put_line(total);
