@@ -9,7 +9,7 @@ DECLARE
     procedure convertEncoded(p_encodeStr IN VARCHAR2, p_idxTable IN OUT NOCOPY t_idxTable)
     is
         windowIdx NUMBER(1,0):= 3;
-    BEGIN
+    begin
         for i in 1..length(p_encodeStr)
         loop
             if mod(i, windowIdx) = 0
@@ -18,7 +18,7 @@ DECLARE
                 p_idxTable(p_idxTable.LAST) := cast(substr(p_encodeStr, i-(windowIdx-1), windowIdx) AS NUMBER);
             end if;
         end loop;
-    END;
+    end;
 
     FUNCTION calcAns(p_ipStr IN ansLength, p_idxTable IN t_idxTable)
     return ansLength
