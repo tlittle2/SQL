@@ -4,7 +4,8 @@ DECLARE
 	ip char(1):= 'A';
 
 BEGIN
-	if ip member of vowels then
+	if ip member of vowels
+	then
     		dbms_output.put_line('Jebb');
 	else
     		if ip = 'Y'
