@@ -5,8 +5,8 @@ DECLARE
 
     procedure processInput
     is
-    ip varchar2(52):= 'AH 2H 3H 4H 5H';
-    currChar charLength_ST;
+        ip varchar2(52):= 'AH 2H 3H 4H 5H';
+        currChar charLength_ST;
     begin
         for i in 1..length(ip)
         loop
@@ -21,9 +21,10 @@ DECLARE
         end loop;
     end;
 
-    function produceAnswer return pls_integer
+    function produceAnswer
+    return pls_integer
     is
-    answer pls_integer := 0;
+        answer pls_integer := 0;
     begin
         for i in indices of ipTable
         loop
@@ -31,10 +32,11 @@ DECLARE
               answer := ipTable(i);
           end if;
         end loop;
+
         return answer;
     end;
 
 BEGIN
-processInput;
-dbms_output.put_line(produceAnswer);
+    processInput;
+    dbms_output.put_line(produceAnswer);
 END;
