@@ -25,15 +25,16 @@ DECLARE
 		        	exit;
 		        end if;
 		end loop;
-	return True;
-    end;
-        
+		
+		return True;
+    	end;
 
 BEGIN
-	if findDifference(createMasterList) then
+	if findDifference(createMasterList)
+	then
     		dbms_output.put_line(substr(ip_str, length(ip_str)));
     	else
         	dbms_output.put_line(-1);
-    end if;
+	end if;
 
 END;
