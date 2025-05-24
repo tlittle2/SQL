@@ -27,7 +27,8 @@ DECLARE
 BEGIN
 	for i in problems.FIRST..problems.LAST
 	LOOP
-		if evaluateProblem(problems(i)) then
+		if evaluateProblem(problems(i))
+		then
 			dbms_output.put_line('SKIPPED');
 		else
 	        	dbms_output.put_line(solveProblem(problems(i)));
