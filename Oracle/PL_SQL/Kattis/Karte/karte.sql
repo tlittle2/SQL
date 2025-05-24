@@ -16,12 +16,13 @@ DECLARE
 
 	ip varchar2(1000) := 'H02H10P11H02'; --user input
 
-	procedure processInput(p_ipString IN VARCHAR2, p_collection IN OUT t_arr) is
-        v_Idx number := 1;
-    	const_sublength constant number :=3;
-    	v_word varchar2(3);
-    	v_key st_keylength;
-    	v_value varchar2(2);
+	procedure processInput(p_ipString IN VARCHAR2, p_collection IN OUT t_arr)
+	is
+	        v_Idx number := 1;
+	    	const_sublength constant number :=3;
+	    	v_word varchar2(3);
+	    	v_key st_keylength;
+	    	v_value varchar2(2);
     	begin
         	loop
 			if v_Idx > length(p_ipString)
@@ -47,8 +48,9 @@ DECLARE
 		end loop;
     	end;
 
-	procedure checkOtherCards(p_collection IN OUT t_arr) is 
-	v_idx st_keylength:= p_collection.FIRST;
+	procedure checkOtherCards(p_collection IN OUT t_arr)
+	is 
+		v_idx st_keylength:= p_collection.FIRST;
     	begin
         	while v_idx is not null
 		loop
@@ -60,10 +62,11 @@ DECLARE
     	end;
 
 
-	procedure processCollection(p_collection IN t_arr, p_ans IN OUT t_ansArr) is
-	v_idx st_keylength := p_collection.FIRST;
-	distinctCards t_cardNumber;
-	mx CONSTANT number := 13;
+	procedure processCollection(p_collection IN t_arr, p_ans IN OUT t_ansArr)
+	is
+		v_idx st_keylength := p_collection.FIRST;
+		distinctCards t_cardNumber;
+		mx CONSTANT number := 13;
 	begin
         	while v_idx is not null loop
 			p_ans.EXTEND;
@@ -81,8 +84,9 @@ DECLARE
     		end loop;
     	end;
 
-	procedure printInputCollection(p_collection in t_arr) is
-	v_idx st_keylength := p_collection.FIRST;
+	procedure printInputCollection(p_collection in t_arr)
+	is
+		v_idx st_keylength := p_collection.FIRST;
     	begin
 	        while v_idx is not null
 		loop
@@ -95,7 +99,8 @@ DECLARE
     		end loop;
 	end;
 
-	procedure printAns(p_answerCollection in t_ansArr) is
+	procedure printAns(p_answerCollection in t_ansArr)
+	is
 	begin
         	if greska member of p_answerCollection then
         		dbms_output.put_line(greska);
