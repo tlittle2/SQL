@@ -14,12 +14,15 @@ DECLARE
 	symbols PLS_INTEGER:= 0;
 
 	
-	function calculation(p_num IN PLS_INTEGER, p_ipString IN varchar2) return FLOAT is
+	function calculation(p_num IN PLS_INTEGER, p_ipString IN varchar2)
+	return FLOAT
+	is
 	begin
         	return p_num / length(p_ipString);
     	end;
 
-	procedure populateStaticCollections(p_letters IN OUT t_chars, p_isUpper IN BOOLEAN DEFAULT TRUE) is 
+	procedure populateStaticCollections(p_letters IN OUT t_chars, p_isUpper IN BOOLEAN DEFAULT TRUE)
+	is 
 	begin
 		if p_isUpper then
 			for i in ascii('A')..ascii('Z')
@@ -36,7 +39,8 @@ DECLARE
         
     	end;
 
-	procedure populateIPTable(p_ipString IN VARCHAR2, p_ipLetters IN OUT t_chars) is
+	procedure populateIPTable(p_ipString IN VARCHAR2, p_ipLetters IN OUT t_chars)
+	is
 	begin
         	for i in 1..length(p_ipString)
 		loop
@@ -46,7 +50,9 @@ DECLARE
 
     	end;
 	
-	function isMember(p_chr IN CHAR, p_collection IN t_chars) return BOOLEAN is
+	function isMember(p_chr IN CHAR, p_collection IN t_chars)
+	return BOOLEAN
+	is
     	begin
         	if p_chr member of p_collection then
         		return true;
