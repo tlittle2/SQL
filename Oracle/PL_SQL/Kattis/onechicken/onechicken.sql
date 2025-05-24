@@ -1,5 +1,5 @@
 DECLARE
-	ip varchar(9) := '20 100';
+	ip varchar2(9) := '20 100';
 
 	n integer:= to_number(substr(ip, 1, instr(ip, ' ')-1));
 	m integer:= to_number(substr(ip, instr(ip, ' ')+1, length(ip)));
