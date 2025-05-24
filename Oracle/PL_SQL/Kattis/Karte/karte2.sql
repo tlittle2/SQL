@@ -64,12 +64,12 @@ DECLARE
 			group by dim.suit
 	        ) where cnt_distinct < cnt;
 
-        if isGreska > 0
-        then
-            return True;
-        end if;
-
-        return False;
+	        if isGreska > 0
+	        then
+	            return True;
+	        end if;
+	
+	        return False;
 	end;
 	
 	procedure displayOutput
