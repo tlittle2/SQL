@@ -5,6 +5,7 @@ Kattis doesn't have Oracle PL/SQL as a supported language. However, for practice
 **Good Code Reference Examples by Category**
 
 | Concept  | Problems |
+| ------------- | ------------- |
 | Associative Arrays | Astrological Sign, Poker Hand, Triple_Texting, backspace, champernowneverificationj, printingcosts, thendaysofchristmas
 | Nested Tables | AlphabetSpam, Desiigner_strengir, Ive_Been_Everywhere_,_Man, Karte, happyhappyprimeprime, numberfun, License_To_Launch, Pokechat,  apaxiaaans, composedrhythms, cprnummer, doublepassword, stopwatch
 | Member Of | AlphabetSpam, Desiigner_strengir, isyavowel, mæting, quickbrownfox, quickbrownfox2, stafur
