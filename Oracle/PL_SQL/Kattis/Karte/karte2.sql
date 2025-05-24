@@ -3,8 +3,6 @@ CREATE TABLE KARTE(
     CARD_NUM NUMBER(2,0)
 );
 
-
-
 CREATE TABLE KARTE_DIM(
     SUIT CHAR(1)
 );
@@ -14,24 +12,23 @@ INSERT INTO KARTE_DIM VALUES('K');
 INSERT INTO KARTE_DIM VALUES('H');
 INSERT INTO KARTE_DIM VALUES('T');
 
-
 COMMIT;
 
-
+--=========================================================================================================
 
 DECLARE
-    ip varchar2(1000) := 'P10K10H10T01'; --user input
+	ip varchar2(1000) := 'P10K10H10T01'; --user input
+	subtype st_ansLength is varchar2(6);
 
-    subtype st_ansLength is varchar2(6);
-
-    procedure processInput(p_ipString IN VARCHAR2) is
-    v_Idx number := 1;
-    const_sublength constant number :=3;
-    v_word varchar2(3);
-    v_key KARTE.SUIT%TYPE;
-    v_value varchar2(2);
-    begin
-	    EXECUTE IMMEDIATE 'TRUNCATE TABLE KARTE';
+	procedure processInput(p_ipString IN VARCHAR2)
+	is
+		v_Idx number := 1;
+    		const_sublength constant number :=3;
+    		v_word varchar2(3);
+    		v_key KARTE.SUIT%TYPE;
+    		v_value varchar2(2);
+	begin
+		EXECUTE IMMEDIATE 'TRUNCATE TABLE KARTE';
 		loop
 			if v_Idx > length(p_ipString)
 			then
@@ -43,12 +40,16 @@ DECLARE
 	    		v_value := to_number(substr(v_word, 2,2));
 
             		INSERT INTO KARTE VALUES(v_key, v_value);
-	    		v_Idx:= v_Idx + const_sublength;
+	    		
+			v_Idx:= v_Idx + const_sublength;
 		end loop;
-        	commit;
-    end;
+        	
+		commit;
+    	end;
 
-	function isGreska return boolean is
+	function isGreska
+	return boolean
+	is
 		cursor cur_checkGreska is
 		select dim.suit
 		, count(nvl(k.card_num,0)) as cnt
@@ -68,7 +69,8 @@ DECLARE
 		return False;
 	end;
 	
-	procedure displayOutput is
+	procedure displayOutput
+	is
 		cursor cur_createOutput is
 		select LISTAGG(cardsLeft, ' ') WITHIN GROUP (ORDER BY rownum) as answer from (
 			select suit, 13-cnt as cardsLeft from (
@@ -81,14 +83,15 @@ DECLARE
 			)
 		);
 	begin
-	for rec in cur_createOutput
-	loop
-		dbms_output.put_line(rec.answer);
-	end loop;
+		for rec in cur_createOutput
+		loop
+			dbms_output.put_line(rec.answer);
+		end loop;
 	end;
 
 BEGIN
 	processInput(ip);
+	
 	if isGreska
 	THEN
 		dbms_output.put_line('GRESKA');
