@@ -10,8 +10,7 @@ Kattis doesn't have Oracle PL/SQL as a supported language. However, for practice
 | Nested Tables | AlphabetSpam, Desiigner_strengir, Ive_Been_Everywhere_,_Man, Karte, happyhappyprimeprime, numberfun, License_To_Launch, Pokechat,  apaxiaaans, composedrhythms, cprnummer, doublepassword, stopwatch
 | Member Of | AlphabetSpam, Desiigner_strengir, isyavowel, mæting, quickbrownfox, quickbrownfox2, stafur
 | Multiset | Karte
-| IN OUT parameters | AlphabetSpam, Karte, kinahvisl, printingcosts, quickbrownfox2
-| NOCOPY parameters | Pokechat
+| IN OUT / NOCOPY parameters | AlphabetSpam, Karte, kinahvisl, printingcosts, quickbrownfox2, Pokechat, mumblerap
 | Functions | Pokechat, Triple_Texting, champernowneverification, happyhappyprimeprime, knightpacking, quickbrownfox2, quickbrownfox3, thendaysofchristmas, whichkindofnumberisit
 | SubTypes | Astrological Sign, Karte, Pokechat, Poker Hand, mumblerap
 | String Parsing | Gluttonous George, Karte, Pokechat, Triple_Texting, canadianseh, coffeecupcombo, doublepassword, helpaphd, kinahvisl, mumblerap, quickbrownfox, quickbrownfox2, simonsays, thendaysofchristmas
