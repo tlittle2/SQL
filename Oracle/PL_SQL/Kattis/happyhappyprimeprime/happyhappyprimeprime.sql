@@ -2,8 +2,12 @@ DECLARE
 	type t_arr is table of integer;
 	arr t_arr := t_arr(1,7,383,1000); --user input simulation
 
-	function isPrime(p_prime in integer) return boolean is
-  		function f_prime(p_prime in number, p_divisor in number) return number is
+	function isPrime(p_prime in integer)
+	return boolean
+	is
+  		function f_prime(p_prime in number, p_divisor in number)
+		return number
+		is
   		begin
     			return case when p_divisor >= p_prime then 0 else case when mod(p_prime, p_divisor) = 0 then 1 else 0 end + f_prime(p_prime, p_divisor+1) end;
   		end;
@@ -15,9 +19,11 @@ DECLARE
 		end if;
 	end;
 
-	FUNCTION isHappy(n integer) return boolean is
-    	ans integer:= 0;
-	str_n varchar2(20):= to_char(n);
+	FUNCTION isHappy(n integer)
+	return boolean
+	is
+	    	ans integer:= 0;
+		str_n varchar2(20):= to_char(n);
 	begin
 	        if n = 1 then
 			return False;
