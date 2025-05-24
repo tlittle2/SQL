@@ -14,9 +14,11 @@ BEGIN
 
 	for i in 1..arr.COUNT
 	LOOP
-        	if arr(i) = ' ' then
-	        	if arr(i+1) = upper(arr(i+1)) then
-	        	ans:= ans || arr(i+1);
+        	if arr(i) = ' '
+		then
+	        	if arr(i+1) = upper(arr(i+1))
+			then
+	        		ans:= ans || arr(i+1);
 			end if;
         	end if;
     	END LOOP;
