@@ -4,7 +4,8 @@ DECLARE
 	
 	ip integer:= 12; --user input
 
-	PROCEDURE processInput(p_ipString IN INTEGER, p_collection IN OUT t_arr) is
+	PROCEDURE processInput(p_ipString IN INTEGER, p_collection IN OUT t_arr)
+	is
 	begin
 	        for i in 1..p_ipString
 		loop
@@ -12,8 +13,10 @@ DECLARE
 	        end loop;
     	end;
 
-	FUNCTION calculateOutput1(p_collection IN t_arr) return INTEGER IS
-    	out1 integer:= 0;
+	FUNCTION calculateOutput1(p_collection IN t_arr)
+	return INTEGER
+	IS
+    		out1 integer:= 0;
     	begin
         	for i in p_collection.FIRST..p_collection.LAST
 		loop
@@ -23,8 +26,10 @@ DECLARE
 		return out1;
     	end;
 
-	FUNCTION calculateOutput2(p_ipString IN INTEGER) return INTEGER IS
-    	out2 integer:= 0;
+	FUNCTION calculateOutput2(p_ipString IN INTEGER)
+	return INTEGER
+	IS
+    		out2 integer:= 0;
     	begin
         	for i in 1..p_ipString
 		loop
