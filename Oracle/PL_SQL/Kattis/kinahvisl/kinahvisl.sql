@@ -7,7 +7,8 @@ DECLARE
 	ip2 varchar2(100) := 'pepega';
 
 
-	procedure populateCollection(p_ipString IN VARCHAR2, p_collection IN OUT t_input) is
+	procedure populateCollection(p_ipString IN VARCHAR2, p_collection IN OUT t_input)
+	is
 	begin
 		p_collection := t_input();
 		for i in 1..length(p_ipString)
@@ -17,8 +18,10 @@ DECLARE
 	    	end loop;
 	end;
 	
-	function findDiffs(p_ip1 IN t_input, p_ip2 IN t_input) return PLS_INTEGER is
-	diff PLS_INTEGER := 1;
+	function findDiffs(p_ip1 IN t_input, p_ip2 IN t_input)
+	return PLS_INTEGER
+	is
+		diff PLS_INTEGER := 1;
 	begin
 		for i in p_ip1.FIRST..p_ip1.LAST
 		loop
