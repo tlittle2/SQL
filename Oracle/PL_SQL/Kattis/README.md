@@ -15,7 +15,7 @@ Kattis doesn't have Oracle PL/SQL as a supported language. However, for practice
 | Functions | Pokechat, Triple_Texting, champernowneverification, happyhappyprimeprime, knightpacking, quickbrownfox2, quickbrownfox3, thendaysofchristmas, whichkindofnumberisit
 | SubTypes | Astrological Sign, Karte, Pokechat, Poker Hand, mumblerap
 | String Parsing | Gluttonous George, Karte, Pokechat, Triple_Texting, canadianseh, coffeecupcombo, doublepassword, helpaphd, kinahvisl, mumblerap, quickbrownfox, quickbrownfox2, simonsays, thendaysofchristmas
-| TypeCasting | Pokechat, cprnummer, internationaldates, titlecost
+| TypeCasting | Karte, Pokechat, cprnummer, internationaldates, titlecost
 | Answering Questions in DECLARE section | planina, slatkisi, stopwatch, titlecost
 | "While" Loops | titlecost
 | Other Oracle Packages | quickestimate
