@@ -6,9 +6,11 @@ DECLARE
 	ans integer:= greatest(ip1,ip2) * 2;
 
 BEGIN
-	if ans = 0 then
+	if ans = 0
+	then
     		dbms_output.put_line('Not a moose');
-    	elsif ip1 = ip2 then
+    	elsif ip1 = ip2
+	then
     		dbms_output.put_line('Even ' || ans);
 	else
         	dbms_output.put_line('Odd ' || ans);
