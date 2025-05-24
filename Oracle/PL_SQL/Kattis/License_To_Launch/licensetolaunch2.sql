@@ -9,31 +9,31 @@ DECLARE
 	minKey PLS_INTEGER;
 
 
-procedure populateMap(p_ip IN t_input, p_arr IN OUT t_nums)
-is
-begin
-    for i in p_ip.FIRST..p_ip.LAST
-    loop
-        	p_arr(i) := p_ip(i);
-    end loop;
-end;
-
-FUNCTION returnAnswer(p_arr IN t_nums)
-return PLS_INTEGER
-is
-begin
-	minNum := p_arr(t_arr.FIRST);
-	minKey := p_arr.FIRST;
-
-	for i in p_arr.FIRST..p_arr.LAST
-	loop
-        	if p_arr(i) < minNum then
-	        	minNum := t_arr(i);
-	        	minKey := i;
-		end if;
-    	end loop;
-	return minKey-1;
-end;
+	procedure populateMap(p_ip IN t_input, p_arr IN OUT t_nums)
+	is
+	begin
+	    for i in p_ip.FIRST..p_ip.LAST
+	    loop
+	        	p_arr(i) := p_ip(i);
+	    end loop;
+	end;
+	
+	FUNCTION returnAnswer(p_arr IN t_nums)
+	return PLS_INTEGER
+	is
+	begin
+		minNum := p_arr(t_arr.FIRST);
+		minKey := p_arr.FIRST;
+	
+		for i in p_arr.FIRST..p_arr.LAST
+		loop
+	        	if p_arr(i) < minNum then
+		        	minNum := t_arr(i);
+		        	minKey := i;
+			end if;
+	    	end loop;
+		return minKey-1;
+	end;
 
 BEGIN
 	populateMap(t_ip, t_arr);
