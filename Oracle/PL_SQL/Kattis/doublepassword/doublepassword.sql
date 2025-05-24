@@ -6,7 +6,8 @@ DECLARE
 	ip1 varchar2(4) := '1111';
 	ip2 varchar2(4) := '1234';
 
-	procedure populateCollection(p_ipString IN VARCHAR2, p_collection IN OUT arr_t) is
+	procedure populateCollection(p_ipString IN VARCHAR2, p_collection IN OUT arr_t)
+	is
     	begin
 	        p_collection := arr_t();
 	        for i in 1..length(p_ipString)
@@ -16,8 +17,10 @@ DECLARE
 	        end loop;
     	end;
 
-	function answer(p_collection1 IN arr_t, p_collection2 IN arr_t) return INTEGER IS
-        c integer:= 0;
+	function answer(p_collection1 IN arr_t, p_collection2 IN arr_t)
+	return INTEGER
+	IS
+        	c integer:= 0;
 	begin
 		for i in 1..p_collection1.COUNT
 		loop
@@ -25,7 +28,8 @@ DECLARE
 			c:= c + 1;
 		end if;
     		end loop;
-	return power(2,c);
+		
+		return power(2,c);
     	end;
 
 BEGIN
