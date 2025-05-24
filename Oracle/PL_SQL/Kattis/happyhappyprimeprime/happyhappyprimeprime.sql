@@ -48,7 +48,8 @@ DECLARE
 BEGIN
     for i in arr.FIRST..arr.LAST
     LOOP
-        if isHappy(arr(i)) and isPrime(arr(i))  then
+        if isHappy(arr(i)) and isPrime(arr(i))
+	then
         	dbms_output.put_line(arr(i) || ' YES');
     	else
 		dbms_output.put_line(arr(i) || ' NO');
