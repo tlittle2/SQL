@@ -9,7 +9,8 @@ DECLARE
 	minKey PLS_INTEGER;
 
 
-procedure populateMap(p_ip IN t_input, p_arr IN OUT t_nums) is
+procedure populateMap(p_ip IN t_input, p_arr IN OUT t_nums)
+is
 begin
     for i in p_ip.FIRST..p_ip.LAST
     loop
@@ -17,9 +18,11 @@ begin
     end loop;
 end;
 
-FUNCTION returnAnswer(p_arr IN t_nums) return PLS_INTEGER is
+FUNCTION returnAnswer(p_arr IN t_nums)
+return PLS_INTEGER
+is
 begin
-    minNum := p_arr(t_arr.FIRST);
+	minNum := p_arr(t_arr.FIRST);
 	minKey := p_arr.FIRST;
 
 	for i in p_arr.FIRST..p_arr.LAST
