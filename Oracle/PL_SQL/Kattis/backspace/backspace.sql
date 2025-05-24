@@ -11,7 +11,9 @@ DECLARE
 	ans max_str_length := '';
 	
 
-	function getCurrentChar(p_ip_str IN VARCHAR2, idx IN integer) return CHAR is
+	function getCurrentChar(p_ip_str IN VARCHAR2, idx IN integer)
+	return CHAR
+	is
     	begin
         	return substr(p_ip_str,idx,1);
 	end;
