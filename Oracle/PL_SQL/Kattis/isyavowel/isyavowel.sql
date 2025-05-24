@@ -7,8 +7,9 @@ DECLARE
 BEGIN
 	for i in 1..length(word)
 	loop
-	    	if substr(word, i, 1) member of vowels then
-	    	ans:= ans + 1;
+	    	if substr(word, i, 1) member of vowels
+		then
+	    		ans:= ans + 1;
 	    	end if;
     	end loop;
 	
