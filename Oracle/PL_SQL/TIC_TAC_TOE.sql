@@ -13,7 +13,9 @@ AS
     	player1 cellLength := 'X';
     	player2 cellLength := 'O';
 
-	function checkHorizontals(p_board t_board, p_letter cellLength) return BOOLEAN is
+	function checkHorizontals(p_board t_board, p_letter cellLength)
+	return BOOLEAN
+	is
     	begin
 		for i in p_board.FIRST..p_board.LAST
 		loop
@@ -25,7 +27,9 @@ AS
     		return FALSE;
     	end;
 
-	function checkVerticals(p_board t_board, p_letter cellLength) return BOOLEAN is
+	function checkVerticals(p_board t_board, p_letter cellLength)
+	return BOOLEAN
+	is
     	begin
 	        if (p_board(1).cell1 = p_letter and p_board(2).cell1 = p_letter and p_board(3).cell1 = p_letter)
 	        or (p_board(1).cell2 = p_letter and p_board(2).cell2 = p_letter and p_board(3).cell2 = p_letter)
@@ -37,7 +41,9 @@ AS
 	    	return FALSE;
 	end;
 
-	function checkDiagonals(p_board t_board, p_letter cellLength) return boolean is
+	function checkDiagonals(p_board t_board, p_letter cellLength)
+	return boolean
+	is
 	begin
 		if (p_board(1).cell1 = p_letter and p_board(2).cell2 = p_letter and p_board(3).cell3 = p_letter)
 		or (p_board(1).cell3 = p_letter and p_board(2).cell2 = p_letter and p_board(3).cell1 = p_letter)
@@ -48,23 +54,28 @@ AS
 		return False;
 	end;
 
-	function randomLetter return CHAR IS
+	function randomLetter
+	return CHAR
+	IS
 	begin
 		IF ROUND(DBMS_RANDOM.VALUE(0,1)) = 0
 		then
 			return player1;
     		else
-        	RETURN player2;
+        	
+		RETURN player2;
     
     		end if;
     	end;
 
-	procedure printOutput(p_letter cellLength, p_direction VARCHAR2) is
+	procedure printOutput(p_letter cellLength, p_direction VARCHAR2)
+	is
 	begin
         	dbms_output.put_line(p_letter || ' won ' || p_direction);
     	end;
 
-	procedure processPlayer(p_board t_board, p_player cellLength) is 
+	procedure processPlayer(p_board t_board, p_player cellLength)
+	is 
     	begin
 		if checkHorizontals(p_board, p_player)
 		then
@@ -78,14 +89,16 @@ AS
     		end if;
     	end;
 	
-	procedure viewBoard(p_board t_board) is
+	procedure viewBoard(p_board t_board)
+	is
 	begin
 	        for i in p_board.FIRST..p_board.LAST loop
 	            dbms_output.put_line(p_board(i).cell1 || p_board(i).cell2 || p_board(i).cell3);
 	        end loop;
 	end;
 
-	procedure populateBoard(p_board IN OUT t_board) is 
+	procedure populateBoard(p_board IN OUT t_board)
+	is 
 	begin
 		for i in 1..3
 		loop
@@ -94,6 +107,7 @@ AS
 	        	p_board(i).cell3 := randomLetter;
     		end loop;
     	end;
+
 BEGIN
 	populateBoard(board);
 	viewBoard(board);
