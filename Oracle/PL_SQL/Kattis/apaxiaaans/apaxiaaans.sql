@@ -2,8 +2,10 @@ DECLARE
 	type v_arr is table of char(1);
 	arr v_arr := v_arr();
 
-	ip varchar2(32767) := 'rooobert';
-	ans varchar2(32767);
+	subtype st_apaxians_word is varchar2(32767);
+
+	ip st_apaxians_word := 'rooobert';
+	ans st_apaxians_word;
 
 BEGIN
     for i in 1..length(ip)
