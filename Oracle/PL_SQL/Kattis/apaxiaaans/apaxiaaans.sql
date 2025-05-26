@@ -3,7 +3,7 @@ DECLARE
 	arr v_arr := v_arr();
 
 	ip varchar2(32767) := 'rooobert';
-	ans varchar(32767);
+	ans varchar2(32767);
 
 BEGIN
     for i in 1..length(ip)
