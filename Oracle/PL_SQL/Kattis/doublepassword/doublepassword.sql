@@ -2,9 +2,11 @@ DECLARE
 	type arr_t is table of varchar2(4);
 	arr1 arr_t;
 	arr2 arr_t;
+
+	subtype st_iptype is varchar2(4);
     
-	ip1 varchar2(4) := '1111';
-	ip2 varchar2(4) := '1234';
+	ip1 st_iptype := '1111';
+	ip2 st_iptype := '1234';
 
 	procedure populateCollection(p_ipString IN VARCHAR2, p_collection IN OUT arr_t)
 	is
