@@ -179,7 +179,7 @@ EXCEPTION
 	when NO_DATA_FOUND THEN
 	RAISE_APPLICATION_ERROR(-20002, 'COLUMN NAME ' || p_column_name
 	|| ' DOES NOT EXIST IN ' || p_src_owner || '.' || p_src_table || '!'
-	|| ' PLEASE INVESTIGATE!'
+	|| ' PLEASE INVESTIGATE!');
 
 	WHEN OTHERS THEN
 		rollback;
