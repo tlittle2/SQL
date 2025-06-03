@@ -144,9 +144,11 @@ BEGIN
 		elsif is_number(v_column_datatype)
 		then
 			fetch insert_cursor into numberContainer;
+		
 		elsif is_date(v_column_datatype)
 		then
 			fetch insert_cursor into dateContainer;
+		
 		else
 			UNSUPPORTED_DATATYPE;
 		end if;
