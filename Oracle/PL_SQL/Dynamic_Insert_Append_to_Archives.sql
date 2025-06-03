@@ -1,10 +1,10 @@
 PROCEDURE INSERT_APPEND(p_src_owner          IN MY_PARM_TABLE.TABLE_OWNER%TYPE
-          					  , p_src_table          IN MY_PARM_TABLE.TABLE_NAME%TYPE
-          					  , p_src_partition_name IN ALL_TAB_PARTITIONS.PARTITION_NAME%TYPE 
-          					  , p_arch_owner         IN MY_PARM_TABLE.TABLE_OWNER%TYPE
-          					  , p_arch_table         IN MY_PARM_TABLE.TABLE_NAME%TYPE
-          					  , p_key_column         IN MY_PARM_TABLE.ARCHIVE_COLUMN_KEY%TYPE
-					              )  
+		      , p_src_table          IN MY_PARM_TABLE.TABLE_NAME%TYPE
+          	      , p_src_partition_name IN ALL_TAB_PARTITIONS.PARTITION_NAME%TYPE 
+          	      , p_arch_owner         IN MY_PARM_TABLE.TABLE_OWNER%TYPE
+          	      , p_arch_table         IN MY_PARM_TABLE.TABLE_NAME%TYPE
+          	      , p_key_column         IN MY_PARM_TABLE.ARCHIVE_COLUMN_KEY%TYPE
+			)  
 IS
 	v_column_datatype ALL_TAB_COLUMNS.DATA_TYPE%TYPE;
 	insert_cursor sys_refcursor;
@@ -33,7 +33,7 @@ IS
 		
 	
 	FUNCTION is_string(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE) 
-    RETURN BOOLEAN 
+	RETURN BOOLEAN 
 	IS 
 	BEGIN
 		IF p_column_datatype IN ('CHAR', 'VARCHAR2', 'VARCHAR')
@@ -126,6 +126,7 @@ BEGIN
 		if is_string(v_column_datatype)
 		then
 			fetch insert_cursor into strContainer;
+		
 		elsif is_number(v_column_datatype)
 		then
 			fetch insert_cursor into numberContainer;
@@ -136,7 +137,7 @@ BEGIN
 			UNSUPPORTED_DATATYPE;
 		end if;
 	
-    exit when insert_cursor%NOTFOUND;
+    		exit when insert_cursor%NOTFOUND;
 		
 		if is_string(v_column_datatype)
 		then
@@ -161,16 +162,16 @@ BEGIN
 	close insert_cursor;
 	
 EXCEPTION
-		when NO_DATA_FOUND THEN
-		RAISE_APPLICATION_ERROR(-20002, 'COLUMN NAME ' || p_column_name
-		|| ' DOES NOT EXIST IN ' || p_src_owner || '.' || p_src_table || '!'
-		|| ' PLEASE INVESTIGATE!'
-		
-		WHEN OTHERS THEN
-			rollback;
-			
-			if insert_cursor%ISOPEN
-			THEN
-				close insert_cursor;	
-			end if;
+	when NO_DATA_FOUND THEN
+	RAISE_APPLICATION_ERROR(-20002, 'COLUMN NAME ' || p_column_name
+	|| ' DOES NOT EXIST IN ' || p_src_owner || '.' || p_src_table || '!'
+	|| ' PLEASE INVESTIGATE!'
+
+	WHEN OTHERS THEN
+		rollback;
+
+		if insert_cursor%ISOPEN
+		THEN
+			close insert_cursor;	
+		end if;
 END;
