@@ -1,7 +1,7 @@
 CREATE OR REPLACE PROCEDURE BATCH_CDC(p_table_owner IN ALL_TABLES.OWNER%TYPE
-									, p_stage_table IN ALL_TABLES.TABLE_NAME%TYPE
-									, p_cdc_table IN ALL_TABLES.TABLE_NAME%TYPE
-									, p_target_table IN ALL_TABLES.TABLE_NAME%TYPE)
+				    , p_stage_table IN ALL_TABLES.TABLE_NAME%TYPE
+				    , p_cdc_table IN ALL_TABLES.TABLE_NAME%TYPE
+				    , p_target_table IN ALL_TABLES.TABLE_NAME%TYPE)
 									
 AS
 
