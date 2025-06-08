@@ -320,8 +320,12 @@ BEGIN
 	         dbms_output.put_line('VIEW2');
 	         dbms_output.put_line(print_line);
 	         CREATE_VIEW_2(cdc_list,non_cdc_list);
-	         
-	         --execute immediate 'truncate table ' || p_table_owner || '.' || p_stage_table;
+             
+             dbms_output.put_line(chr(10));
+             
+             dbms_output.put_line('TRUNCATE');
+	         dbms_output.put_line(print_line);
+	         dbms_output.put_line('truncate table ' || p_table_owner || '.' || p_stage_table);
             
               
               dbms_output.put_line(chr(10));
