@@ -205,6 +205,8 @@ BEGIN
 	GATHER_NON_CDC_COLUMNS(non_cdc_list);
      print_collection(non_cdc_list);
      
+     dbms_output.put_line(chr(10));
+     
      dbms_output.put_line('VIEW1');
      dbms_output.put_line('--------------------------------');
      createView1(cdc_list);
