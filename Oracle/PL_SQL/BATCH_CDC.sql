@@ -68,14 +68,15 @@ AS
 	            MINUS
 	            select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_target_table
 	        );
+            
 	        
 	        if v_differences > 0 
 	        then
-	            RETURN FALSE; 
-	        else
-	            RETURN TRUE;
+	            RETURN TRUE; 
 	        end if;
-    
+            
+	        RETURN FALSE;
+	        
 	END CHECK_SCHEMAS;
     
 	
@@ -297,73 +298,65 @@ AS
         
         end;
         
-        procedure RUN_CDC_STEPS
-        IS
-        BEGIN
-            dbms_output.put_line('CDC_COLUMNS');
-	        dbms_output.put_line(print_line);
-	        GATHER_CDC_COLUMNS(cdc_list);
-	        print_collection(cdc_list);
-	        
-	        dbms_output.put_line(chr(10));
-	     
-	        dbms_output.put_line('NON_CDC_COLUMNS');
-	        dbms_output.put_line(print_line);
-	        GATHER_NON_CDC_COLUMNS(non_cdc_list);
-	        print_collection(non_cdc_list);
-            
-            dbms_output.put_line(chr(10));
-              
-              dbms_output.put_line('INSERT');
-	         dbms_output.put_line(print_line); 
-              INSERT_INTO_CDC(cdc_list);
-	     
-	        dbms_output.put_line(chr(10));
-	     
-	         dbms_output.put_line('VIEW1');
-	         dbms_output.put_line(print_line);
-	         CREATE_VIEW_1(cdc_list);
-	         
-	         dbms_output.put_line(chr(10));
-	         
-	         dbms_output.put_line('VIEW2');
-	         dbms_output.put_line(print_line);
-	         CREATE_VIEW_2(cdc_list,non_cdc_list);
-             
-             dbms_output.put_line(chr(10));
-             
-             dbms_output.put_line('TRUNCATE');
-	         dbms_output.put_line(print_line);
-	         dbms_output.put_line('truncate table ' || p_table_owner || '.' || p_stage_table);
-            
-              
-              dbms_output.put_line(chr(10));
-	         
-	         dbms_output.put_line('MOVE');
-	         dbms_output.put_line(print_line);
-	         MOVE_CDC_TO_STAGE(cdc_list,non_cdc_list);
-             
-             dbms_output.put_line(chr(10));
-             
-             dbms_output.put_line('REMOVE from TARGET');
-	         dbms_output.put_line(print_line);
-	         REMOVE_FROM_TARGET(cdc_list);
-             
-             dbms_output.put_line(chr(10));
-             
-	         dbms_output.put_line('INSERT FROM STAGE TO TARGET');
-	         dbms_output.put_line(print_line);
-	         dbms_output.put_line('INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table);
-        END;
-	
 
 BEGIN
 	IF NOT (CHECK_SCHEMAS(p_cdc_table, p_stage_table) OR CHECK_SCHEMAS(p_cdc_table, p_target_table))
     THEN
-        RUN_CDC_STEPS;
-    ELSE
         RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
     END IF;
+    
+    dbms_output.put_line('CDC_COLUMNS');
+    dbms_output.put_line(print_line);
+	GATHER_CDC_COLUMNS(cdc_list);
+	print_collection(cdc_list);
+	
+	dbms_output.put_line(chr(10));
+	
+	dbms_output.put_line('NON_CDC_COLUMNS');
+	dbms_output.put_line(print_line);
+	GATHER_NON_CDC_COLUMNS(non_cdc_list);
+	print_collection(non_cdc_list);
+    
+    dbms_output.put_line(chr(10));
+    
+    dbms_output.put_line('INSERT');
+	dbms_output.put_line(print_line); 
+    INSERT_INTO_CDC(cdc_list);
+	
+	dbms_output.put_line(chr(10));
+	dbms_output.put_line('VIEW1');
+	dbms_output.put_line(print_line);
+	CREATE_VIEW_1(cdc_list);
+	
+    dbms_output.put_line(chr(10));
+	
+    dbms_output.put_line('VIEW2');
+	dbms_output.put_line(print_line);
+	CREATE_VIEW_2(cdc_list,non_cdc_list);
+    
+    dbms_output.put_line(chr(10));
+    
+    dbms_output.put_line('TRUNCATE');
+	dbms_output.put_line(print_line);
+	dbms_output.put_line('truncate table ' || p_table_owner || '.' || p_stage_table);
+    
+    dbms_output.put_line(chr(10));
+	
+    dbms_output.put_line('MOVE');
+	dbms_output.put_line(print_line);
+	MOVE_CDC_TO_STAGE(cdc_list,non_cdc_list);
+    
+    dbms_output.put_line(chr(10));
+    
+    dbms_output.put_line('REMOVE from TARGET');
+	dbms_output.put_line(print_line);
+	REMOVE_FROM_TARGET(cdc_list);
+    
+    dbms_output.put_line(chr(10));
+    
+    dbms_output.put_line('INSERT FROM STAGE TO TARGET');
+	dbms_output.put_line(print_line);
+	dbms_output.put_line('INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table);
 	
 END;
 /
