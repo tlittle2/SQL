@@ -71,7 +71,7 @@ AS
 	        
 	        if v_differences > 0 
 	        then
-	            RETURN TRUE; 
+	            RETURN FALSE; 
 	        else
 	            RETURN TRUE;
 	        end if;
@@ -296,12 +296,11 @@ AS
             dbms_output.put_line(v_delete_string);
         
         end;
-	
-
-BEGIN
-	IF CHECK_SCHEMAS(p_cdc_table, p_stage_table) AND CHECK_SCHEMAS(p_cdc_table, p_target_table)
-    	THEN
-	        dbms_output.put_line('CDC_COLUMNS');
+        
+        procedure RUN_CDC_STEPS
+        IS
+        BEGIN
+            dbms_output.put_line('CDC_COLUMNS');
 	        dbms_output.put_line(print_line);
 	        GATHER_CDC_COLUMNS(cdc_list);
 	        print_collection(cdc_list);
@@ -355,12 +354,16 @@ BEGIN
 	         dbms_output.put_line('INSERT FROM STAGE TO TARGET');
 	         dbms_output.put_line(print_line);
 	         dbms_output.put_line('INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table);
-             
+        END;
+	
 
-        ELSE
-            RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
-            
-        END IF;
+BEGIN
+	IF NOT (CHECK_SCHEMAS(p_cdc_table, p_stage_table) OR CHECK_SCHEMAS(p_cdc_table, p_target_table))
+    THEN
+        RUN_CDC_STEPS;
+    ELSE
+        RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
+    END IF;
 	
 END;
 /
