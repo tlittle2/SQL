@@ -10,12 +10,13 @@ AS
 	cdc_list columns_list_t;
 	non_cdc_list columns_list_t;
      
-     
-	PROCEDURE CHECK_SCHEMAS(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
+    --given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
+	FUNCTION CHECK_SCHEMAS(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
 						  , p_target_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE)
-	IS
+	RETURN BOOLEAN
+    IS
 	BEGIN
-		null; --given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
+		RETURN TRUE; --fix later
 	END CHECK_SCHEMAS;
 	
 	PROCEDURE GATHER_CDC_COLUMNS(p_collection IN OUT NOCOPY columns_list_t)
@@ -196,34 +197,40 @@ AS
 	
 
 BEGIN
-	CHECK_SCHEMAS(p_cdc_table, p_stage_table);
-	CHECK_SCHEMAS(p_cdc_table, p_target_table);
-	
-	GATHER_CDC_COLUMNS(cdc_list);
-     print_collection(cdc_list);
+    
+	IF CHECK_SCHEMAS(p_cdc_table, p_stage_table) AND CHECK_SCHEMAS(p_cdc_table, p_target_table)
+    THEN
+        GATHER_CDC_COLUMNS(cdc_list);
+        print_collection(cdc_list);
      
-	GATHER_NON_CDC_COLUMNS(non_cdc_list);
-     print_collection(non_cdc_list);
+        GATHER_NON_CDC_COLUMNS(non_cdc_list);
+        print_collection(non_cdc_list);
      
-     dbms_output.put_line(chr(10));
+        dbms_output.put_line(chr(10));
      
-     dbms_output.put_line('VIEW1');
-     dbms_output.put_line('--------------------------------');
-     createView1(cdc_list);
-     
-     dbms_output.put_line(chr(10));
-     
-     dbms_output.put_line('VIEW2');
-     dbms_output.put_line('--------------------------------');     
-     createView2(cdc_list,non_cdc_list);
-     
-     --execute immediate 'truncate table ' || p_table_owner || '.' || p_stage_table;
-     
-      dbms_output.put_line(chr(10));
-     
-     dbms_output.put_line('INSERT');
-     dbms_output.put_line('--------------------------------'); 
-     move_cdc_to_stage(cdc_list,non_cdc_list);
+         dbms_output.put_line('VIEW1');
+         dbms_output.put_line('--------------------------------');
+         createView1(cdc_list);
+         
+         dbms_output.put_line(chr(10));
+         
+         dbms_output.put_line('VIEW2');
+         dbms_output.put_line('--------------------------------');     
+         createView2(cdc_list,non_cdc_list);
+         
+         --execute immediate 'truncate table ' || p_table_owner || '.' || p_stage_table;
+         
+          dbms_output.put_line(chr(10));
+         
+         dbms_output.put_line('INSERT');
+         dbms_output.put_line('--------------------------------'); 
+         move_cdc_to_stage(cdc_list,non_cdc_list);
+         
+         
+        ELSE
+            RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
+            
+        END IF;
 	
 END;
 /
