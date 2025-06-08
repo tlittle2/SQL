@@ -130,7 +130,7 @@ AS
                		then
                     		v_select := str_comma_sep(v_select);
                		else
-                    		v_select := v_select || ',EFF_DATE) as row_id1, k.* from ' || p_table_owner || '.' || p_cdc_table;
+                    		v_select := v_select || ',EFF_DATE) as row_id1, k.* from ' || p_table_owner || '.' || p_cdc_table || ' k';
                		end if;
           	END LOOP;
           
@@ -222,7 +222,7 @@ AS
                                 || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ' a '
                                 || ' WHERE (' || v_cdc_columns_string || ') not in ' 
                                 || '(select ' || v_cdc_columns_string || ' from ' || p_table_owner || '.' || p_cdc_table || ' b )'
-                                || ' and exists (select 1 from '  || p_table_owner || '.' || p_cdc_table || ' b where '
+                                || ' or exists (select 1 from '  || p_table_owner || '.' || p_cdc_table || ' b where '
                                 || v_cdc_columns_equality
                                 || ' and ((b.EFF_DATE <= a.EFF_DATE and b.END_DATE >= a.EFF_DATE) OR (b.EFF_DATE >= a.EFF_DATE and b.EFF_DATE <= a.END_DATE)))';
             
@@ -251,7 +251,7 @@ AS
             		THEN
 		                v_insert_statement := v_insert_statement || ', EFF_DATE, END_DATE, CREATE_ID, LAST_UPDATE_ID)';
 		                
-		                v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DATE-1, ''2100-12-31'') as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
+		                v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DATE-1, to_date(''2100-12-31'')) as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
 			               					 || ' FROM vt2 x1 LEFT OUTER JOIN vt2 x2 ON ';
 	                
 	                	for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
@@ -364,7 +364,7 @@ END;
 /
 
 BEGIN
-BATCH_CDC('INFA_SRC', 'SALARY_DATA_S', 'SALARY_DATA_CDC', 'SALARY_DATA');
+BATCH_CDC('INFA_SRC', 'SALARY_DATA_STG', 'SALARY_DATA_CDC', 'SALARY_DATA');
 END;
 /
 
