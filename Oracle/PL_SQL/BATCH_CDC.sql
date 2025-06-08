@@ -222,7 +222,7 @@ AS
                                 || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ' a '
                                 || ' WHERE (' || v_cdc_columns_string || ') not in ' 
                                 || '(select ' || v_cdc_columns_string || ' from ' || p_table_owner || '.' || p_cdc_table || ' b )'
-                                || ' or exists (select 1 from '  || p_table_owner || '.' || p_cdc_table || ' b where '
+                                || ' and exists (select 1 from '  || p_table_owner || '.' || p_cdc_table || ' b where '
                                 || v_cdc_columns_equality
                                 || ' and ((b.EFF_DATE <= a.EFF_DATE and b.END_DATE >= a.EFF_DATE) OR (b.EFF_DATE >= a.EFF_DATE and b.EFF_DATE <= a.END_DATE)))';
             
