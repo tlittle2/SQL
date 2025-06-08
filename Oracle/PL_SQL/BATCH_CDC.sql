@@ -50,7 +50,7 @@ AS
 	        then
 	            RETURN TRUE; 
 	        else
-	            RETURN FALSE;
+	            RETURN TRUE;
 	        end if;
     
 	END CHECK_SCHEMAS;
@@ -179,8 +179,38 @@ AS
                		end if;
           	END LOOP;
           
-		dbms_output.put_line(v_select || dynamicJoin(p_cdc_columns) || dynamicNotEqualClause(p_non_cdc_columns));
+            dbms_output.put_line(v_select || dynamicJoin(p_cdc_columns) || dynamicNotEqualClause(p_non_cdc_columns));
           end;
+          
+        PROCEDURE INSERT_INTO_CDC(p_cdc_columns IN columns_list_t)
+        IS
+            v_insert_statement dynamic_statement_st := 'INSERT INTO ' || p_table_owner || '.' || p_cdc_table 
+                                                    || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ' a '
+                                                    || ' WHERE (';
+            v_cdc_columns_string dynamic_statement_st;
+            v_cdc_columns_equality dynamic_statement_st;
+        BEGIN
+            for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
+        	loop
+                if i <> p_cdc_columns.LAST
+                then
+                    v_cdc_columns_string := v_cdc_columns_string || p_cdc_columns(i) || ', ';
+                    v_cdc_columns_equality := v_cdc_columns_equality || 'b.' || p_cdc_columns(i) || ' = a.' || p_cdc_columns(i) || ' and ';
+                else
+                    v_cdc_columns_string :=  v_cdc_columns_string || p_cdc_columns(i);
+                    v_cdc_columns_equality := v_cdc_columns_equality || 'b.' || p_cdc_columns(i) || ' = a.' || p_cdc_columns(i);
+                end if;
+            end loop;
+            
+            v_insert_statement := v_insert_statement || v_cdc_columns_string || ') not in ' 
+                                || '(select ' || v_cdc_columns_string || ' from ' || p_table_owner || '.' || p_cdc_table || ' b )'
+                                || ' and exists (select 1 from '  || p_table_owner || '.' || p_cdc_table || ' b where '
+                                || v_cdc_columns_equality
+                                || ' and ((b.EFF_DATE <= a.EFF_DATE and b.END_DATE >= a.EFF_DATE) OR (b.EFF_DATE >= a.EFF_DATE and b.EFF_DATE <= a.END_DATE)))';
+            
+            dbms_output.put_line(v_insert_statement);
+        
+        END;
     
     	procedure MOVE_CDC_TO_STAGE(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
     	is
@@ -244,6 +274,12 @@ BEGIN
 	        dbms_output.put_line('--------------------------------');
 	        GATHER_NON_CDC_COLUMNS(non_cdc_list);
 	        print_collection(non_cdc_list);
+            
+            dbms_output.put_line(chr(10));
+              
+              dbms_output.put_line('INSERT');
+	         dbms_output.put_line('--------------------------------'); 
+              INSERT_INTO_CDC(cdc_list);
 	     
 	        dbms_output.put_line(chr(10));
 	     
@@ -258,10 +294,11 @@ BEGIN
 	         CREATE_VIEW_2(cdc_list,non_cdc_list);
 	         
 	         --execute immediate 'truncate table ' || p_table_owner || '.' || p_stage_table;
+            
+              
+              dbms_output.put_line(chr(10));
 	         
-	          dbms_output.put_line(chr(10));
-	         
-	         dbms_output.put_line('INSERT');
+	         dbms_output.put_line('MOVE');
 	         dbms_output.put_line('--------------------------------'); 
 	         MOVE_CDC_TO_STAGE(cdc_list,non_cdc_list);
 
