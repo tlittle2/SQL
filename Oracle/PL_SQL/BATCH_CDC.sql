@@ -149,8 +149,8 @@ AS
           	BEGIN
                		for i in p_collection.FIRST..p_collection.LAST
                		loop
-	                    v_where_clause:= v_where_clause ||
-	                    '(x1.' || p_collection(i) || ' <> ' || 'x2.' || p_collection(i) || ')'
+	                    v_where_clause := v_where_clause
+	                    || '(x1.' || p_collection(i) || ' <> ' || 'x2.' || p_collection(i) || ')'
 	                    || ' OR ' 
 	                    || '(x1.' || p_collection(i) || ' is null' || ' and ' || 'x2.' || p_collection(i) || ' is not null)'
 	                    || ' OR '
