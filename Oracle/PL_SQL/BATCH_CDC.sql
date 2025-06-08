@@ -33,6 +33,12 @@ AS
     BEGIN
         RETURN p_in_str || ',';
     END;
+    
+    procedure run_commit
+    is
+    begin
+        dbms_output.put_line('COMMIT;');
+    end;
      
     --given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
 	FUNCTION CHECK_SCHEMAS(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
@@ -134,13 +140,13 @@ AS
                		end if;
           	END LOOP;
           
-          	dbms_output.put_line('CREATE TABLE vt1 as SELECT ROW_NUMBER() OVER( ORDER BY ' || v_select);
+          	dbms_output.put_line('with vt1 as (SELECT ROW_NUMBER() OVER( ORDER BY ' || v_select || ')');
           
     	end;
          
     	procedure CREATE_VIEW_2(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
     	is
-		v_select dynamic_statement_st := 'CREATE TABLE vt2 as SELECT ROW_NUMBER() OVER( ORDER BY ';
+		v_select dynamic_statement_st := ', vt2 as (SELECT ROW_NUMBER() OVER( ORDER BY ';
 
 		function dynamicJoin(p_collection IN columns_list_t)
           	return VARCHAR2
@@ -197,7 +203,7 @@ AS
                		end if;
           	END LOOP;
           
-            dbms_output.put_line(v_select || dynamicJoin(p_cdc_columns) || dynamicNotEqualClause(p_non_cdc_columns));
+            dbms_output.put_line(v_select || dynamicJoin(p_cdc_columns) || dynamicNotEqualClause(p_non_cdc_columns) || ')');
           end;
           
         PROCEDURE INSERT_INTO_CDC(p_cdc_columns IN columns_list_t)
@@ -219,14 +225,15 @@ AS
             end loop;
             
             v_insert_statement := 'INSERT INTO ' || p_table_owner || '.' || p_cdc_table 
-                                || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ' a '
+                                || ' SELECT * FROM ' || p_table_owner || '.' || p_target_table || ' a '
                                 || ' WHERE (' || v_cdc_columns_string || ') not in ' 
                                 || '(select ' || v_cdc_columns_string || ' from ' || p_table_owner || '.' || p_cdc_table || ' b )'
                                 || ' and exists (select 1 from '  || p_table_owner || '.' || p_cdc_table || ' b where '
                                 || v_cdc_columns_equality
                                 || ' and ((b.EFF_DATE <= a.EFF_DATE and b.END_DATE >= a.EFF_DATE) OR (b.EFF_DATE >= a.EFF_DATE and b.EFF_DATE <= a.END_DATE)))';
             
-            dbms_output.put_line(v_insert_statement);
+            dbms_output.put_line(v_insert_statement || ';');
+            run_commit;
         
         END;
     
@@ -251,7 +258,7 @@ AS
             		THEN
 		                v_insert_statement := v_insert_statement || ', EFF_DATE, END_DATE, CREATE_ID, LAST_UPDATE_ID)';
 		                
-		                v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DATE-1, to_date(''2100-12-31'')) as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
+		                v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DATE-1, to_date(''31-DEC-2100'')) as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
 			               					 || ' FROM vt2 x1 LEFT OUTER JOIN vt2 x2 ON ';
 	                
 	                	for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
@@ -273,7 +280,8 @@ AS
         	end loop;
         
             dbms_output.put_line(v_insert_statement);
-            dbms_output.put_line(v_select_statement);
+            dbms_output.put_line(v_select_statement || ';');
+            run_commit;
     
         end;
         
@@ -296,7 +304,8 @@ AS
                             || ' WHERE ' || '(' || v_cdc_cols_string || ') IN '||
                             '(SELECT '|| v_cdc_cols_string || ' FROM ' || p_table_owner || '.' || p_stage_table || ')';
             
-            dbms_output.put_line(v_delete_string);
+            dbms_output.put_line(v_delete_string || '; ');
+            run_commit;
         
         end;
         
@@ -340,7 +349,7 @@ BEGIN
     
     dbms_output.put_line('TRUNCATE');
 	dbms_output.put_line(print_line);
-	dbms_output.put_line('truncate table ' || p_table_owner || '.' || p_stage_table);
+	dbms_output.put_line('truncate table ' || p_table_owner || '.' || p_stage_table || ';');
     
     dbms_output.put_line(chr(10));
 	
@@ -358,15 +367,19 @@ BEGIN
     
     dbms_output.put_line('INSERT FROM STAGE TO TARGET');
 	dbms_output.put_line(print_line);
-	dbms_output.put_line('INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table);
+	dbms_output.put_line('INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ';');
+    run_commit;
 	
 END;
 /
+
+
 
 BEGIN
 BATCH_CDC('INFA_SRC', 'SALARY_DATA_STG', 'SALARY_DATA_CDC', 'SALARY_DATA');
 END;
 /
+
 
 CREATE TABLE UPDATE_MATCH (
      TABLE_OWNER VARCHAR2(128) NOT NULL
