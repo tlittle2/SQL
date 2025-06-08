@@ -20,13 +20,14 @@ AS
 	        with schema_check as (
 	        select a.owner, a.table_name, a.column_name
 	        , case a.data_type
-	            WHEN 'DATE' THEN 'DATE'
-	            WHEN 'FLOAT' then 'FLOAT(' || a.data_precision || ',' || a.data_scale || ')'
-	            WHEN 'NUMBER' then 'NUMBER(' || a.data_precision || ',' || a.data_scale || ')'
-	            WHEN 'VARCHAR' THEN 'TEXT(' || a.data_length || ')'
-	            WHEN 'VARCHAR2' THEN 'TEXT(' || a.data_length || ')'
-	            WHEN 'CHAR' THEN 'TEXT(' || a.data_length || ')'
-	            end as data_type
+			WHEN 'DATE' THEN 'DATE'
+			WHEN 'FLOAT' then 'FLOAT(' || a.data_precision || ',' || a.data_scale || ')'
+			WHEN 'NUMBER' then 'NUMBER(' || a.data_precision || ',' || a.data_scale || ')'
+			WHEN 'VARCHAR' THEN 'TEXT(' || a.data_length || ')'
+			WHEN 'VARCHAR2' THEN 'TEXT(' || a.data_length || ')'
+			WHEN 'CHAR' THEN 'TEXT(' || a.data_length || ')'
+			ELSE a.data_type
+		end as data_type
 	        from all_tab_columns a
 	        )
 	        
