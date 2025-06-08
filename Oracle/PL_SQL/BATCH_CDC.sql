@@ -41,7 +41,8 @@ AS
     	IS
     		v_differences NUMBER;
 	BEGIN
-	        with schema_check as (
+        
+        with schema_check as (
 	        select a.owner, a.table_name, a.column_name
 	        , case nvl(substr(data_type, 1, instr(data_type, '(', 1)-1),data_type)
 			WHEN 'DATE' THEN 'DATE'
@@ -69,6 +70,7 @@ AS
 	            select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_target_table
 	        );
             
+            dbms_output.put_line(v_differences);
 	        
 	        if v_differences > 0 
 	        then
@@ -300,7 +302,7 @@ AS
         
 
 BEGIN
-	IF NOT (CHECK_SCHEMAS(p_cdc_table, p_stage_table) OR CHECK_SCHEMAS(p_cdc_table, p_target_table))
+	IF CHECK_SCHEMAS(p_cdc_table, p_stage_table) OR CHECK_SCHEMAS(p_cdc_table, p_target_table)
     THEN
         RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
     END IF;
