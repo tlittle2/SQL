@@ -203,7 +203,7 @@ AS
             		THEN
 		                v_insert_statement := v_insert_statement || ', EFF_DATE, END_DATE, CREATE_ID, LAST_UPDATE_ID)';
 		                
-		                v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DT-1, ''2100-12-31'') as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
+		                v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DATE-1, ''2100-12-31'') as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
 			               					 || ' FROM vt2 x1 LEFT OUTER JOIN vt2 x2 ON ';
 	                
 	                	for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
