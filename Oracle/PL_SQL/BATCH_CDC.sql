@@ -11,14 +11,14 @@ AS
 	non_cdc_list columns_list_t;
 	subtype dynamic_statement_st is VARCHAR2(4000);
     
-    function print_line
-    return varchar2
-    is
-    begin
-        return lpad('-', 40 , '-');
-    end;
+    	function print_line
+    	return varchar2
+    	is
+    	begin
+        	return lpad('-', 40 , '-');
+    	end;
     
-    procedure print_collection(p_collection IN columns_list_t)
+    	procedure print_collection(p_collection IN columns_list_t)
     	is
     	begin
 	         for i in p_collection.FIRST..p_collection.LAST
@@ -27,7 +27,7 @@ AS
 	         end loop;
     	end;
      
-    --given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
+    	--given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
 	FUNCTION CHECK_SCHEMAS(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
 						  , p_target_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE)
 	RETURN BOOLEAN
