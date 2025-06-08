@@ -26,6 +26,7 @@ AS
 			WHEN 'VARCHAR' THEN 'TEXT(' || a.data_length || ')'
 			WHEN 'VARCHAR2' THEN 'TEXT(' || a.data_length || ')'
 			WHEN 'CHAR' THEN 'TEXT(' || a.data_length || ')'
+			WHEN 'NVARCHAR2' THEN 'TEXT(' || a.data_length || ')'
 			WHEN 'RAW' THEN 'TEXT(' || a.data_length || ')'
 			ELSE a.data_type
 		end as data_type
