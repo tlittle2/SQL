@@ -130,7 +130,7 @@ AS
                		then
                     		v_select := str_comma_sep(v_select);
                		else
-                    		v_select := v_select || ',EFF_DATE) as row_id1, k.* from ' || p_table_owner || '.' || p_cdc_table || ' k';
+                    		v_select := v_select || ',EFF_DATE) as row_id, k.* from ' || p_table_owner || '.' || p_cdc_table || ' k';
                		end if;
           	END LOOP;
           
@@ -251,7 +251,7 @@ AS
             		THEN
 		                v_insert_statement := v_insert_statement || ', EFF_DATE, END_DATE, CREATE_ID, LAST_UPDATE_ID)';
 		                
-		                v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DATE-1, to_date(''31-DEC-2100'')) as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
+		                v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DATE-1, to_date(''2100-12-31'')) as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
 			               					 || ' FROM vt2 x1 LEFT OUTER JOIN vt2 x2 ON ';
 	                
 	                	for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
@@ -367,7 +367,6 @@ BEGIN
 BATCH_CDC('INFA_SRC', 'SALARY_DATA_STG', 'SALARY_DATA_CDC', 'SALARY_DATA');
 END;
 /
-
 
 CREATE TABLE UPDATE_MATCH (
      TABLE_OWNER VARCHAR2(128) NOT NULL
