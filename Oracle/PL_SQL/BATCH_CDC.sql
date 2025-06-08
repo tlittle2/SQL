@@ -9,7 +9,7 @@ AS
 	
 	cdc_list columns_list_t;
 	non_cdc_list columns_list_t;
-	subtype dynamic_statement_st is VARCHAR2(4000);
+	subtype dynamic_statement_st is VARCHAR2(10000);
     
     function print_line
     return varchar2
@@ -52,7 +52,7 @@ AS
 			WHEN 'VARCHAR2' THEN 'TEXT(' || a.data_length || ')'
 			WHEN 'CHAR' THEN 'TEXT(' || a.data_length || ')'
 			WHEN 'NVARCHAR2' THEN 'TEXT(' || a.data_length || ')'
-			WHEN 'RAW' THEN 'TEXT(' || a.data_length || ')'
+			WHEN 'RAW' THEN 'RAW(' || a.data_length || ')'
 			ELSE a.data_type
 		end as data_type
 	        from all_tab_columns a
@@ -71,7 +71,7 @@ AS
 	        
 	        if v_differences > 0 
 	        then
-	            RETURN FALSE; 
+	            RETURN TRUE; 
 	        else
 	            RETURN TRUE;
 	        end if;
@@ -118,7 +118,7 @@ AS
     
     	procedure CREATE_VIEW_1(p_collection IN columns_list_t)
     	is
-     	v_select dynamic_statement_st := 'CREATE TABLE vt1 as SELECT ROW_NUMBER() OVER( ORDER BY ';
+     	v_select dynamic_statement_st;
     	begin
 		for i in p_collection.FIRST..p_collection.LAST
 		LOOP
@@ -131,7 +131,7 @@ AS
                		end if;
           	END LOOP;
           
-          	dbms_output.put_line(v_select);
+          	dbms_output.put_line('CREATE TABLE vt1 as SELECT ROW_NUMBER() OVER( ORDER BY ' || v_select);
           
     	end;
          
@@ -142,7 +142,7 @@ AS
 		function dynamicJoin(p_collection IN columns_list_t)
           	return VARCHAR2
           	is
-			v_join_clause VARCHAR2(32767) := ' and ';
+			v_join_clause dynamic_statement_st;
           	begin
                		for i in p_collection.FIRST..p_collection.LAST
                		loop
@@ -154,14 +154,14 @@ AS
                     
                		end loop;
                
-               		return v_join_clause;
+               		return ' and ' || v_join_clause;
      
           	end;
           
           	function dynamicNotEqualClause(p_collection IN columns_list_t)
           	return VARCHAR2
           	IS
-               		v_where_clause dynamic_statement_st := ' where x2.row_id is null or ';
+               		v_where_clause dynamic_statement_st;
           	BEGIN
                		for i in p_collection.FIRST..p_collection.LAST
                		loop
@@ -177,7 +177,7 @@ AS
                             v_where_clause := v_where_clause || ' OR ';  
                         end if;
                		end loop;
-               		return v_where_clause;
+               		return ' where x2.row_id is null or ' || v_where_clause;
           	END;
 		
 	begin
@@ -199,9 +199,7 @@ AS
           
         PROCEDURE INSERT_INTO_CDC(p_cdc_columns IN columns_list_t)
         IS
-            v_insert_statement dynamic_statement_st := 'INSERT INTO ' || p_table_owner || '.' || p_cdc_table 
-                                                    || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ' a '
-                                                    || ' WHERE (';
+            v_insert_statement dynamic_statement_st;
             v_cdc_columns_string dynamic_statement_st;
             v_cdc_columns_equality dynamic_statement_st;
         BEGIN
@@ -217,7 +215,9 @@ AS
                 end if;
             end loop;
             
-            v_insert_statement := v_insert_statement || v_cdc_columns_string || ') not in ' 
+            v_insert_statement := 'INSERT INTO ' || p_table_owner || '.' || p_cdc_table 
+                                || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ' a '
+                                || ' WHERE (' || v_cdc_columns_string || ') not in ' 
                                 || '(select ' || v_cdc_columns_string || ' from ' || p_table_owner || '.' || p_cdc_table || ' b )'
                                 || ' and exists (select 1 from '  || p_table_owner || '.' || p_cdc_table || ' b where '
                                 || v_cdc_columns_equality
@@ -277,8 +277,7 @@ AS
         procedure REMOVE_FROM_TARGET(p_cdc_columns IN columns_list_t)
         is
             v_cdc_cols_string dynamic_statement_st;
-            
-            v_delete_string dynamic_statement_st:= 'DELETE FROM ' || p_table_owner || '.' || p_target_table || ' WHERE ';
+            v_delete_string dynamic_statement_st;
         begin
             for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
             LOOP
@@ -289,7 +288,11 @@ AS
                     		v_cdc_cols_string := v_cdc_cols_string || p_cdc_columns(i);
                		end if;
           	END LOOP;
-            v_delete_string := v_delete_string || '(' || v_cdc_cols_string || ') IN (SELECT '|| v_cdc_cols_string || ' FROM ' || p_table_owner || '.' || p_stage_table || ')';
+            
+            v_delete_string := 'DELETE FROM ' || p_table_owner || '.' || p_target_table
+                            || ' WHERE ' || '(' || v_cdc_cols_string || ') IN '||
+                            '(SELECT '|| v_cdc_cols_string || ' FROM ' || p_table_owner || '.' || p_stage_table || ')';
+            
             dbms_output.put_line(v_delete_string);
         
         end;
