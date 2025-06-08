@@ -11,14 +11,14 @@ AS
 	non_cdc_list columns_list_t;
 	subtype dynamic_statement_st is VARCHAR2(4000);
     
-    	function print_line
-    	return varchar2
-    	is
-    	begin
-        	return lpad('-', 40 , '-');
-    	end;
+    function print_line
+    return varchar2
+    is
+    begin
+        return lpad('-', 40 , '-');
+    end;
     
-    	procedure print_collection(p_collection IN columns_list_t)
+    procedure print_collection(p_collection IN columns_list_t)
     	is
     	begin
 	         for i in p_collection.FIRST..p_collection.LAST
@@ -26,8 +26,15 @@ AS
 	         dbms_output.put_line(p_collection(i));
 	         end loop;
     	end;
+        
+    function str_comma_sep(p_in_str IN VARCHAR2)
+    RETURN VARCHAR2 DETERMINISTIC
+    IS
+    BEGIN
+        RETURN p_in_str || ',';
+    END;
      
-    	--given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
+    --given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
 	FUNCTION CHECK_SCHEMAS(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
 						  , p_target_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE)
 	RETURN BOOLEAN
@@ -118,7 +125,7 @@ AS
 			v_select := v_select || p_collection(i);
                		if i <> p_collection.LAST
                		then
-                    		v_select := v_select || ',';     
+                    		v_select := str_comma_sep(v_select);
                		else
                     		v_select := v_select || ',EFF_DATE) as row_id1, k.* from ' || p_table_owner || '.' || p_cdc_table;
                		end if;
@@ -165,10 +172,10 @@ AS
 	                    || ' OR '
 	                    || '(x1.' || p_collection(i) || ' is not null' || ' and' || ' x2.' || p_collection(i) || ' is null)';
               
-	                    	if i <> p_collection.LAST
-	                    	then
-					v_where_clause := v_where_clause || ' OR ';  
-	                    	end if;
+                        if i <> p_collection.LAST
+	                    then
+                            v_where_clause := v_where_clause || ' OR ';  
+                        end if;
                		end loop;
                		return v_where_clause;
           	END;
@@ -179,7 +186,7 @@ AS
 			v_select := v_select || 'x1.' || p_cdc_columns(i);
                		if i <> p_cdc_columns.LAST
                		then
-                    		v_select := v_select || ',';     
+                    		v_select := str_comma_sep(v_select);  
                		else
                     		v_select := v_select || ',x1.EFF_DATE) as row_id2, x1.* '
                             || ' from vt1 x1 left outer join vt1 x2'
@@ -202,7 +209,7 @@ AS
         	loop
                 if i <> p_cdc_columns.LAST
                 then
-                    v_cdc_columns_string := v_cdc_columns_string || p_cdc_columns(i) || ', ';
+                    v_cdc_columns_string := str_comma_sep(v_cdc_columns_string || p_cdc_columns(i));
                     v_cdc_columns_equality := v_cdc_columns_equality || 'b.' || p_cdc_columns(i) || ' = a.' || p_cdc_columns(i) || ' and ';
                 else
                     v_cdc_columns_string :=  v_cdc_columns_string || p_cdc_columns(i);
@@ -227,8 +234,8 @@ AS
     	begin
         	for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
         	loop
-	            v_insert_statement := v_insert_statement || p_cdc_columns(i) || ', ';
-	            v_select_statement := v_select_statement || 'x1.' || p_cdc_columns(i) || ', ';
+	            v_insert_statement := str_comma_sep(v_insert_statement || p_cdc_columns(i));
+	            v_select_statement := str_comma_sep(v_select_statement || 'x1.' || p_cdc_columns(i));
             
         	end loop;
         
@@ -256,8 +263,8 @@ AS
 	                    
 	               		end loop;
             		ELSE
-		                v_insert_statement := v_insert_statement || ', ';
-		                v_select_statement := v_select_statement || ', ';
+		                v_insert_statement := str_comma_sep(v_insert_statement);
+		                v_select_statement := str_comma_sep(v_select_statement);
             		end if;
             
         	end loop;
@@ -277,12 +284,12 @@ AS
             LOOP
                		if i <> p_cdc_columns.LAST
                		then
-                    		v_cdc_cols_string := v_cdc_cols_string || p_cdc_columns(i) || ',';     
+                    		v_cdc_cols_string := str_comma_sep(v_cdc_cols_string || p_cdc_columns(i));  
                		else
                     		v_cdc_cols_string := v_cdc_cols_string || p_cdc_columns(i);
                		end if;
           	END LOOP;
-            v_delete_string := v_delete_string || '(' || v_cdc_cols_string || ') IN (SELECT '|| v_cdc_cols_string || 'FROM ' || p_table_owner || '.' || p_stage_table || ')';
+            v_delete_string := v_delete_string || '(' || v_cdc_cols_string || ') IN (SELECT '|| v_cdc_cols_string || ' FROM ' || p_table_owner || '.' || p_stage_table || ')';
             dbms_output.put_line(v_delete_string);
         
         end;
