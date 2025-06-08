@@ -66,7 +66,7 @@ AS
     end;
     
     
-    procedure createView1(p_collection IN columns_list_t)
+    procedure CREATE_VIEW_1(p_collection IN columns_list_t)
     is
      v_select VARCHAR2(4000) := 'CREATE TABLE vt1 as SELECT ROW_NUMBER() OVER( ORDER BY ';
     begin
@@ -87,7 +87,7 @@ AS
           
     end;
          
-    procedure createView2(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
+    procedure CREATE_VIEW_2(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
     is
           v_select VARCHAR2(4000) := 'CREATE TABLE vt2 as SELECT ROW_NUMBER() OVER( ORDER BY ';
      
@@ -149,7 +149,7 @@ AS
           
     end;
     
-    procedure move_cdc_to_stage(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
+    procedure MOVE_CDC_TO_STAGE(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
     is
         v_insert_statement VARCHAR2(4000) := 'INSERT INTO ' || p_table_owner || '.' || p_stage_table || '(';
         v_select_statement VARCHAR2(4000) := 'SELECT ';
@@ -197,36 +197,44 @@ AS
 	
 
 BEGIN
+    
 	IF CHECK_SCHEMAS(p_cdc_table, p_stage_table) AND CHECK_SCHEMAS(p_cdc_table, p_target_table)
-	THEN
-	        GATHER_CDC_COLUMNS(cdc_list);
-	        print_collection(cdc_list);
-	     
-	        GATHER_NON_CDC_COLUMNS(non_cdc_list);
-	        print_collection(non_cdc_list);
-	     
-	        dbms_output.put_line(chr(10));
-	     
-	         dbms_output.put_line('VIEW1');
-	         dbms_output.put_line('--------------------------------');
-	         createView1(cdc_list);
-	         
-	         dbms_output.put_line(chr(10));
-	         
-	         dbms_output.put_line('VIEW2');
-	         dbms_output.put_line('--------------------------------');     
-	         createView2(cdc_list,non_cdc_list);
-	         
-	         --execute immediate 'truncate table ' || p_table_owner || '.' || p_stage_table;
-	         
-	          dbms_output.put_line(chr(10));
-	         
-	         dbms_output.put_line('INSERT');
-	         dbms_output.put_line('--------------------------------'); 
-	         move_cdc_to_stage(cdc_list,non_cdc_list);
-	ELSE
-            
-		RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
+    THEN
+        dbms_output.put_line('CDC_COLUMNS');
+        dbms_output.put_line('--------------------------------');
+        GATHER_CDC_COLUMNS(cdc_list);
+        print_collection(cdc_list);
+        
+        dbms_output.put_line(chr(10));
+     
+        dbms_output.put_line('NON_CDC_COLUMNS');
+        dbms_output.put_line('--------------------------------');
+        GATHER_NON_CDC_COLUMNS(non_cdc_list);
+        print_collection(non_cdc_list);
+     
+        dbms_output.put_line(chr(10));
+     
+         dbms_output.put_line('VIEW1');
+         dbms_output.put_line('--------------------------------');
+         CREATE_VIEW_1(cdc_list);
+         
+         dbms_output.put_line(chr(10));
+         
+         dbms_output.put_line('VIEW2');
+         dbms_output.put_line('--------------------------------');     
+         CREATE_VIEW_2(cdc_list,non_cdc_list);
+         
+         --execute immediate 'truncate table ' || p_table_owner || '.' || p_stage_table;
+         
+          dbms_output.put_line(chr(10));
+         
+         dbms_output.put_line('INSERT');
+         dbms_output.put_line('--------------------------------'); 
+         MOVE_CDC_TO_STAGE(cdc_list,non_cdc_list);
+         
+         
+        ELSE
+            RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
             
         END IF;
 	
