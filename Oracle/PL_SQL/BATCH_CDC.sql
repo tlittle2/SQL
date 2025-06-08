@@ -172,7 +172,8 @@ AS
                		then
                     		v_select := v_select || ',';     
                		else
-                    		v_select := v_select || ',x1.EFF_DATE) as row_id2, x1.* from vt1 x1 left outer join vt1 x2'
+                    		v_select := v_select || ',x1.EFF_DATE) as row_id2, x1.* '
+				|| ' from vt1 x1 left outer join vt1 x2'
                     		|| ' on x1.row_id=x2.row_id+1';
                		end if;
           	END LOOP;
