@@ -9,12 +9,13 @@ AS
 	
 	cdc_list columns_list_t;
 	non_cdc_list columns_list_t;
-
+     
+     
 	PROCEDURE CHECK_SCHEMAS(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
 						  , p_target_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE)
 	IS
 	BEGIN
-		null;
+		null; --given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
 	END CHECK_SCHEMAS;
 	
 	PROCEDURE GATHER_CDC_COLUMNS(p_collection IN OUT NOCOPY columns_list_t)
@@ -69,7 +70,7 @@ AS
     
     procedure createView1(p_collection IN columns_list_t)
     is
-     v_select VARCHAR2(4000) := 'SELECT ROW_NUMBER() OVER( ORDER BY ';
+     v_select VARCHAR2(4000) := 'CREATE TABLE vt1 as SELECT ROW_NUMBER() OVER( ORDER BY ';
     begin
           for i in p_collection.FIRST..p_collection.LAST
           LOOP
@@ -83,13 +84,14 @@ AS
                
                
           END LOOP;
+          
           dbms_output.put_line(v_select);
           
     end;
          
     procedure createView2(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
     is
-          v_select VARCHAR2(4000) := 'SELECT ROW_NUMBER() OVER( ORDER BY ';
+          v_select VARCHAR2(4000) := 'CREATE TABLE vt2 as SELECT ROW_NUMBER() OVER( ORDER BY ';
      
           function dynamicJoin(p_collection IN columns_list_t)
           return VARCHAR2
@@ -169,6 +171,8 @@ BEGIN
      dbms_output.put_line('VIEW2');
      dbms_output.put_line('--------------------------------');     
      createView2(cdc_list,non_cdc_list);
+     
+     --execute immediate 'truncate table ' || p_table_owner || '.' || p_stage_table;
      
 	
 END;
