@@ -71,7 +71,7 @@ AS
 	        
 	        if v_differences > 0 
 	        then
-	            RETURN TRUE; 
+	            RETURN FALSE; 
 	        else
 	            RETURN TRUE;
 	        end if;
