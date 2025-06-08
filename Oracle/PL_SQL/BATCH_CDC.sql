@@ -292,14 +292,14 @@ BEGIN
 	IF CHECK_SCHEMAS(p_cdc_table, p_stage_table) AND CHECK_SCHEMAS(p_cdc_table, p_target_table)
     	THEN
 	        dbms_output.put_line('CDC_COLUMNS');
-	        dbms_output.put_line('--------------------------------');
+	        dbms_output.put_line(print_line);
 	        GATHER_CDC_COLUMNS(cdc_list);
 	        print_collection(cdc_list);
 	        
 	        dbms_output.put_line(chr(10));
 	     
 	        dbms_output.put_line('NON_CDC_COLUMNS');
-	        dbms_output.put_line('--------------------------------');
+	        dbms_output.put_line(print_line);
 	        GATHER_NON_CDC_COLUMNS(non_cdc_list);
 	        print_collection(non_cdc_list);
             
