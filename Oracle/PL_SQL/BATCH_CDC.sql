@@ -248,7 +248,7 @@ AS
 	                    
 	               		end loop;
             		ELSE
-		                v_insert_statement := v_insert_statement ||  ', ';
+		                v_insert_statement := v_insert_statement || ', ';
 		                v_select_statement := v_select_statement || ', ';
             		end if;
             
