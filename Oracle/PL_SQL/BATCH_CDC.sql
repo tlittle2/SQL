@@ -227,7 +227,7 @@ AS
         	for i in p_non_cdc_columns.FIRST..p_non_cdc_columns.LAST
         	loop
 	            v_insert_statement := v_insert_statement || p_non_cdc_columns(i);
-	            v_select_statement := v_select_statement || 'x2.' || p_non_cdc_columns(i);
+	            v_select_statement := v_select_statement || 'x1.' || p_non_cdc_columns(i);
             
             		if i = p_non_cdc_columns.LAST
             		THEN
