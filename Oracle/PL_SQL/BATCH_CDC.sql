@@ -10,6 +10,22 @@ AS
 	cdc_list columns_list_t;
 	non_cdc_list columns_list_t;
 	subtype dynamic_statement_st is VARCHAR2(4000);
+    
+    function print_line
+    return varchar2
+    is
+    begin
+        return lpad('-', 40 , '-');
+    end;
+    
+    procedure print_collection(p_collection IN columns_list_t)
+    	is
+    	begin
+	         for i in p_collection.FIRST..p_collection.LAST
+	         loop
+	         dbms_output.put_line(p_collection(i));
+	         end loop;
+    	end;
      
     --given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
 	FUNCTION CHECK_SCHEMAS(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
@@ -54,6 +70,7 @@ AS
 	        end if;
     
 	END CHECK_SCHEMAS;
+    
 	
 	PROCEDURE GATHER_CDC_COLUMNS(p_collection IN OUT NOCOPY columns_list_t)
 	IS
@@ -90,15 +107,6 @@ AS
 		end loop;
 	
 	END;
-	
-	procedure print_collection(p_collection IN columns_list_t)
-    	is
-    	begin
-	         for i in p_collection.FIRST..p_collection.LAST
-	         loop
-	         dbms_output.put_line(p_collection(i));
-	         end loop;
-    	end;
     
     
     	procedure CREATE_VIEW_1(p_collection IN columns_list_t)
@@ -174,7 +182,7 @@ AS
                     		v_select := v_select || ',';     
                		else
                     		v_select := v_select || ',x1.EFF_DATE) as row_id2, x1.* '
-				|| ' from vt1 x1 left outer join vt1 x2'
+                            || ' from vt1 x1 left outer join vt1 x2'
                     		|| ' on x1.row_id=x2.row_id+1';
                		end if;
           	END LOOP;
@@ -257,7 +265,27 @@ AS
             dbms_output.put_line(v_insert_statement);
             dbms_output.put_line(v_select_statement);
     
-    end;
+        end;
+        
+        procedure REMOVE_FROM_TARGET(p_cdc_columns IN columns_list_t)
+        is
+            v_cdc_cols_string dynamic_statement_st;
+            
+            v_delete_string dynamic_statement_st:= 'DELETE FROM ' || p_table_owner || '.' || p_target_table || ' WHERE ';
+        begin
+            for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
+            LOOP
+               		if i <> p_cdc_columns.LAST
+               		then
+                    		v_cdc_cols_string := v_cdc_cols_string || p_cdc_columns(i) || ',';     
+               		else
+                    		v_cdc_cols_string := v_cdc_cols_string || p_cdc_columns(i);
+               		end if;
+          	END LOOP;
+            v_delete_string := v_delete_string || '(' || v_cdc_cols_string || ') IN (SELECT '|| v_cdc_cols_string || 'FROM ' || p_table_owner || '.' || p_stage_table || ')';
+            dbms_output.put_line(v_delete_string);
+        
+        end;
 	
 
 BEGIN
@@ -278,19 +306,19 @@ BEGIN
             dbms_output.put_line(chr(10));
               
               dbms_output.put_line('INSERT');
-	         dbms_output.put_line('--------------------------------'); 
+	         dbms_output.put_line(print_line); 
               INSERT_INTO_CDC(cdc_list);
 	     
 	        dbms_output.put_line(chr(10));
 	     
 	         dbms_output.put_line('VIEW1');
-	         dbms_output.put_line('--------------------------------');
+	         dbms_output.put_line(print_line);
 	         CREATE_VIEW_1(cdc_list);
 	         
 	         dbms_output.put_line(chr(10));
 	         
 	         dbms_output.put_line('VIEW2');
-	         dbms_output.put_line('--------------------------------');     
+	         dbms_output.put_line(print_line);
 	         CREATE_VIEW_2(cdc_list,non_cdc_list);
 	         
 	         --execute immediate 'truncate table ' || p_table_owner || '.' || p_stage_table;
@@ -299,8 +327,21 @@ BEGIN
               dbms_output.put_line(chr(10));
 	         
 	         dbms_output.put_line('MOVE');
-	         dbms_output.put_line('--------------------------------'); 
+	         dbms_output.put_line(print_line);
 	         MOVE_CDC_TO_STAGE(cdc_list,non_cdc_list);
+             
+             dbms_output.put_line(chr(10));
+             
+             dbms_output.put_line('REMOVE from TARGET');
+	         dbms_output.put_line(print_line);
+	         REMOVE_FROM_TARGET(cdc_list);
+             
+             dbms_output.put_line(chr(10));
+             
+	         dbms_output.put_line('INSERT FROM STAGE TO TARGET');
+	         dbms_output.put_line(print_line);
+	         dbms_output.put_line('INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table);
+             
 
         ELSE
             RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
