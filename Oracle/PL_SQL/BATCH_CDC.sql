@@ -57,11 +57,11 @@ AS
 	PROCEDURE GATHER_CDC_COLUMNS(p_collection IN OUT NOCOPY columns_list_t)
 	IS
 		cursor cdc_columns is
-        select sort_order_number
+        	select sort_order_number
 		, column_name
 		from update_match where UPPER(table_owner) = UPPER(p_table_owner)
 		and UPPER(table_name) = UPPER(p_target_table)
-        order by sort_order_number asc;
+        	order by sort_order_number asc;
 	BEGIN
 	
 		for rec_cdc in cdc_columns
@@ -78,9 +78,8 @@ AS
 		select column_id, column_name from all_tab_columns where owner = UPPER(p_table_owner) and table_name = UPPER(p_target_table)
 		AND COLUMN_NAME NOT IN ('EFF_DATE' , 'END_DATE' , 'CREATE_ID' , 'LAST_UPDATE_ID')
 		and column_name not in (
-          select column_name from update_match where UPPER(table_owner) = UPPER(p_table_owner) and UPPER(table_name) = UPPER(p_target_table)
+          		select column_name from update_match where UPPER(table_owner) = UPPER(p_table_owner) and UPPER(table_name) = UPPER(p_target_table)
 		) 
-		
 		order by column_id asc;
 	BEGIN
 	
