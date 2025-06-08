@@ -15,8 +15,39 @@ AS
 						  , p_target_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE)
 	RETURN BOOLEAN
     	IS
+    		v_differences NUMBER;
 	BEGIN
-		RETURN TRUE; --fix later
+	        with schema_check as (
+	        select a.owner, a.table_name, a.column_name
+	        , case a.data_type
+	            WHEN 'DATE' THEN 'DATE'
+	            WHEN 'FLOAT' then 'FLOAT(' || a.data_precision || ',' || a.data_scale || ')'
+	            WHEN 'NUMBER' then 'NUMBER(' || a.data_precision || ',' || a.data_scale || ')'
+	            WHEN 'VARCHAR' THEN 'TEXT(' || a.data_length || ')'
+	            WHEN 'VARCHAR2' THEN 'TEXT(' || a.data_length || ')'
+	            WHEN 'CHAR' THEN 'TEXT(' || a.data_length || ')'
+	            end as data_type
+	        from all_tab_columns a
+	        )
+	        
+	        select nvl(count(1), 1) into v_differences
+	        from (
+	            select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_target_table
+	            MINUS
+	            select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_source_table
+	            UNION ALL
+	            select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_source_table
+	            MINUS
+	            select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_target_table
+	        );
+	        
+	        if v_differences > 0 
+	        then
+	            RETURN TRUE; 
+	        else
+	            RETURN FALSE;
+	        end if;
+    
 	END CHECK_SCHEMAS;
 	
 	PROCEDURE GATHER_CDC_COLUMNS(p_collection IN OUT NOCOPY columns_list_t)
@@ -235,6 +266,11 @@ BEGIN
             
         END IF;
 	
+END;
+/
+
+BEGIN
+BATCH_CDC('INFA_SRC', 'SALARY_DATA_S', 'SALARY_DATA_CDC', 'SALARY_DATA');
 END;
 /
 
