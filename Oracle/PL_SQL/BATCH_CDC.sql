@@ -62,6 +62,25 @@ AS
 		end loop;
 	
 	END;
+
+	procedure createView1(p_collection IN columns_list_t)
+    	is
+     		v_select VARCHAR2(4000) := 'SELECT ROW_NUMBER() OVER( ORDER BY ';
+    	begin
+		for i in p_collection.FIRST..p_collection.LAST
+          	LOOP
+               		v_select := v_select || p_collection(i);
+               		if i <> p_collection.LAST
+               		then
+                    		v_select := v_select || ',';     
+               		else
+                    		v_select := v_select || ')';     
+               		end if;
+               
+               
+          	END LOOP;
+          	dbms_output.put_line(v_select);
+    	end;
 	
 
 	function createWhereClause(p_collection IN columns_list_t)
