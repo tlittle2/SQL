@@ -150,6 +150,52 @@ AS
           dbms_output.put_line(v_select || dynamicJoin(p_cdc_columns) || dynamicNotEqualClause(p_non_cdc_columns));
           
     end;
+    
+    procedure move_cdc_to_stage(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
+    is
+        v_insert_statement VARCHAR2(4000) := 'INSERT INTO ' || p_table_owner || '.' || p_stage_table || '(';
+        v_select_statement VARCHAR2(4000) := 'SELECT ';
+    begin
+        for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
+        loop
+            v_insert_statement := v_insert_statement || p_cdc_columns(i) || ',';
+            v_select_statement := v_select_statement || 'x1.' || p_cdc_columns(i) || ',';
+            
+        end loop;
+        
+        for i in p_non_cdc_columns.FIRST..p_non_cdc_columns.LAST
+        loop
+            v_insert_statement := v_insert_statement || p_non_cdc_columns(i);
+            v_select_statement := v_select_statement || 'x1.' || p_non_cdc_columns(i);
+            
+            if i = p_non_cdc_columns.LAST
+            THEN
+                v_insert_statement := v_insert_statement || ')';
+                v_select_statement := v_select_statement || ' FROM vt2 x1 LEFT OUTER JOIN vt2 x2 ON ';
+                
+                for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
+                loop
+                    v_select_statement := v_select_statement || 'x1.' || p_cdc_columns(i) || ' = ' || 'x2.' || p_cdc_columns(i);
+                    if i <> p_cdc_columns.LAST
+                    then
+                         v_select_statement := v_select_statement || ' and ';
+                         
+                    else
+                        v_select_statement := v_select_statement || ' and x1.row_id2 = x2.row_id2-1 ';
+                    end if;
+                    
+               end loop;
+            ELSE
+                v_insert_statement := v_insert_statement ||  ',';
+                v_select_statement := v_select_statement || ',';
+            end if;
+            
+        end loop;
+        
+            dbms_output.put_line(v_insert_statement);
+            dbms_output.put_line(v_select_statement);
+    
+    end;
 	
 
 BEGIN
@@ -174,6 +220,11 @@ BEGIN
      
      --execute immediate 'truncate table ' || p_table_owner || '.' || p_stage_table;
      
+      dbms_output.put_line(chr(10));
+     
+     dbms_output.put_line('INSERT');
+     dbms_output.put_line('--------------------------------'); 
+     move_cdc_to_stage(cdc_list,non_cdc_list);
 	
 END;
 /
