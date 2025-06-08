@@ -9,6 +9,7 @@ AS
 	
 	cdc_list columns_list_t;
 	non_cdc_list columns_list_t;
+	subtype dynamic_statement_st is VARCHAR2(4000);
      
     --given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
 	FUNCTION CHECK_SCHEMAS(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
@@ -102,7 +103,7 @@ AS
     
     	procedure CREATE_VIEW_1(p_collection IN columns_list_t)
     	is
-     	v_select VARCHAR2(4000) := 'CREATE TABLE vt1 as SELECT ROW_NUMBER() OVER( ORDER BY ';
+     	v_select dynamic_statement_st := 'CREATE TABLE vt1 as SELECT ROW_NUMBER() OVER( ORDER BY ';
     	begin
 		for i in p_collection.FIRST..p_collection.LAST
 		LOOP
@@ -121,7 +122,7 @@ AS
          
     	procedure CREATE_VIEW_2(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
     	is
-		v_select VARCHAR2(4000) := 'CREATE TABLE vt2 as SELECT ROW_NUMBER() OVER( ORDER BY ';
+		v_select dynamic_statement_st := 'CREATE TABLE vt2 as SELECT ROW_NUMBER() OVER( ORDER BY ';
 
 		function dynamicJoin(p_collection IN columns_list_t)
           	return VARCHAR2
@@ -145,7 +146,7 @@ AS
           	function dynamicNotEqualClause(p_collection IN columns_list_t)
           	return VARCHAR2
           	IS
-               		v_where_clause VARCHAR2(32767) := ' where x2.row_id is null or ';
+               		v_where_clause dynamic_statement_st := ' where x2.row_id is null or ';
           	BEGIN
                		for i in p_collection.FIRST..p_collection.LAST
                		loop
@@ -183,8 +184,8 @@ AS
     
     	procedure MOVE_CDC_TO_STAGE(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
     	is
-	        v_insert_statement VARCHAR2(4000) := 'INSERT INTO ' || p_table_owner || '.' || p_stage_table || '(';
-	        v_select_statement VARCHAR2(4000) := 'SELECT ';
+	        v_insert_statement dynamic_statement_st := 'INSERT INTO ' || p_table_owner || '.' || p_stage_table || '(';
+	        v_select_statement dynamic_statement_st := 'SELECT ';
     	begin
         	for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
         	loop
