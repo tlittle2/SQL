@@ -1,7 +1,7 @@
 CREATE OR REPLACE PROCEDURE BATCH_CDC(p_table_owner IN ALL_TABLES.OWNER%TYPE
-				    , p_stage_table IN ALL_TABLES.TABLE_NAME%TYPE
-				    , p_cdc_table IN ALL_TABLES.TABLE_NAME%TYPE
-				    , p_target_table IN ALL_TABLES.TABLE_NAME%TYPE)
+									, p_stage_table IN ALL_TABLES.TABLE_NAME%TYPE
+									, p_cdc_table IN ALL_TABLES.TABLE_NAME%TYPE
+									, p_target_table IN ALL_TABLES.TABLE_NAME%TYPE)
 									
 AS
 
@@ -156,8 +156,8 @@ AS
     begin
         for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
         loop
-            v_insert_statement := v_insert_statement || p_cdc_columns(i) || ',';
-            v_select_statement := v_select_statement || 'x1.' || p_cdc_columns(i) || ',';
+            v_insert_statement := v_insert_statement || p_cdc_columns(i) || ', ';
+            v_select_statement := v_select_statement || 'x1.' || p_cdc_columns(i) || ', ';
             
         end loop;
         
@@ -169,6 +169,9 @@ AS
             if i = p_non_cdc_columns.LAST
             THEN
                 v_insert_statement := v_insert_statement || ')';
+                
+                v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DT-1, 2100-12-31) as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID ' ;
+                
                 v_select_statement := v_select_statement || ' FROM vt2 x1 LEFT OUTER JOIN vt2 x2 ON ';
                 
                 for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
@@ -184,8 +187,8 @@ AS
                     
                end loop;
             ELSE
-                v_insert_statement := v_insert_statement ||  ',';
-                v_select_statement := v_select_statement || ',';
+                v_insert_statement := v_insert_statement ||  ', ';
+                v_select_statement := v_select_statement || ', ';
             end if;
             
         end loop;
