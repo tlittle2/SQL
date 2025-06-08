@@ -36,9 +36,6 @@ AS
 	END;
 	
 
-
-
-	
 	PROCEDURE GATHER_NON_CDC_COLUMNS(p_collection IN OUT NOCOPY columns_list_t)
 	IS
 		cursor non_cdc_columns is
@@ -228,6 +225,12 @@ BEGIN
 	
 END;
 /
+
+BEGIN
+BATCH_CDC('INFA_SRC', 'SALARY_DATA_S', 'SALARY_DATA_CDC', 'SALARY_DATA');
+END;
+/
+
 
 CREATE TABLE UPDATE_MATCH (
      TABLE_OWNER VARCHAR2(128) NOT NULL
