@@ -19,8 +19,9 @@ AS
 	BEGIN
 	        with schema_check as (
 	        select a.owner, a.table_name, a.column_name
-	        , case a.data_type
+	        , case nvl(substr(data_type, 1, instr(data_type, '(', 1)-1),data_type)
 			WHEN 'DATE' THEN 'DATE'
+			WHEN 'TIMESTAMP' then 'TIMESTAMP(' || a.data_scale || ')'
 			WHEN 'FLOAT' then 'FLOAT(' || a.data_precision || ',' || a.data_scale || ')'
 			WHEN 'NUMBER' then 'NUMBER(' || a.data_precision || ',' || a.data_scale || ')'
 			WHEN 'VARCHAR' THEN 'TEXT(' || a.data_length || ')'
