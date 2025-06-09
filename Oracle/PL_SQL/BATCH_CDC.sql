@@ -11,11 +11,11 @@ AS
 	non_cdc_list columns_list_t;
 	subtype dynamic_statement_st is VARCHAR2(10000);
     
-    function print_line
-    return varchar2
+    procedure step_separate(p_step_name in VARCHAR2)
     is
     begin
-        return lpad('-', 40 , '-');
+        dbms_output.put_line(p_step_name);
+        dbms_output.put_line(lpad('-', 40 , '-'));
     end;
     
     procedure print_collection(p_collection IN columns_list_t)
@@ -124,94 +124,12 @@ AS
 	
 	END;
     
-    
-    	procedure CREATE_VIEW_1(p_collection IN columns_list_t)
-    	is
-     	v_select dynamic_statement_st;
-    	begin
-		for i in p_collection.FIRST..p_collection.LAST
-		LOOP
-			v_select := v_select || p_collection(i);
-               		if i <> p_collection.LAST
-               		then
-                    		v_select := str_comma_sep(v_select);
-               		else
-                    		v_select := v_select || ',EFF_DATE) as row_id, k.* from ' || p_table_owner || '.' || p_cdc_table || ' k';
-               		end if;
-          	END LOOP;
-          
-          	dbms_output.put_line('with vt1 as (SELECT ROW_NUMBER() OVER( ORDER BY ' || v_select || ')');
-          
-    	end;
-         
-    	procedure CREATE_VIEW_2(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
-    	is
-		v_select dynamic_statement_st := ', vt2 as (SELECT ROW_NUMBER() OVER( ORDER BY ';
-
-		function dynamicJoin(p_collection IN columns_list_t)
-          	return VARCHAR2
-          	is
-			v_join_clause dynamic_statement_st;
-          	begin
-               		for i in p_collection.FIRST..p_collection.LAST
-               		loop
-                    		v_join_clause := v_join_clause || 'x1.' || p_collection(i) || ' = ' || 'x2.' || p_collection(i);
-                    		if i <> p_collection.LAST
-                    		then
-                         		v_join_clause := v_join_clause || ' and ';
-                    		end if;
-                    
-               		end loop;
-               
-               		return ' and ' || v_join_clause;
-     
-          	end;
-          
-          	function dynamicNotEqualClause(p_collection IN columns_list_t)
-          	return VARCHAR2
-          	IS
-               		v_where_clause dynamic_statement_st;
-          	BEGIN
-               		for i in p_collection.FIRST..p_collection.LAST
-               		loop
-	                    v_where_clause := v_where_clause
-	                    || '(x1.' || p_collection(i) || ' <> ' || 'x2.' || p_collection(i) || ')'
-	                    || ' OR ' 
-	                    || '(x1.' || p_collection(i) || ' is null' || ' and ' || 'x2.' || p_collection(i) || ' is not null)'
-	                    || ' OR '
-	                    || '(x1.' || p_collection(i) || ' is not null' || ' and' || ' x2.' || p_collection(i) || ' is null)';
-              
-                        if i <> p_collection.LAST
-	                    then
-                            v_where_clause := v_where_clause || ' OR ';  
-                        end if;
-               		end loop;
-               		return ' where x2.row_id is null or ' || v_where_clause;
-          	END;
-		
-	begin
-		for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
-		LOOP
-			v_select := v_select || 'x1.' || p_cdc_columns(i);
-               		if i <> p_cdc_columns.LAST
-               		then
-                    		v_select := str_comma_sep(v_select);  
-               		else
-                    		v_select := v_select || ',x1.EFF_DATE) as row_id2, x1.* '
-                            || ' from vt1 x1 left outer join vt1 x2'
-                    		|| ' on x1.row_id=x2.row_id+1';
-               		end if;
-          	END LOOP;
-          
-            dbms_output.put_line(v_select || dynamicJoin(p_cdc_columns) || dynamicNotEqualClause(p_non_cdc_columns) || ')');
-          end;
-          
-        PROCEDURE INSERT_INTO_CDC(p_cdc_columns IN columns_list_t)
-        IS
-            v_insert_statement dynamic_statement_st;
-            v_cdc_columns_string dynamic_statement_st;
-            v_cdc_columns_equality dynamic_statement_st;
-        BEGIN
+    PROCEDURE INSERT_INTO_CDC(p_cdc_columns IN columns_list_t)
+    IS
+        v_insert_statement dynamic_statement_st;
+         v_cdc_columns_string dynamic_statement_st;
+        v_cdc_columns_equality dynamic_statement_st;
+    BEGIN
             for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
         	loop
                 if i <> p_cdc_columns.LAST
@@ -237,11 +155,94 @@ AS
         
         END;
     
-    	procedure MOVE_CDC_TO_STAGE(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
-    	is
+    	PROCEDURE MOVE_CDC_TO_STAGE(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
+    	IS
 	        v_insert_statement dynamic_statement_st := 'INSERT INTO ' || p_table_owner || '.' || p_stage_table || '(';
 	        v_select_statement dynamic_statement_st := 'SELECT ';
-    	begin
+            
+            FUNCTION CREATE_VIEW_1(p_collection IN columns_list_t)
+            return varchar2
+            is
+            v_select dynamic_statement_st;
+            begin
+            for i in p_collection.FIRST..p_collection.LAST
+            LOOP
+                v_select := v_select || p_collection(i);
+                        if i <> p_collection.LAST
+                        then
+                                v_select := str_comma_sep(v_select);
+                        else
+                                v_select := v_select || ',EFF_DATE) as row_id, k.* from ' || p_table_owner || '.' || p_cdc_table || ' k';
+                        end if;
+                END LOOP;
+              
+                return 'with vt1 as (SELECT ROW_NUMBER() OVER( ORDER BY ' || v_select || ')';
+              
+            end;
+         
+            function CREATE_VIEW_2(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
+            return varchar2
+            is
+                v_select dynamic_statement_st := ', vt2 as (SELECT ROW_NUMBER() OVER( ORDER BY ';
+            
+                function dynamicJoin(p_collection IN columns_list_t)
+                return VARCHAR2
+                is
+                    v_join_clause dynamic_statement_st;
+                begin
+                    for i in p_collection.FIRST..p_collection.LAST
+                    loop
+                        v_join_clause := v_join_clause || 'x1.' || p_collection(i) || ' = ' || 'x2.' || p_collection(i);
+                        if i <> p_collection.LAST
+                        then
+                            v_join_clause := v_join_clause || ' and ';
+                        end if;
+                    end loop;
+                    
+                    return ' and ' || v_join_clause;
+                end;
+                  
+                function dynamicNotEqualClause(p_collection IN columns_list_t)
+                return VARCHAR2
+                is
+                    v_where_clause dynamic_statement_st;
+                begin
+                    for i in p_collection.FIRST..p_collection.LAST
+                    loop
+                        v_where_clause := v_where_clause
+                        || '(x1.' || p_collection(i) || ' <> ' || 'x2.' || p_collection(i) || ')'
+                        || ' OR ' 
+                        || '(x1.' || p_collection(i) || ' is null' || ' and ' || 'x2.' || p_collection(i) || ' is not null)'
+                        || ' OR '
+                        || '(x1.' || p_collection(i) || ' is not null' || ' and' || ' x2.' || p_collection(i) || ' is null)';
+                        
+                        if i <> p_collection.LAST
+                        then
+                            v_where_clause := v_where_clause || ' OR ';  
+                        end if;
+                    end loop;
+                    return ' where x2.row_id is null or ' || v_where_clause;
+                end;
+            
+            begin
+                for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
+                LOOP
+                    v_select := v_select || 'x1.' || p_cdc_columns(i);
+                    if i <> p_cdc_columns.LAST
+                    then
+                        v_select := str_comma_sep(v_select);  
+                    else
+                        v_select := v_select || ',x1.EFF_DATE) as row_id2, x1.* '
+                        || ' from vt1 x1 left outer join vt1 x2'
+                        || ' on x1.row_id=x2.row_id+1';
+                    end if;
+                END LOOP;
+                
+                return v_select || dynamicJoin(p_cdc_columns) || dynamicNotEqualClause(p_non_cdc_columns) || ')';
+              
+            end;
+            
+    	BEGIN
         	for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
         	loop
 	            v_insert_statement := str_comma_sep(v_insert_statement || p_cdc_columns(i));
@@ -253,43 +254,44 @@ AS
         	loop
 	            v_insert_statement := v_insert_statement || p_non_cdc_columns(i);
 	            v_select_statement := v_select_statement || 'x1.' || p_non_cdc_columns(i);
-            
-            		if i = p_non_cdc_columns.LAST
-            		THEN
-		                v_insert_statement := v_insert_statement || ', EFF_DATE, END_DATE, CREATE_ID, LAST_UPDATE_ID)';
-		                
-		                v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DATE-1, to_date(''31-DEC-2100'')) as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
-			               					 || ' FROM vt2 x1 LEFT OUTER JOIN vt2 x2 ON ';
-	                
-	                	for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
-	                	loop
-	                    		v_select_statement := v_select_statement || 'x1.' || p_cdc_columns(i) || ' = ' || 'x2.' || p_cdc_columns(i);
-	                    		if i <> p_cdc_columns.LAST
-	                    		then
-	                         		v_select_statement := v_select_statement || ' and ';
-	                    		else
-	                        		v_select_statement := v_select_statement || ' and x1.row_id2 = x2.row_id2-1 ';
-	                    		end if;
+                
+                if i = p_non_cdc_columns.LAST
+            	THEN
+                    v_insert_statement := v_insert_statement || ', EFF_DATE, END_DATE, CREATE_ID, LAST_UPDATE_ID)';
+                    v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DATE-1, to_date(''31-DEC-2100'')) as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
+                                        || ' FROM vt2 x1 LEFT OUTER JOIN vt2 x2 ON ';
+                    for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
+	                loop
+                        v_select_statement := v_select_statement || 'x1.' || p_cdc_columns(i) || ' = ' || 'x2.' || p_cdc_columns(i);
+	                    if i <> p_cdc_columns.LAST
+	                    then
+                            v_select_statement := v_select_statement || ' and ';
+                        else
+                            v_select_statement := v_select_statement || ' and x1.row_id2 = x2.row_id2-1 ';
+                        end if;
 	                    
-	               		end loop;
-            		ELSE
-		                v_insert_statement := str_comma_sep(v_insert_statement);
-		                v_select_statement := str_comma_sep(v_select_statement);
-            		end if;
+                    end loop;
+                ELSE
+                    v_insert_statement := str_comma_sep(v_insert_statement);
+		            v_select_statement := str_comma_sep(v_select_statement);
+                end if;
             
         	end loop;
         
             dbms_output.put_line(v_insert_statement);
+            dbms_output.put_line(CREATE_VIEW_1(p_cdc_columns));
+            dbms_output.put_line(CREATE_VIEW_2(p_cdc_columns,p_non_cdc_columns));
             dbms_output.put_line(v_select_statement || ';');
             run_commit;
     
-        end;
+        END;
         
-        procedure REMOVE_FROM_TARGET(p_cdc_columns IN columns_list_t)
-        is
+        PROCEDURE REMOVE_FROM_TARGET(p_cdc_columns IN columns_list_t)
+        IS
             v_cdc_cols_string dynamic_statement_st;
             v_delete_string dynamic_statement_st;
-        begin
+        BEGIN
+        
             for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
             LOOP
                		if i <> p_cdc_columns.LAST
@@ -307,7 +309,7 @@ AS
             dbms_output.put_line(v_delete_string || '; ');
             run_commit;
         
-        end;
+        END;
         
 
 BEGIN
@@ -316,68 +318,44 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
     END IF;
     
-    dbms_output.put_line('CDC_COLUMNS');
-    dbms_output.put_line(print_line);
-	GATHER_CDC_COLUMNS(cdc_list);
+    step_separate('CDC_COLUMNS');
+    GATHER_CDC_COLUMNS(cdc_list);
 	print_collection(cdc_list);
-	
 	dbms_output.put_line(chr(10));
 	
-	dbms_output.put_line('NON_CDC_COLUMNS');
-	dbms_output.put_line(print_line);
+    step_separate('NON_CDC_COLUMNS');
 	GATHER_NON_CDC_COLUMNS(non_cdc_list);
 	print_collection(non_cdc_list);
-    
     dbms_output.put_line(chr(10));
     
-    dbms_output.put_line('INSERT');
-	dbms_output.put_line(print_line); 
+    step_separate('INSERT');
     INSERT_INTO_CDC(cdc_list);
-	
-	dbms_output.put_line(chr(10));
-	dbms_output.put_line('VIEW1');
-	dbms_output.put_line(print_line);
-	CREATE_VIEW_1(cdc_list);
-	
-    dbms_output.put_line(chr(10));
-	
-    dbms_output.put_line('VIEW2');
-	dbms_output.put_line(print_line);
-	CREATE_VIEW_2(cdc_list,non_cdc_list);
-    
     dbms_output.put_line(chr(10));
     
-    dbms_output.put_line('TRUNCATE');
-	dbms_output.put_line(print_line);
+    
+    step_separate('TRUNCATE');
 	dbms_output.put_line('truncate table ' || p_table_owner || '.' || p_stage_table || ';');
-    
     dbms_output.put_line(chr(10));
-	
-    dbms_output.put_line('MOVE');
-	dbms_output.put_line(print_line);
+    
+    step_separate('MOVE');
 	MOVE_CDC_TO_STAGE(cdc_list,non_cdc_list);
-    
     dbms_output.put_line(chr(10));
     
-    dbms_output.put_line('REMOVE from TARGET');
-	dbms_output.put_line(print_line);
-	REMOVE_FROM_TARGET(cdc_list);
-    
+    step_separate('REMOVE from TARGET');
+	REMOVE_FROM_TARGET(cdc_list);    
     dbms_output.put_line(chr(10));
     
-    dbms_output.put_line('INSERT FROM STAGE TO TARGET');
-	dbms_output.put_line(print_line);
-	dbms_output.put_line('INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ';');
+    step_separate('INSERT FROM STAGE TO TARGET');
+    dbms_output.put_line('INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ';');
     run_commit;
 
 EXCEPTION
     WHEN OTHERS THEN
     DBMS_OUTPUT.PUT_LINE('ERROR IN PROGRAM');
-    raise;	
-
+    raise;
+	
 END;
 /
-
 
 
 BEGIN
