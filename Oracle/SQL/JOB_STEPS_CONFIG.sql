@@ -1,5 +1,6 @@
 CREATE TABLE JOB_STEPS_CONFIG(
-  SYSTEM_SK VARCHAR2(3 BYTE)
+  JOB_STEPS_CONFIG_SK NUMBER GENERATED ALWAYS AS IDENTITY  
+, SYSTEM_SK VARCHAR2(3 BYTE)
 , SUBSYSTEM_SK VARCHAR2(3 BYTE)
 , JOB_ID NUMBER(10,0)
 , STEP_NUMBER NUMBER(10,0)
@@ -31,4 +32,11 @@ INSERT INTO JOB_STEPS_CONFIG VALUES('000', '000', 1,1, 'L', 'SQLLDR', 'p_target_
 
 select * from job_steps_config where job_id = :p_job_id
 and active_flag = 'Y' and process_completed = 'N'
+order by step_number, operation_order, operation_sub_order;
+
+--put arguments together
+select listagg(operation_value || ',') within group (order by operation_order, operation_sub_order) from job_steps_config
+where job_id = 1
+and active_flag = 'Y' and process_completed = 'N'
+and step_number = 2
 order by step_number, operation_order, operation_sub_order;
