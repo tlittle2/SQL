@@ -161,6 +161,18 @@ AS
             end if;
         
         END;
+        
+        procedure TRUNCATE_STAGE
+        is
+            v_trunc_statement dynamic_statement_st := 'truncate table ' || p_table_owner || '.' || p_stage_table;
+        begin
+            if c_debug_mode
+            then
+            dbms_output.put_line(v_trunc_statement);
+            else
+            execute immediate v_trunc_statement;
+            end if;
+        end;
     
     	PROCEDURE MOVE_CDC_TO_STAGE(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
     	IS
@@ -332,6 +344,22 @@ AS
             end if;
         END;
         
+        procedure INSERT_TO_TARGET
+        is
+            v_insert_statement dynamic_statement_st := 'INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table;
+        begin
+            if c_debug_mode
+            then
+                dbms_output.put_line(v_insert_statement);
+                run_commit;
+            else
+                execute immediate v_insert_statement;
+                commit;
+            end if;
+
+        end;
+        
+        
 
 BEGIN
 	IF CHECK_SCHEMAS(p_cdc_table, p_stage_table) OR CHECK_SCHEMAS(p_cdc_table, p_target_table)
@@ -355,7 +383,7 @@ BEGIN
     
     
     step_separate('TRUNCATE');
-	dbms_output.put_line('truncate table ' || p_table_owner || '.' || p_stage_table || ';');
+    TRUNCATE_STAGE;
     dbms_output.put_line(chr(10));
     
     step_separate('MOVE');
@@ -367,8 +395,7 @@ BEGIN
     dbms_output.put_line(chr(10));
     
     step_separate('INSERT FROM STAGE TO TARGET');
-    dbms_output.put_line('INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ';');
-    run_commit;
+    INSERT_TO_TARGET;
 
 EXCEPTION
     WHEN OTHERS THEN
