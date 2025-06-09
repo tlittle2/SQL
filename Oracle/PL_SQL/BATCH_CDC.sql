@@ -17,29 +17,29 @@ AS
     begin
         dbms_output.put_line(p_step_name);
         dbms_output.put_line(lpad('-', 40 , '-'));
-    end;
+    end step_separate;
     
     procedure print_collection(p_collection IN columns_list_t)
-    	is
-    	begin
-	         for i in p_collection.FIRST..p_collection.LAST
-	         loop
-	         dbms_output.put_line(p_collection(i));
-	         end loop;
-    	end;
+    is
+    begin
+        for i in p_collection.FIRST..p_collection.LAST
+	    loop
+            dbms_output.put_line(p_collection(i));
+        end loop;
+    end print_collection;
         
     function str_comma_sep(p_in_str IN VARCHAR2)
     RETURN VARCHAR2 DETERMINISTIC
     IS
     BEGIN
         RETURN p_in_str || ',';
-    END;
+    END str_comma_sep;
     
     procedure run_commit
     is
     begin
         dbms_output.put_line('COMMIT;');
-    end;
+    end run_commit;
      
     --given 2 tables, find a way to create a normalized schema check to ensure that the columns are consistent
 	FUNCTION CHECK_SCHEMAS(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
@@ -88,6 +88,21 @@ AS
 	        
 	END CHECK_SCHEMAS;
     
+    PROCEDURE STG_TO_CDC
+    IS
+    BEGIN
+        if c_debug_mode
+            then
+                dbms_output.put_line('TRUNCATE TABLE '|| p_table_owner || '.' || p_cdc_table);
+                dbms_output.put_line('INSERT INTO '|| p_table_owner || '.' || p_cdc_table || ' SELECT * FROM ' || p_stage_table);
+                run_commit;
+            else
+                execute immediate 'TRUNCATE TABLE '|| p_table_owner || '.' || p_cdc_table;
+                execute immediate 'INSERT INTO '|| p_table_owner || '.' || ' SELECT * FROM ' || p_stage_table;
+                commit;
+            end if;
+    END STG_TO_CDC;
+    
 	
 	PROCEDURE GATHER_CDC_COLUMNS(p_collection IN OUT NOCOPY columns_list_t)
 	IS
@@ -104,7 +119,7 @@ AS
 			p_collection(rec_cdc.sort_order_number) := rec_cdc.column_name; 
 		end loop;
 	
-	END;
+	END GATHER_CDC_COLUMNS;
 	
 
 	PROCEDURE GATHER_NON_CDC_COLUMNS(p_collection IN OUT NOCOPY columns_list_t)
@@ -123,7 +138,7 @@ AS
 			p_collection(rec_non_cdc.column_id) := rec_non_cdc.column_name; 
 		end loop;
 	
-	END;
+	END GATHER_NON_CDC_COLUMNS;
     
     PROCEDURE INSERT_INTO_CDC(p_cdc_columns IN columns_list_t)
     IS
@@ -160,7 +175,7 @@ AS
                 commit;
             end if;
         
-        END;
+        END INSERT_INTO_CDC;
         
         procedure TRUNCATE_STAGE
         is
@@ -172,7 +187,7 @@ AS
             else
             execute immediate v_trunc_statement;
             end if;
-        end;
+        end TRUNCATE_STAGE;
     
     	PROCEDURE MOVE_CDC_TO_STAGE(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
     	IS
@@ -198,7 +213,7 @@ AS
               
                 return 'with vt1 as (SELECT ROW_NUMBER() OVER( ORDER BY ' || v_select || ')';
               
-            end;
+            end CREATE_VIEW_1;
          
             function CREATE_VIEW_2(p_cdc_columns IN columns_list_t, p_non_cdc_columns IN columns_list_t)
             return varchar2
@@ -220,7 +235,7 @@ AS
                     end loop;
                     
                     return ' and ' || v_join_clause;
-                end;
+                end dynamicJoin;
                   
                 function dynamicNotEqualClause(p_collection IN columns_list_t)
                 return VARCHAR2
@@ -242,7 +257,7 @@ AS
                         end if;
                     end loop;
                     return ' where x2.row_id is null or ' || v_where_clause;
-                end;
+                end dynamicNotEqualClause;
             
             begin
                 for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
@@ -260,7 +275,7 @@ AS
                 
                 return v_select || dynamicJoin(p_cdc_columns) || dynamicNotEqualClause(p_non_cdc_columns) || ')';
               
-            end;
+            end CREATE_VIEW_2;
             
     	BEGIN
         	for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
@@ -313,7 +328,7 @@ AS
                 commit;
             end if;
     
-        END;
+        END MOVE_CDC_TO_STAGE;
         
         PROCEDURE REMOVE_FROM_TARGET(p_cdc_columns IN columns_list_t)
         IS
@@ -343,7 +358,7 @@ AS
                 execute immediate v_delete_string;
                 commit;
             end if;
-        END;
+        END REMOVE_FROM_TARGET;
         
         procedure INSERT_TO_TARGET
         is
@@ -358,7 +373,7 @@ AS
                 commit;
             end if;
 
-        end;
+        end INSERT_TO_TARGET;
         
         
 
@@ -367,6 +382,10 @@ BEGIN
     THEN
         RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
     END IF;
+    
+    step_separate('STG_TO_CDC');
+    STG_TO_CDC;
+    dbms_output.put_line(chr(10));
     
     step_separate('CDC_COLUMNS');
     GATHER_CDC_COLUMNS(cdc_list);
@@ -403,7 +422,7 @@ EXCEPTION
     DBMS_OUTPUT.PUT_LINE('ERROR IN PROGRAM');
     raise;
 	
-END;
+END BATCH_CDC;
 /
 
 
