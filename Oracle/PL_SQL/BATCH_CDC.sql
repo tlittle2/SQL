@@ -4,6 +4,7 @@ CREATE OR REPLACE PROCEDURE BATCH_CDC(p_table_owner IN ALL_TABLES.OWNER%TYPE
 				   , p_target_table IN ALL_TABLES.TABLE_NAME%TYPE)
 									
 AS
+    c_debug_mode CONSTANT BOOLEAN := TRUE;
 
 	type columns_list_t is table of ALL_TAB_COLUMNS.COLUMN_NAME%TYPE index by pls_integer;
 	
@@ -150,8 +151,14 @@ AS
                                 || v_cdc_columns_equality
                                 || ' and ((b.EFF_DATE <= a.EFF_DATE and b.END_DATE >= a.EFF_DATE) OR (b.EFF_DATE >= a.EFF_DATE and b.EFF_DATE <= a.END_DATE)))';
             
-            dbms_output.put_line(v_insert_statement || ';');
-            run_commit;
+            if c_debug_mode
+            then
+                dbms_output.put_line(v_insert_statement);
+                run_commit;
+            else
+                execute immediate v_insert_statement;
+                commit;
+            end if;
         
         END;
     
@@ -278,11 +285,20 @@ AS
             
         	end loop;
         
-            dbms_output.put_line(v_insert_statement);
-            dbms_output.put_line(CREATE_VIEW_1(p_cdc_columns));
-            dbms_output.put_line(CREATE_VIEW_2(p_cdc_columns,p_non_cdc_columns));
-            dbms_output.put_line(v_select_statement || ';');
-            run_commit;
+            if c_debug_mode
+            then
+                dbms_output.put_line(v_insert_statement);
+                dbms_output.put_line(CREATE_VIEW_1(p_cdc_columns));
+                dbms_output.put_line(CREATE_VIEW_2(p_cdc_columns,p_non_cdc_columns));
+                dbms_output.put_line(v_select_statement || ';');
+                run_commit;
+            else
+                execute immediate v_insert_statement
+                                || CREATE_VIEW_1(p_cdc_columns)
+                                || CREATE_VIEW_2(p_cdc_columns,p_non_cdc_columns)
+                                || v_select_statement;
+                commit;
+            end if;
     
         END;
         
@@ -306,9 +322,14 @@ AS
                             || ' WHERE ' || '(' || v_cdc_cols_string || ') IN '||
                             '(SELECT '|| v_cdc_cols_string || ' FROM ' || p_table_owner || '.' || p_stage_table || ')';
             
-            dbms_output.put_line(v_delete_string || '; ');
-            run_commit;
-        
+            if c_debug_mode
+            then
+                dbms_output.put_line(v_delete_string || '; ');
+                run_commit;
+            else
+                execute immediate v_delete_string;
+                commit;
+            end if;
         END;
         
 
