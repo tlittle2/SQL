@@ -383,10 +383,6 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20001, 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
     END IF;
     
-    step_separate('STG_TO_CDC');
-    STG_TO_CDC;
-    dbms_output.put_line(chr(10));
-    
     step_separate('CDC_COLUMNS');
     GATHER_CDC_COLUMNS(cdc_list);
 	print_collection(cdc_list);
@@ -397,10 +393,15 @@ BEGIN
 	print_collection(non_cdc_list);
     dbms_output.put_line(chr(10));
     
-    step_separate('INSERT');
-    INSERT_INTO_CDC(cdc_list);
+    
+    step_separate('STG_TO_CDC');
+    STG_TO_CDC;
     dbms_output.put_line(chr(10));
     
+    step_separate('INSERT_FROM_MSTR');
+    INSERT_INTO_CDC(cdc_list);
+    dbms_output.put_line(chr(10));
+
     
     step_separate('TRUNCATE');
     TRUNCATE_STAGE;
