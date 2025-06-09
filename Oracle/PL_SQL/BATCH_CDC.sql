@@ -184,15 +184,16 @@ AS
             is
             v_select dynamic_statement_st;
             begin
-            for i in p_collection.FIRST..p_collection.LAST
-            LOOP
-                v_select := v_select || p_collection(i);
-                        if i <> p_collection.LAST
-                        then
-                                v_select := str_comma_sep(v_select);
-                        else
-                                v_select := v_select || ',EFF_DATE) as row_id, k.* from ' || p_table_owner || '.' || p_cdc_table || ' k';
-                        end if;
+                for i in p_collection.FIRST..p_collection.LAST
+                LOOP
+                    v_select := v_select || p_collection(i);
+                    if i <> p_collection.LAST
+                    then
+                        v_select := str_comma_sep(v_select);
+                    else
+                        v_select := v_select || ',EFF_DATE) as row_id, k.* from ' || p_table_owner || '.' || p_cdc_table || ' k';
+                    end if;
+                
                 END LOOP;
               
                 return 'with vt1 as (SELECT ROW_NUMBER() OVER( ORDER BY ' || v_select || ')';
@@ -277,7 +278,7 @@ AS
                 if i = p_non_cdc_columns.LAST
             	THEN
                     v_insert_statement := v_insert_statement || ', EFF_DATE, END_DATE, CREATE_ID, LAST_UPDATE_ID)';
-                    v_select_statement := v_select_statement || ', x2.EFF_DATE, coalesce(x2.EFF_DATE-1, to_date(''31-DEC-2100'')) as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
+                    v_select_statement := v_select_statement || ', x1.EFF_DATE, coalesce(x2.EFF_DATE-1, to_date(''31-DEC-2100'')) as END_DATE, x2.CREATE_ID, coalesce(x2.LAST_UPDATE_ID, x1.LAST_UPDATE_ID) as LAST_UPDATE_ID '
                                         || ' FROM vt2 x1 LEFT OUTER JOIN vt2 x2 ON ';
                     for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
 	                loop
