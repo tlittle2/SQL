@@ -369,7 +369,12 @@ BEGIN
 	dbms_output.put_line(print_line);
 	dbms_output.put_line('INSERT INTO ' || p_table_owner || '.' || p_target_table || ' SELECT * FROM ' || p_table_owner || '.' || p_stage_table || ';');
     run_commit;
-	
+
+EXCEPTION
+    WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('ERROR IN PROGRAM');
+    raise;	
+
 END;
 /
 
