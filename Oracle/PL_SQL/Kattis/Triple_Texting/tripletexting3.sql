@@ -12,8 +12,9 @@ DECLARE
 	    	len integer := 1;
 	        maxlength integer := floor(length(ip)/const_split);
     	begin
-	        for i in 1..const_split loop
-	    	a(i) := substr(ip, len, maxlength);
+	        for i in 1..const_split
+		loop
+	    		a(i) := substr(ip, len, maxlength);
 			len := len + maxlength;
 	    	end loop;
 		return a;
@@ -25,14 +26,16 @@ DECLARE
 	IS
         	occurArray c_arr := c_arr();
     	BEGIN
-	        for i in a.FIRST..a.LAST loop
-	        if not occurArray.EXISTS(a(i)) then --if current word from processInput array does not exists in occurrence array, add it
-	        	occurArray(a(i)) := 1;	
-	        else
-	        	occurArray(a(i)) := occurArray(a(i)) + 1;
+	        for i in a.FIRST..a.LAST
+		loop
+		        if not occurArray.EXISTS(a(i)) --if current word from processInput array does not exists in occurrence array, add it
+			then
+		        	occurArray(a(i)) := 1;	
+		        else
+		        	occurArray(a(i)) := occurArray(a(i)) + 1;
 			end if;
 	    	end loop;
-			return occurArray;
+		return occurArray;
     	END;
 
 	function findAnswer(occurArray IN c_arr)
@@ -40,13 +43,17 @@ DECLARE
 	is
     		tmpKey ipLength := occurArray.FIRST;
     	begin
-	    	while tmpKey is not null loop
-	            if occurArray(tmpKey) > 1 then
-	            return tmpKey;
-	    		exit;
-	            end if;
-	    		tmpKey := occurArray.NEXT(tmpKey);
-	        end loop;
+		while tmpKey is not null
+		loop
+			if occurArray(tmpKey) > 1
+			then
+				return tmpKey;
+	    			exit;
+	            	end if;
+	    	
+			tmpKey := occurArray.NEXT(tmpKey);
+	        
+		end loop;
     	end;
 
 BEGIN
