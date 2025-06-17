@@ -6,11 +6,11 @@ DECLARE
 	occur c_arr := c_arr();
 
 	function processInput return t_arr is
-        a t_arr := t_arr();
-        const_split CONSTANT INTEGER := 3;
-        ip ipLength := 'trevortrevertrevor';
-    	len integer := 1;
-        maxlength integer := floor(length(ip)/const_split);
+	        a t_arr := t_arr();
+	        const_split CONSTANT INTEGER := 3;
+	        ip ipLength := 'trevortrevertrevor';
+	    	len integer := 1;
+	        maxlength integer := floor(length(ip)/const_split);
 	begin
 	        for i in 1..const_split
 		loop
@@ -35,14 +35,18 @@ DECLARE
 	function findAnswer(occurArray IN c_arr) return ipLength is
 	tmpKey ipLength := occurArray.FIRST;
 	begin
-		while tmpKey is not null loop
-			if occurArray(tmpKey) > 1 then
-            			return tmpKey;
+		while tmpKey is not null
+		loop
+			if occurArray(tmpKey) > 1
+			then
+				return tmpKey;
     				exit;
             		end if;
-    		tmpKey := occurArray.NEXT(tmpKey);
-        	end loop;
-    end;
+    			
+			tmpKey := occurArray.NEXT(tmpKey);
+        	
+		end loop;
+    	end;
 BEGIN
 	createOccurrenceArray(processInput, occur);
 	dbms_output.put_line(findAnswer(occur));
