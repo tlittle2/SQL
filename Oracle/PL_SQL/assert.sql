@@ -4,12 +4,12 @@ IS
 BEGIN
     case p_flag
         when false then --if we want to check that the condition is not satisfied
-            IF NOT P_CONDITION
+            IF NOT nvl(P_CONDITION, false)
             THEN
                 RAISE_APPLICATION_ERROR(-20000, p_return_value);
             END IF;
         else
-            IF P_CONDITION  --if we want to check that the condition is satisfied
+            IF nvl(P_CONDITION, false)  --if we want to check that the condition is satisfied
             THEN
                 RAISE_APPLICATION_ERROR(-20001, p_return_value);
             END IF;
