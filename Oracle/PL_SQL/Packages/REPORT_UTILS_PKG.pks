@@ -4,7 +4,7 @@ AS
 	type report_tab_t is TABLE OF report_tab_str_len;
     v_rpt_str report_tab_str_len;
     
-    TYPE report_tab_to IS TABLE OF GENERAL_REPORT_O;
+    --TYPE report_tab_to IS TABLE OF GENERAL_REPORT_O;
 
 	FUNCTION SALARY_DATA_REPORT(p_report_title IN VARCHAR2)
 	RETURN report_tab_t PIPELINED;
