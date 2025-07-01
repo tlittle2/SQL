@@ -34,6 +34,15 @@ AS
         return string_utils_pkg.bool_to_str(DEBUG_PKG.get_debug_state);
     end;
     
+    PROCEDURE print(p_value IN VARCHAR2)
+    is
+    begin
+		if debug_pkg.get_debug_state
+		then
+			dbms_output.put_line(p_value);
+        end if;
+	end;
+    
 	
 	PROCEDURE START_TIMER(p_context IN VARCHAR2 := NULL)
 	IS
