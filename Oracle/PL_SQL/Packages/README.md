@@ -1,2 +1,2 @@
-.pks = Package Spec
+.pks = Package Spec \
 .pkb = Package Body
