@@ -1,7 +1,8 @@
+ /*THIS VERSION HAS DEPENDENCIES ON OTHER USER-CREATED PACKAGES*/
 create or replace procedure BATCH_CDC(p_table_owner in all_tables.owner%type
 				    , p_stage_table in all_tables.table_name%type
 				    , p_cdc_table in all_tables.table_name%type
-				   , p_target_table in all_tables.table_name%type) --THIS VERSION HAS DEPENDENCIES ON OTHER USER-CREATED PACKAGES
+				   , p_target_table in all_tables.table_name%type)
 									
 as
 	type columns_list_t is table of all_tab_columns.column_name%type index by pls_integer;
