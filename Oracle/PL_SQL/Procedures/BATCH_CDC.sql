@@ -279,7 +279,7 @@ as
                 for i in p_collection.FIRST..p_collection.LAST
                 loop
                 sql_query_v2_where.f_where := sql_query_v2_where.f_where 
-                                                ||'(x1.' || p_collection(i) || ' <> ' || 'x2.' || p_collection(i) || ')'
+                                                || '(x1.' || p_collection(i) || ' <> ' || 'x2.' || p_collection(i) || ')'
                                                 || ' or ' 
                                                 || '(x1.' || p_collection(i) || ' is null' || ' and ' || 'x2.' || p_collection(i) || ' is not null)'
                                                 || ' or '
@@ -404,8 +404,7 @@ as
                     || get_full_table_name(p_target_table)
                     || ' '
                     || sql_builder_pkg.get_select(sql_query_c1)
-                    || sql_builder_pkg.get_from(sql_query_c1)
-                    );
+                    || sql_builder_pkg.get_from(sql_query_c1));
     end;
         
 BEGIN
