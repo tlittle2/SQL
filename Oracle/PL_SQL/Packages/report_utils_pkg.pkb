@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY report_utils_pkg
+create or replace PACKAGE BODY REPORT_UTILS_PKG
 AS
     type report_header_t is record(
         rpt_name report_tab_str_len,
@@ -47,7 +47,7 @@ AS
         
         for i in 1..p_col_list.count
         loop
-            p_report_header.rpt_columns :=  p_report_header.rpt_columns || rpad(p_col_list(i), p_pad, c_space_separator);
+            string_utils_pkg.add_str_token(p_report_header.rpt_columns, rpad(p_col_list(i), p_pad, c_space_separator), '');
         end loop;
         
         p_report_header.rpt_line2 := header_separator;
@@ -68,8 +68,6 @@ AS
         
         return false;
     end;
-
-    
 --===========================================================================================================================================================================
 
 	function salary_data_report(p_report_title in varchar2)
@@ -118,6 +116,8 @@ AS
         loop
             PIPE ROW(rec.data);
          end loop;
+         
+         PIPE ROW(report_header.rpt_line2);
         
         RETURN;
     
@@ -176,6 +176,8 @@ AS
             
             v_rolling_header := v_rolling_header + 1;
          end loop;
+         
+         PIPE ROW(report_header.rpt_line2);
         
         return;
         
@@ -188,6 +190,57 @@ AS
     end astrology_report;
         
 --===========================================================================================================================================================================
+    function table_volume_report
+    return report_tab_t pipelined
+    is
+        c_rpt_pad CONSTANT INTEGER := 20;
+        
+        cursor volume_report is
+        with qry as(
+            select nvl(tablespace_name, '(blank)') as tablespace_name
+            , sum(nvl(num_rows,0)) as volume
+            from my_tables
+            group by tablespace_name
+            order by volume desc
+        )
+        
+        select 
+        rpad(tablespace_name, c_rpt_pad, ' ')
+        || rpad(volume, c_rpt_pad, ' ')
+        as data
+        from qry;
+        
+        rec_length volume_report%rowtype;
+        
+        col_list column_list_t := column_list_t('TABLESPACE_NAME', 'VOLUME');
+    begin
+        --peek the first row to get length
+        open volume_report;
+        fetch volume_report into rec_length;
+        g_row_length :=length(rec_length.data);
+        close volume_report;
+        
+        GENERATE_HEADER('VOLUME REPORT',c_rpt_pad, col_list, report_header);    
+        
+        pipe row(report_header.rpt_name);
+        pipe row(report_header.rpt_date);
+        pipe row(report_header.rpt_line1);
+        pipe row(report_header.rpt_columns);
+        pipe row(report_header.rpt_line2);
+        
+        for rec in volume_report
+        loop
+            pipe row(rec.data);
+        end loop;
+        
+        PIPE ROW(report_header.rpt_line2);
+        
+        return;
+    end;
+
+--===========================================================================================================================================================================
+
+
     function create_trxn_file
     return report_tab_t pipelined
     is
@@ -237,6 +290,7 @@ AS
         
     end;
 --===========================================================================================================================================================================
+
 
 
 /*doesn't work for 2 reasons
