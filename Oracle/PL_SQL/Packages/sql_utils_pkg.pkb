@@ -1,6 +1,6 @@
 create or replace package body sql_utils_pkg
 as
-	function is_sql_allowed(p_sql in varchar2)
+    function is_sql_allowed(p_sql in varchar2)
     return boolean
     is
     begin
@@ -97,7 +97,7 @@ as
     
     begin
         error_pkg.assert(p_table_name is not null, 'Table name is null. Processing halted.');
-    
+        
         select count(1)
         into l_tablecount
         from user_tables
@@ -120,14 +120,14 @@ as
         end if;
         
         reset_sql_statement(l_sql_statement);
-        
         l_sql_statement := 'ALTER TABLE ' || p_table_name || ' move';
+        print_or_execute(l_sql_statement);
         
         for rec in idxs
         loop
             reset_sql_statement(l_sql_statement);
             l_sql_statement := 'alter index ' || rec.index_name || ' rebuild parallel (degree ' || rec.degree || ' instances 1) ';
-            print_or_execute(l_sql_statement); 
+            print_or_execute(l_sql_statement);
         end loop;
         
         if l_row_movement_flag
