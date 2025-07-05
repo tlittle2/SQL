@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY REPORT_UTILS_PKG
+create or replace PACKAGE BODY report_utils_pkg
 AS
     type report_header_t is record(
         rpt_name report_tab_str_len,
