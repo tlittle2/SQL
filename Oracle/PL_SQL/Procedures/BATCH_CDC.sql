@@ -237,8 +237,8 @@ as
             
             END LOOP;
             
-            sql_query_v1.f_select := 'with vt1 as (SELECT ROW_NUMBER() OVER( ORDER BY ' || sql_query_v1.f_select;
-
+            string_utils_pkg.prepend_str_token(sql_query_v1.f_select, 'with vt1 as (SELECT ROW_NUMBER() OVER( ORDER BY ', '');
+            
             return sql_query_v1.f_select
                 || sql_builder_pkg.get_from(sql_query_v1);
 
@@ -265,8 +265,10 @@ as
                 
                 end loop;
                 
-                sql_query_join.f_where := ' and ' || sql_query_join.f_where;
-                    
+                string_utils_pkg.prepend_str_token(sql_query_join.f_where
+                                                , ' and '
+                                                , '');
+                        
                 return sql_query_join.f_where;
             
             end dynamicJoin;
@@ -291,7 +293,9 @@ as
                     end if;
                 end loop;
                 
-                sql_query_v2_where.f_where := ' where x2.row_id is null or ' || sql_query_v2_where.f_where;
+                string_utils_pkg.prepend_str_token(sql_query_v2_where.f_where
+                                                , ' where x2.row_id is null or '
+                                                , '');
                 
                 return sql_query_v2_where.f_where;
                 
@@ -311,7 +315,7 @@ as
                 end if;
             end loop;
             
-            sql_query_v2.f_select := ', vt2 as (SELECT ROW_NUMBER() OVER( ORDER BY ' || sql_query_v2.f_select;
+            string_utils_pkg.prepend_str_token(sql_query_v2.f_select, ', vt2 as (SELECT ROW_NUMBER() OVER( ORDER BY ', '');
             
             return sql_query_v2.f_select
             || dynamicJoin(p_cdc_columns)
@@ -353,7 +357,7 @@ as
         
         string_utils_pkg.add_str_token(sql_query_cdc_to_stg_select.f_where, 'and x1.row_id2 = x2.row_id2-1', '');
         
-        sql_query_cdc_to_stg_insert.f_select := 'INSERT INTO ' || get_full_table_name(p_stage_table) || '(' || sql_query_cdc_to_stg_insert.f_select;
+        string_utils_pkg.prepend_str_token(sql_query_cdc_to_stg_insert.f_select, 'INSERT INTO ' || get_full_table_name(p_stage_table) || '(', '');
 
         print_or_execute(sql_query_cdc_to_stg_insert.f_select
                         || create_view_1(p_cdc_columns)
