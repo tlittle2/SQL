@@ -1,6 +1,6 @@
 create or replace package body sql_utils_pkg
 as
-    function is_sql_allowed(p_sql in varchar2)
+	function is_sql_allowed(p_sql in varchar2)
     return boolean
     is
     begin
@@ -81,9 +81,10 @@ as
     procedure reorg_table(p_table_name in USER_TABLES.TABLE_NAME%TYPE)
     is
         l_tablecount NUMBER;
+        l_row_movement_flag boolean := false;
+        
         l_partitioned USER_TABLES.PARTITIONED%TYPE;
         l_row_movement USER_TABLES.ROW_MOVEMENT%TYPE;
-        l_row_movement_flag boolean := false;
         
         l_sql_statement VARCHAR2(1000);
         
@@ -103,13 +104,14 @@ as
         from user_tables
         where table_name = p_table_name;
         
+        error_pkg.assert(l_tablecount > 0, 'Table does not exist. Processing halted.');
+        
         select partitioned
         , row_movement
         into l_partitioned, l_row_movement
         from user_tables
         where table_name = p_table_name;
         
-        error_pkg.assert(l_tablecount > 0, 'Table does not exist. Processing halted.');
         error_pkg.assert(upper(trim(l_partitioned)) <> 'YES', 'Table is partitioned. Processing halted.');
         
         if upper(trim(l_row_movement)) = 'DISABLED'
