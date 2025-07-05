@@ -410,7 +410,7 @@ as
 BEGIN
     error_pkg.assert(check_schemas(p_cdc_table, p_stage_table) and check_schemas(p_cdc_table, p_target_table), 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
     
-    debug_pkg.debug_on;
+    --debug_pkg.debug_on;
 	
     step_separate('CDC_COLUMNS');
     gather_cdc_columns(cdc_list);
@@ -448,7 +448,7 @@ BEGIN
     step_separate('INSERT FROM STAGE TO TARGET');
     INSERT_TO_TARGET;
     
-    debug_pkg.debug_off;
+    --debug_pkg.debug_off;
 
 exception
     when others then
