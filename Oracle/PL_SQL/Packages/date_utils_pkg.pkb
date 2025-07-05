@@ -9,54 +9,70 @@ as
     is 
     begin
         return c_forwards_direction;
-    end;
+    end get_forward_flag;
     
     function get_backward_flag
     return char deterministic
     is
     begin
         return c_backwards_direction;
-    end;
+    end get_backward_flag;
 
-    function get_year_quarter(p_date in date)
-    return varchar2
-    is
-    	p_year number := extract(year from p_date);
-    	p_quarter number := to_char(p_date, 'Q');
-    begin
-    	return format_year_quarter(p_year, p_quarter);
-    
+	function get_year_quarter(p_date in date)
+	return varchar2
+	is
+		p_year number := extract(year from p_date);
+		p_quarter number := to_char(p_date, 'Q');
+	begin
+		return format_year_quarter(p_year, p_quarter);
+	
     end get_year_quarter;
 
 
-    function format_year_quarter(p_year in number, p_quarter in number)
+	function format_year_quarter(p_year in number, p_quarter in number)
     return varchar2
-    is
-    begin
-    	return p_year || 'Q' ||  p_quarter;
+	is
+	begin
+		return p_year || 'Q' ||  p_quarter;
 
-    end format_year_quarter;
+	end format_year_quarter;
 
 
-    function get_quarter(p_month in number)
-    return number
-    is
-    begin
+	function get_quarter(p_month in number)
+	return number
+	is
+	begin
         error_pkg.assert(p_month between 1 and 12, 'not a valid month');
-    	return case
-    		when p_month in (1,2,3)    then 1
-    		when p_month in (4,5,6)    then 2
-    		when p_month in (7,8,9)    then 3
-    		when p_month in (10,11,12) then 4
+		return case
+			when p_month in (1,2,3)    then 1
+			when p_month in (4,5,6)    then 2
+			when p_month in (7,8,9)    then 3
+			when p_month in (10,11,12) then 4
             end;
-    end get_quarter;
+	end get_quarter;
     
     function get_month(p_date in date)
     return number
     is
     begin
         return to_number(to_char(p_date, 'MM'));
-    end;
+    end get_month;
+    
+    
+    function parse_year_qrtr_for_quarter(p_year_qrtr IN VARCHAR2)
+    return number
+    is
+    begin
+        return to_number(string_utils_pkg.get_nth_token(p_year_qrtr, 2, 'Q'));
+    end parse_year_qrtr_for_quarter;
+    
+    
+    function format_time(p_from_date in date, p_to_date in date)
+    return varchar2
+    is
+    begin
+        return format_time(p_to_date - p_from_date);
+    end format_time;
     
     
     function format_time(p_days in number)
@@ -125,22 +141,12 @@ as
     
     end;
     
-    
-    function format_time(p_from_date in date, p_to_date in date)
-    return varchar2
-    is
-    begin
-        return format_time(p_to_date - p_from_date);
-    end;
-    
-    
-    
     function get_range_of_dates(p_start_date in date, p_num_of_days in number, p_direction in char)
     return date_table_t pipelined
     is
         date_table date_table_t;
     begin
-        error_pkg.assert(p_direction in (c_backwards_direction,c_forwards_direction), 'Please specify a irection to generate dates for!');
+        error_pkg.assert(p_direction in (c_backwards_direction,c_forwards_direction), 'Please specify a direction to generate dates for!');
         
         if p_direction = c_backwards_direction then
             for i in 0..p_num_of_days
