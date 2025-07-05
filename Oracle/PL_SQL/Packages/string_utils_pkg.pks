@@ -8,7 +8,7 @@ as
     
     g_default_separator            constant varchar2(1) := ';';
 
-	FUNCTION BOOL_TO_STR(p_value IN BOOLEAN)
+    FUNCTION BOOL_TO_STR(p_value IN BOOLEAN)
     RETURN VARCHAR2;
     
     function str_to_bool (p_str in varchar2)
