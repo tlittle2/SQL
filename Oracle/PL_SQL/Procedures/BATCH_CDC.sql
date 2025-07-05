@@ -1,4 +1,3 @@
- /*THIS VERSION HAS DEPENDENCIES ON OTHER USER-CREATED PACKAGES*/
 create or replace procedure BATCH_CDC(p_table_owner in all_tables.owner%type
 				    , p_stage_table in all_tables.table_name%type
 				    , p_cdc_table in all_tables.table_name%type
@@ -7,6 +6,7 @@ create or replace procedure BATCH_CDC(p_table_owner in all_tables.owner%type
 as
 	type columns_list_t is table of all_tab_columns.column_name%type index by pls_integer;
     
+
 	cdc_list columns_list_t;
 	non_cdc_list columns_list_t;
 	subtype dynamic_statement_st is VARCHAR2(10000);
@@ -278,8 +278,8 @@ as
             begin
                 for i in p_collection.FIRST..p_collection.LAST
                 loop
-                sql_query_v2_where.f_where := sql_query_v2_where.f_where ||
-                                             '(x1.' || p_collection(i) || ' <> ' || 'x2.' || p_collection(i) || ')'
+                sql_query_v2_where.f_where := sql_query_v2_where.f_where 
+                                                ||'(x1.' || p_collection(i) || ' <> ' || 'x2.' || p_collection(i) || ')'
                                                 || ' or ' 
                                                 || '(x1.' || p_collection(i) || ' is null' || ' and ' || 'x2.' || p_collection(i) || ' is not null)'
                                                 || ' or '
