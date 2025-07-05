@@ -8,11 +8,11 @@ as
     f_order_by   string_utils_pkg.st_max_pl_varchar2
     );
 
-	procedure set_from (p_query in out t_query,p_name in varchar2);
-	
-	procedure add_select (p_query in out t_query,p_name in varchar2, p_separator CHAR DEFAULT ','); 
+    procedure set_from (p_query in out t_query,p_name in varchar2);
     
-	function get_select(p_query in t_query)
+    procedure add_select (p_query in out t_query,p_name in varchar2, p_separator CHAR DEFAULT ','); 
+    
+    function get_select(p_query in t_query)
     return varchar2 deterministic;
 
     procedure add_from(p_query in out t_query,p_name in varchar2); 
