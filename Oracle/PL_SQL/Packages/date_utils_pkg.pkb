@@ -18,38 +18,38 @@ as
         return c_backwards_direction;
     end get_backward_flag;
 
-	function get_year_quarter(p_date in date)
-	return varchar2
-	is
-		p_year number := extract(year from p_date);
-		p_quarter number := to_char(p_date, 'Q');
-	begin
-		return format_year_quarter(p_year, p_quarter);
-	
+    function get_year_quarter(p_date in date)
+    return varchar2
+    is
+    	p_year number := extract(year from p_date);
+    	p_quarter number := to_char(p_date, 'Q');
+    begin
+    	return format_year_quarter(p_year, p_quarter);
+    
     end get_year_quarter;
 
 
-	function format_year_quarter(p_year in number, p_quarter in number)
+    function format_year_quarter(p_year in number, p_quarter in number)
     return varchar2
-	is
-	begin
-		return p_year || 'Q' ||  p_quarter;
+    is
+    begin
+    	return p_year || 'Q' ||  p_quarter;
 
-	end format_year_quarter;
+    end format_year_quarter;
 
 
-	function get_quarter(p_month in number)
-	return number
-	is
-	begin
+    function get_quarter(p_month in number)
+    return number
+    is
+    begin
         error_pkg.assert(p_month between 1 and 12, 'not a valid month');
-		return case
-			when p_month in (1,2,3)    then 1
-			when p_month in (4,5,6)    then 2
-			when p_month in (7,8,9)    then 3
-			when p_month in (10,11,12) then 4
+    	return case
+    		when p_month in (1,2,3)    then 1
+    		when p_month in (4,5,6)    then 2
+    		when p_month in (7,8,9)    then 3
+    		when p_month in (10,11,12) then 4
             end;
-	end get_quarter;
+    end get_quarter;
     
     function get_month(p_date in date)
     return number
