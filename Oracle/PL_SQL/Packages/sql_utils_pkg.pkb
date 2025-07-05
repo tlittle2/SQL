@@ -4,7 +4,7 @@ as
     return boolean
     is
     begin
-        return regexp_like(upper(trim(p_sql)), '^(create|alter|drop|grant|revoke)');
+        return regexp_like(lower(trim(p_sql)), '^(create|alter|drop|grant|revoke)');
     end;
     
     procedure reset_sql_statement(p_sql IN OUT NOCOPY VARCHAR2)
@@ -38,28 +38,28 @@ as
         from dual
         connect by level <= length (p_table_names) - length(replace( p_table_names, ',')) + 1;
         
-        tbl_name all_tables.table_name%type;
+        l_tbl_name all_tables.table_name%type;
     
     begin
         for tbl in tbls
         loop
             select table_name
-            into tbl_name
+            into l_tbl_name
             from user_tables
             where table_name = tbl.value;
             
-            print_or_execute('TRUNCATE TABLE ' || tbl.value);
+            error_pkg.assert(l_tbl_name is not null, 'PROVIDED INVALID TABLE! PLEASE INVESTIGATE');
+            
+            print_or_execute('TRUNCATE TABLE ' || l_tbl_name);
         
         end loop;
         
     exception
-        when no_data_found then
+        when others then
             if tbls%isopen
             then
                 close tbls;
             end if;
-            error_pkg.assert(1=2, 'PROVIDED INVALID TABLE! PLEASE INVESTIGATE');
-            
     end truncate_table;
     
     
