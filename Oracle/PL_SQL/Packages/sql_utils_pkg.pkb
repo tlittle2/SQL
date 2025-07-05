@@ -1,6 +1,6 @@
 create or replace package body sql_utils_pkg
 as
-	function is_sql_allowed(p_sql in varchar2)
+    function is_sql_allowed(p_sql in varchar2)
     return boolean
     is
     begin
