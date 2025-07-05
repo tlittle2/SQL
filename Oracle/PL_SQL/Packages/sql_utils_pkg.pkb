@@ -139,6 +139,13 @@ as
             print_or_execute(l_sql_statement); 
             
         end if;
+        
+    exception
+        when others then
+        if idxs%isopen
+        then
+            close idxs;
+        end if;
          
     end reorg_table;
     
