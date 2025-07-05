@@ -70,8 +70,8 @@ AS
     end;
 --===========================================================================================================================================================================
 
-	function salary_data_report(p_report_title in varchar2)
-	return report_tab_t pipelined
+    function salary_data_report(p_report_title in varchar2)
+    return report_tab_t pipelined
     is
         c_rpt_pad constant integer := 15;
         cursor salary_report is
@@ -132,7 +132,7 @@ AS
 --===========================================================================================================================================================================    
     
     function astrology_report(p_report_title in varchar2)
-	return report_tab_t pipelined
+    return report_tab_t pipelined
     is
         c_rpt_pad CONSTANT INTEGER := 20;
         
