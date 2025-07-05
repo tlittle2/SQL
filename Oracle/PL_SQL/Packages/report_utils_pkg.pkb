@@ -236,6 +236,12 @@ AS
         PIPE ROW(report_header.rpt_line2);
         
         return;
+    exception
+        when others then
+        cleanup_pkg.exception_cleanup(false);
+        if volume_report%isopen then
+            close volume_report;
+        end if;
     end;
 
 --===========================================================================================================================================================================
