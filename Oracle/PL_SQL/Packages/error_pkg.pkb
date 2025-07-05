@@ -1,6 +1,6 @@
 create or replace package body error_pkg
 as
-	procedure assert (p_condition in boolean, p_error_message in varchar2)
+    procedure assert (p_condition in boolean, p_error_message in varchar2)
     is
         begin
         if not nvl(p_condition, false) then
