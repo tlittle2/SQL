@@ -1,20 +1,20 @@
 create or replace package body string_utils_pkg
 as
 
-	function bool_to_str(p_value in boolean)
-	return varchar2
-	is
-	begin
-		return case (p_value)
-		when true then  'TRUE'
-		when false then 'FALSE'
+    function bool_to_str(p_value in boolean)
+    return varchar2
+    is
+    begin
+    	return case (p_value)
+    	when true then  'TRUE'
+    	when false then 'FALSE'
         else 'NULL'
-		end;
+    	end;
         
-	exception
-		when others then
-		cleanup_pkg.exception_cleanup(false);
-	end;
+    exception
+    	when others then
+    	cleanup_pkg.exception_cleanup(false);
+    end;
     
     function str_to_bool(p_str in varchar2)
     return boolean
