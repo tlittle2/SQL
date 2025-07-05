@@ -382,7 +382,7 @@ as
             sql_builder_pkg.add_select(sql_query_where_in, p_cdc_columns(i));
         end loop;
         
-        print_or_execute('DELETE'
+        print_or_execute('DELETE '
                         || sql_builder_pkg.get_from(sql_query_tgt)
                         || sql_builder_pkg.get_where_in(sql_query_where_in)
                         || '('
@@ -403,14 +403,13 @@ as
         print_or_execute('INSERT INTO ' 
                     || get_full_table_name(p_target_table)
                     || ' '
-                    || sql_builder_pkg.get_select(sql_query_c1)
-                    || sql_builder_pkg.get_from(sql_query_c1));
-    end;
+                    || sql_builder_pkg.get_sql(sql_query_c1));
+    end insert_to_target;
         
 BEGIN
     error_pkg.assert(check_schemas(p_cdc_table, p_stage_table) and check_schemas(p_cdc_table, p_target_table), 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
     
-    --debug_pkg.debug_on;
+    debug_pkg.debug_on;
 	
     step_separate('CDC_COLUMNS');
     gather_cdc_columns(cdc_list);
@@ -448,7 +447,7 @@ BEGIN
     step_separate('INSERT FROM STAGE TO TARGET');
     INSERT_TO_TARGET;
     
-    --debug_pkg.debug_off;
+    debug_pkg.debug_off;
 
 exception
     when others then
