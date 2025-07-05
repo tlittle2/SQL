@@ -5,7 +5,6 @@ create or replace procedure BATCH_CDC(p_table_owner in all_tables.owner%type
 									
 as
 	type columns_list_t is table of all_tab_columns.column_name%type index by pls_integer;
-    
 
 	cdc_list columns_list_t;
 	non_cdc_list columns_list_t;
