@@ -1,4 +1,4 @@
-create or replace procedure BATCH_CDC(p_table_owner in all_tables.owner%type
+create or replace procedure batch_cdc(p_table_owner in all_tables.owner%type
 				    , p_stage_table in all_tables.table_name%type
 				    , p_cdc_table in all_tables.table_name%type
 				   , p_target_table in all_tables.table_name%type)
@@ -38,13 +38,6 @@ as
         return p_table_owner || '.' || p_table_name;
     end;
     
-    
-    procedure truncate_table(p_table IN VARCHAR2)
-    is
-    begin
-        print_or_execute('TRUNCATE TABLE '|| get_full_table_name(p_table));
-    end;
-
     procedure step_separate(p_step_name in VARCHAR2)
     is
     begin
@@ -115,7 +108,7 @@ as
         sql_query_c1.f_select := '*';
         sql_query_c1.f_from := get_full_table_name(p_stage_table);
     
-        truncate_table(p_cdc_table);
+        sql_utils_pkg.truncate_table(p_cdc_table);
         print_or_execute('INSERT INTO '
                         || get_full_table_name(p_cdc_table)
                         || ' '
@@ -163,25 +156,25 @@ as
 
     procedure insert_into_cdc(p_cdc_columns in columns_list_t)
     is
-        sql_query_c1 sql_builder_pkg.t_query;
-        sql_query_c2 sql_builder_pkg.t_query;
-        sql_query_c3 sql_builder_pkg.t_query;
+        sql_query_cdc1 sql_builder_pkg.t_query;
+        sql_query_tgt sql_builder_pkg.t_query;
+        sql_query_cdc2 sql_builder_pkg.t_query;
         sql_query_where_in sql_builder_pkg.t_query;
         
         v_cdc_columns_equality dynamic_statement_st;
     begin
-            sql_query_c1.f_from := get_full_table_name(p_cdc_table);
+            sql_query_cdc1.f_from := get_full_table_name(p_cdc_table);
             
-            sql_query_c2.f_select := '*';
-            sql_query_c2.f_from := get_full_table_name(p_target_table);
+            sql_query_tgt.f_select := '*';
+            sql_query_tgt.f_from := get_full_table_name(p_target_table);
             
-            sql_query_c3.f_select := '1';
-            sql_query_c3.f_from := get_full_table_name(p_cdc_table);
+            sql_query_cdc2.f_select := '1';
+            sql_query_cdc2.f_from := get_full_table_name(p_cdc_table);
     
             for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
         	loop
-                sql_builder_pkg.add_select(sql_query_c1,p_cdc_columns(i)); 
-                sql_builder_pkg.add_where(sql_query_c2,p_cdc_columns(i), ','); 
+                sql_builder_pkg.add_select(sql_query_cdc1,p_cdc_columns(i)); 
+                sql_builder_pkg.add_where(sql_query_tgt,p_cdc_columns(i), ','); 
                 sql_builder_pkg.add_select(sql_query_where_in, p_cdc_columns(i));
             
                 if i <> p_cdc_columns.LAST
@@ -192,24 +185,24 @@ as
                 end if;
             end loop;
             
-            sql_query_c3.f_where := v_cdc_columns_equality;
+            sql_query_cdc2.f_where := v_cdc_columns_equality;
                                 
             print_or_execute('INSERT INTO '
-                                || sql_query_c1.f_from
+                                || sql_query_cdc1.f_from
                                 || ' '
-                                || sql_builder_pkg.get_select(sql_query_c2)
-                                || sql_builder_pkg.get_from(sql_query_c2)
+                                || sql_builder_pkg.get_select(sql_query_tgt)
+                                || sql_builder_pkg.get_from(sql_query_tgt)
                                 || ' a '
                                 || sql_builder_pkg.get_where_in(sql_query_where_in, true)
                                 || '('
-                                || sql_builder_pkg.get_select(sql_query_c1)
-                                || sql_builder_pkg.get_from(sql_query_c1)
+                                || sql_builder_pkg.get_select(sql_query_cdc1)
+                                || sql_builder_pkg.get_from(sql_query_cdc1)
                                 || ' b '
                                 || ') and exists ('
-                                || sql_builder_pkg.get_select(sql_query_c3)
-                                || sql_builder_pkg.get_from(sql_query_c3)
+                                || sql_builder_pkg.get_select(sql_query_cdc2)
+                                || sql_builder_pkg.get_from(sql_query_cdc2)
                                 || ' b'
-                                || sql_builder_pkg.get_where(sql_query_c3)
+                                || sql_builder_pkg.get_where(sql_query_cdc2)
                                 || ' and ((b.EFF_DATE <= a.EFF_DATE and b.END_DATE >= a.EFF_DATE) OR (b.EFF_DATE >= a.EFF_DATE and b.EFF_DATE <= a.END_DATE)))'
                             );
 
@@ -437,7 +430,7 @@ BEGIN
 
 
     step_separate('TRUNCATE');
-    truncate_table(p_stage_table);
+    sql_utils_pkg.truncate_table(p_stage_table);
     print_extra_line;
 
     step_separate('MOVE');
@@ -459,4 +452,4 @@ exception
     dbms_output.put_line('error in program');
     raise;
 
-end BATCH_CDC;
+end batch_cdc;
