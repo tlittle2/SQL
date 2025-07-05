@@ -195,7 +195,8 @@ as
             
             sql_query_c3.f_where := v_cdc_columns_equality;
                                 
-            print_or_execute('INSERT INTO ' || sql_query_c1.f_from
+            print_or_execute('INSERT INTO '
+                                || sql_query_c1.f_from
                                 || ' '
                                 || sql_builder_pkg.get_select(sql_query_c2)
                                 || sql_builder_pkg.get_from(sql_query_c2)
