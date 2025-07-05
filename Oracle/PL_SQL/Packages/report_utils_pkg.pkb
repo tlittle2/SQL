@@ -33,11 +33,10 @@ AS
         function center_content(p_input_str in varchar2)
         return varchar2 deterministic
         is
-            --l_total_pad  INTEGER := G_ROW_LENGTH - LENGTH(p_input_str);
-            --l_left_pad   INTEGER := FLOOR(l_total_pad / 2);
-            --RETURN LPAD(p_input_str, round(g_row_length/2 ,0), ' ');  
+            l_total_pad  INTEGER := G_ROW_LENGTH - LENGTH(p_input_str);
+            l_left_pad   INTEGER := FLOOR(l_total_pad / 2);
         begin
-            return rpad(lpad(p_input_str, length(p_input_str) + (floor((g_row_length - length(p_input_str)) / 2)), ' '), g_row_length, ' ');
+            return rpad(lpad(p_input_str, length(p_input_str) + (l_left_pad), ' '), g_row_length, ' ');
         end;
     
     begin
