@@ -1,8 +1,8 @@
 create or replace procedure batch_cdc(p_table_owner in all_tables.owner%type
-, p_stage_table in all_tables.table_name%type
-    			    , p_cdc_table in all_tables.table_name%type
-    			   , p_target_table in all_tables.table_name%type)
-    								
+                                    , p_stage_table in all_tables.table_name%type
+                                    , p_cdc_table in all_tables.table_name%type
+                                    , p_target_table in all_tables.table_name%type)
+                                    
 as
     type columns_list_t is table of all_tab_columns.column_name%type index by pls_integer;
 
@@ -26,7 +26,7 @@ as
     procedure print_extra_line
     is
     begin
-    	dbms_output.put_line(chr(10));
+        dbms_output.put_line(chr(10));
     end;
     
     
@@ -57,7 +57,7 @@ as
     
     --given 2 tables, ensure that the columns are consistent
     function check_schemas(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
-    					  , p_target_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE)
+                          , p_target_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE)
     return boolean
     IS
         v_differences NUMBER;
@@ -65,16 +65,16 @@ as
         with schema_check as (
             select a.owner, a.table_name, a.column_name
             , case nvl(substr(data_type, 1, instr(data_type, '(', 1)-1),data_type)
-    		WHEN 'DATE' THEN 'DATE'
-    		WHEN 'TIMESTAMP' then 'TIMESTAMP(' || a.data_scale || ')'
-    		WHEN 'FLOAT' then 'FLOAT(' || a.data_precision || ',' || a.data_scale || ')'
-    		WHEN 'NUMBER' then 'NUMBER(' || a.data_precision || ',' || a.data_scale || ')'
-    		WHEN 'VARCHAR' THEN 'TEXT(' || a.data_length || ')'
-    		WHEN 'VARCHAR2' THEN 'TEXT(' || a.data_length || ')'
-    		WHEN 'CHAR' THEN 'TEXT(' || a.data_length || ')'
-    		WHEN 'NVARCHAR2' THEN 'TEXT(' || a.data_length || ')'
-    		WHEN 'RAW' THEN 'RAW(' || a.data_length || ')'
-    		ELSE a.data_type end as data_type
+            WHEN 'DATE' THEN 'DATE'
+            WHEN 'TIMESTAMP' then 'TIMESTAMP(' || a.data_scale || ')'
+            WHEN 'FLOAT' then 'FLOAT(' || a.data_precision || ',' || a.data_scale || ')'
+            WHEN 'NUMBER' then 'NUMBER(' || a.data_precision || ',' || a.data_scale || ')'
+            WHEN 'VARCHAR' THEN 'TEXT(' || a.data_length || ')'
+            WHEN 'VARCHAR2' THEN 'TEXT(' || a.data_length || ')'
+            WHEN 'CHAR' THEN 'TEXT(' || a.data_length || ')'
+            WHEN 'NVARCHAR2' THEN 'TEXT(' || a.data_length || ')'
+            WHEN 'RAW' THEN 'RAW(' || a.data_length || ')'
+            ELSE a.data_type end as data_type
             
             from all_tab_columns a
         )
@@ -120,37 +120,37 @@ as
 
     procedure gather_cdc_columns(p_collection in out nocopy columns_list_t)
     is
-    	cursor cdc_columns is
-        	select sort_order_number
-    		, column_name
-    	from update_match where UPPER(table_owner) = UPPER(p_table_owner)
-    	and UPPER(table_name) = UPPER(p_target_table)
-        	order by sort_order_number asc;
+        cursor cdc_columns is
+            select sort_order_number
+            , column_name
+        from update_match where UPPER(table_owner) = UPPER(p_table_owner)
+        and UPPER(table_name) = UPPER(p_target_table)
+            order by sort_order_number asc;
     begin
 
-    	for rec_cdc in cdc_columns
-    	loop
-    		p_collection(rec_cdc.sort_order_number) := rec_cdc.column_name; 
-    	end loop;
+        for rec_cdc in cdc_columns
+        loop
+            p_collection(rec_cdc.sort_order_number) := rec_cdc.column_name; 
+        end loop;
 
     end gather_cdc_columns;
 
 
     procedure gather_non_cdc_columns(p_collection in out nocopy columns_list_t)
     is
-    	cursor non_cdc_columns is
-    	select column_id, column_name from all_tab_columns where owner = UPPER(p_table_owner) and table_name = UPPER(p_target_table)
-    	AND COLUMN_NAME NOT IN ('EFF_DATE' , 'END_DATE' , 'CREATE_ID' , 'LAST_UPDATE_ID')
-    	and column_name not in (
-          		select column_name from update_match where UPPER(table_owner) = UPPER(p_table_owner) and UPPER(table_name) = UPPER(p_target_table)
-    	) 
-    	order by column_id asc;
-    	
+        cursor non_cdc_columns is
+        select column_id, column_name from all_tab_columns where owner = UPPER(p_table_owner) and table_name = UPPER(p_target_table)
+        AND COLUMN_NAME NOT IN ('EFF_DATE' , 'END_DATE' , 'CREATE_ID' , 'LAST_UPDATE_ID')
+        and column_name not in (
+                  select column_name from update_match where UPPER(table_owner) = UPPER(p_table_owner) and UPPER(table_name) = UPPER(p_target_table)
+        ) 
+        order by column_id asc;
+        
     begin
-    	for rec_non_cdc in non_cdc_columns
-    	loop
-    		p_collection(rec_non_cdc.column_id) := rec_non_cdc.column_name; 
-    	end loop;
+        for rec_non_cdc in non_cdc_columns
+        loop
+            p_collection(rec_non_cdc.column_id) := rec_non_cdc.column_name; 
+        end loop;
 
     end gather_non_cdc_columns;
 
@@ -172,7 +172,7 @@ as
             sql_query_cdc2.f_from := get_full_table_name(p_cdc_table);
     
             for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
-        	loop
+            loop
                 sql_builder_pkg.add_select(sql_query_cdc1,p_cdc_columns(i)); 
                 sql_builder_pkg.add_where(sql_query_tgt,p_cdc_columns(i), ','); 
                 sql_builder_pkg.add_select(sql_query_where_in, p_cdc_columns(i));
