@@ -13,8 +13,8 @@ as
     procedure print_error(p_app_info in varchar2)
     is
     begin
-        dbms_output.put_line('ERROR IN' || p_app_info);
-        dbms_output.put_line(SQLCODE || ':' || SQLERRM);
+        dbms_output.put_line('ERROR IN: ' || p_app_info);
+        dbms_output.put_line(SQLCODE || ' : ' || SQLERRM);
     END print_error;
     
     
