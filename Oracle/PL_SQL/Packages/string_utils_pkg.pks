@@ -2,28 +2,76 @@ create or replace package string_utils_pkg
 authid definer
 as
     subtype st_max_pl_varchar2 is VARCHAR2(32767);
+    subtype st_max_db_varchar2 is VARCHAR2(4000);
     
     g_yes                          constant varchar2(1) := 'Y';
     g_no                           constant varchar2(1) := 'N';
     
     g_default_separator            constant varchar2(1) := ';';
+    g_param_and_value_separator    constant varchar2(1) := '=';
+    
+    g_line_feed                    constant varchar2(1) := chr(10);
+    g_new_line                     constant varchar2(1) := chr(13);
+    g_carriage_return              constant varchar2(1) := chr(13);
+    g_crlf                         constant varchar2(2) := g_carriage_return || g_line_feed;
+    g_tab                          constant varchar2(1) := chr(9);
+    g_ampersand                    constant varchar2(1) := chr(38); 
+    
+    g_html_entity_carriage_return  constant varchar2(5) := chr(38) || '#13;';
+    g_html_nbsp                    constant varchar2(6) := chr(38) || 'nbsp;'; 
 
     FUNCTION BOOL_TO_STR(p_value IN BOOLEAN)
     RETURN VARCHAR2;
     
-    function str_to_bool (p_str in varchar2)
+    function str_to_bool(p_str in varchar2)
     return boolean;
     
     FUNCTION str_to_bool_str(p_str IN VARCHAR2)
     return varchar2;
     
+    
+    
     procedure add_str_token(p_text IN OUT VARCHAR2, p_token IN VARCHAR2, p_separator IN VARCHAR2 := g_default_separator);
+    procedure prepend_str_token(p_text IN OUT VARCHAR2, p_token IN VARCHAR2, p_separator IN VARCHAR2 := g_default_separator);
+    
+    function try_parse_date(p_str IN VARCHAR2, p_date_format IN VARCHAR2)
+    return date;
+    
+    function get_nth_token(p_text in varchar2, p_num in number, p_separator in varchar2)
+    return varchar2;
+    
+    function get_pretty_str(p_str in varchar2)
+    return varchar2;
+    
+    function has_value_changed(p_old in varchar2, p_new in varchar2)
+    return boolean;
+    
+    
+    
     
     function is_str_integer(p_str IN VARCHAR2)
     return boolean;
     
-    function try_parse_date(p_str IN VARCHAR2, p_date_format IN VARCHAR2)
-    return date;
+    function is_str_number(p_str IN VARCHAR2, p_decimal_separator IN VARCHAR2 := null, p_thousand_separator IN VARCHAR2 := NULL)
+    return boolean;
+    
+    function is_str_alpha(p_str IN VARCHAR2)
+    return boolean;
+    
+    function is_str_alphanumeric(p_str IN VARCHAR2)
+    return boolean;
+    
+    
+    function remove_alpha(p_str in varchar2)
+    return varchar2;
+    
+    function remove_alphanumeric(p_str in varchar2)
+    return varchar2;
+    
+    function remove_numeric(p_str in varchar2)
+    return varchar2;
+    
+    
     
     function get_str (p_msg    in varchar2,
                       p_value1 in varchar2 := null,
