@@ -30,7 +30,7 @@ DECLARE
                 p_letters(i - ascii('a') + 1):= chr(i);
             end loop;
         end if;
-    end;
+    end populateStaticCollections;
 
     procedure populateIPTable(p_ipString IN VARCHAR2, p_ipLetters IN OUT t_chars)
     is
@@ -40,7 +40,7 @@ DECLARE
             p_ipLetters.EXTEND;
             p_ipLetters(i) := substr(p_ipString, i, 1);
         end loop;
-    end;
+    end populateIPTable;
 
 
     function isMember(p_chr IN CHAR, p_collection IN t_chars)
@@ -53,14 +53,14 @@ DECLARE
         end if;
         
         return false;
-    end;
+    end isMember;
 
 
     procedure printAnswer(p_ipNumber IN PLS_INTEGER, p_ipString VARCHAR2 DEFAULT ipString)
     is
     begin
         dbms_output.put_line(round(p_ipNumber / length(ipString),15));
-    end;
+    end printAnswer;
     
 BEGIN
 
