@@ -18,7 +18,7 @@ DECLARE
                 p_idxTable(p_idxTable.LAST) := cast(substr(p_encodeStr, i-(windowIdx-1), windowIdx) AS NUMBER);
             end if;
         end loop;
-    end;
+    end convertEncoded;
 
     FUNCTION calcAns(p_ipStr IN ansLength, p_idxTable IN t_idxTable)
     return ansLength
@@ -32,7 +32,7 @@ DECLARE
 
         return ans;
 
-    end;
+    end calcAns;
 
 
 BEGIN
