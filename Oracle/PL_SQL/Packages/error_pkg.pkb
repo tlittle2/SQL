@@ -2,7 +2,7 @@ create or replace package body error_pkg
 as
     procedure assert (p_condition in boolean, p_error_message in varchar2)
     is
-        begin
+    begin
         if not nvl(p_condition, false) then
             debug_pkg.debug_off;
             raise_application_error (-20000, p_error_message);
