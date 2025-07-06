@@ -5,7 +5,8 @@ DECLARE
     return VARCHAR2
     is
     begin
-        if mod(p_ip, 2) = 1 then
+        if mod(p_ip, 2) = 1
+        then
             return 'first';
         else
             return 'second';
