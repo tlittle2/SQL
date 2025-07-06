@@ -3,9 +3,9 @@ as
     debug_state boolean := false;
     
     last_timing number := null;
-	last_context string_utils_pkg.st_max_pl_varchar2;
-	
-	v_onoff boolean := true;
+    last_context string_utils_pkg.st_max_pl_varchar2;
+    
+    v_onoff boolean := true;
 
     procedure debug_on
     is
@@ -37,30 +37,30 @@ as
     procedure print(p_value in varchar2)
     is
     begin
-		if debug_pkg.get_debug_state
-		then
-			dbms_output.put_line(p_value);
+        if debug_pkg.get_debug_state
+        then
+            dbms_output.put_line(p_value);
         end if;
-	end;
+    end;
     
-	
-	procedure start_timer(p_context in varchar2 := null)
-	is
-	begin
-		last_timing := dbms_utility.get_time;
-		last_context := p_context;
-	end start_timer;
-	
-	
-	function show_elapsed_time
-	return number
-	is
-		l_end_time pls_integer := dbms_utility.get_time;
-	begin
-		error_pkg.assert(last_timing is not null, 'No time to compare against!');
-		
-		return mod(l_end_time - last_timing + power(2, 32), power(2, 32));
-		
-	end show_elapsed_time;
+    
+    procedure start_timer(p_context in varchar2 := null)
+    is
+    begin
+        last_timing := dbms_utility.get_time;
+        last_context := p_context;
+    end start_timer;
+    
+    
+    function show_elapsed_time
+    return number
+    is
+        l_end_time pls_integer := dbms_utility.get_time;
+    begin
+        error_pkg.assert(last_timing is not null, 'No time to compare against!');
+        
+        return mod(l_end_time - last_timing + power(2, 32), power(2, 32));
+        
+    end show_elapsed_time;
 
 end debug_pkg;
