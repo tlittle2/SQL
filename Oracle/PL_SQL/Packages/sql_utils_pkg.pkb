@@ -5,7 +5,7 @@ as
     is
     begin
         return regexp_like(lower(trim(p_sql)), '^(create|alter|drop|grant|revoke)');
-    end;
+    end is_sql_allowed;
     
     procedure reset_sql_statement(p_sql IN OUT NOCOPY VARCHAR2)
     is
@@ -28,7 +28,7 @@ as
             
             execute immediate p_sql;
         end if;
-    end;
+    end print_or_execute;
     
     --given one or more tables, truncate the tables in the list
     procedure truncate_table(p_table_names in varchar2)
