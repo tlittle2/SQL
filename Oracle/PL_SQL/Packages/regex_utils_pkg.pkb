@@ -6,14 +6,14 @@ as
     is
     begin
         return g_regex_integer;
-    end;
+    end get_regex_integer;
 
     function get_regex_integer_not
     return varchar2 deterministic
     is
     begin
         return g_regex_integer_not;
-    end;
+    end get_regex_integer_not;
 
     function get_regex_alpha
     return varchar2
@@ -22,7 +22,7 @@ as
     begin
         return g_regex_alpha;
 
-    end;
+    end get_regex_alpha;
 
     function regex_alpha_not
     return varchar2
@@ -30,7 +30,7 @@ as
     is
     begin
         return g_regex_alpha_not;
-    end;
+    end regex_alpha_not;
 
 
     function get_regex_email_addresses
@@ -39,7 +39,7 @@ as
     is
     begin
         return g_regex_email_addresses;
-    end;
+    end get_regex_email_addresses;
 
     function get_regex_cc_visa
     return varchar2
@@ -47,7 +47,7 @@ as
     is
     begin
         return g_regex_cc_visa;
-    end;
+    end get_regex_cc_visa;
 
 
 end regex_utils_pkg;
