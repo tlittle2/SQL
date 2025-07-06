@@ -28,7 +28,7 @@ DECLARE
         for i in a.FIRST..a.LAST
         loop
             if occurArray.EXISTS(arr(i))
-			then
+            then
                 occurArray(arr(i)) := occurArray(arr(i)) + 1;
             else
                 occurArray(arr(i)) := 1;
@@ -43,7 +43,7 @@ DECLARE
         while tmpKey is not null
         loop
             if occurArray(tmpKey) > 1
-			then
+            then
                 dbms_output.put_line(tmpKey);
                 exit;
             end if;
