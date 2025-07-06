@@ -20,7 +20,7 @@ DECLARE
                 p_idxTable(p_idxTable.LAST) := cast(substr(p_encodeStr, i-(windowIdx-1), windowIdx) AS NUMBER);
             end if;
         end loop;
-    END;
+    END convertEncoded;
 
     procedure calcAns(p_ipStr IN ansLength, p_idxTable IN t_idxTable, p_ans OUT ansLength)
     is
@@ -30,7 +30,7 @@ DECLARE
             p_ans:= p_ans || substr(p_ipStr, p_idxTable(i), 1);
         end loop;
 
-    end;
+    end calcAns;
 
 BEGIN
     convertEncoded(encodedStr, idxTable);
