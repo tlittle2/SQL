@@ -1,3 +1,4 @@
+
 /*
 Usage:
 DECLARE
@@ -35,19 +36,20 @@ BEGIN
         DBMS_SQL.define_column(cursor_number, i, col_value, max_int);  -- Adjust max size
     END LOOP;
 
-	DBMS_OUTPUT.put_line('Report Name: ' || reportName);
-	DBMS_OUTPUT.put_line('Date of Report: ' || to_char(sysdate, 'MM/DD/YYYY HH:MI:SS') || CHR(10));
+    DBMS_OUTPUT.put_line('Report Name: ' || reportName);
+    DBMS_OUTPUT.put_line('Date of Report: ' || to_char(sysdate, 'MM/DD/YYYY HH:MI:SS') || CHR(10));
         
     -- Print column headers
     FOR i IN 1 .. col_cnt LOOP
         DBMS_OUTPUT.put(col_descriptions(i).col_name || RPAD(' ', length(col_descriptions(i).col_name))); --pad by length of the column
-		g_row_length:= g_row_length + length(RPAD(' ', length(col_descriptions(i).col_name)));
+        g_row_length:= g_row_length + length(RPAD(' ', length(col_descriptions(i).col_name)));
     END LOOP;
     
-	DBMS_OUTPUT.put_line(chr(10) || RPAD('-', g_row_length*2, '-'));
+    DBMS_OUTPUT.put_line(chr(10) || RPAD('-', g_row_length*2, '-'));
 
     -- Fetch each row and output the column values
-    WHILE DBMS_SQL.fetch_rows(cursor_number) > 0 LOOP
+    WHILE DBMS_SQL.fetch_rows(cursor_number) > 0
+    LOOP
         --row_count := row_count + 1;
         
         FOR i IN 1 .. col_cnt LOOP
@@ -66,7 +68,8 @@ BEGIN
 EXCEPTION
     WHEN OTHERS THEN
         -- Ensure the cursor is closed in case of an exception
-        IF DBMS_SQL.is_open(cursor_number) THEN
+        IF DBMS_SQL.is_open(cursor_number)
+        THEN
             DBMS_SQL.close_cursor(cursor_number);
         END IF;
         RAISE;
