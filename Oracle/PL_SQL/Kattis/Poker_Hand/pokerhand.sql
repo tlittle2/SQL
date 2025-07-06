@@ -19,7 +19,7 @@ DECLARE
                 end if;
             end if;
         end loop;
-    end;
+    end processInput;
 
     function produceAnswer
     return pls_integer
@@ -34,7 +34,7 @@ DECLARE
         end loop;
 
         return answer;
-    end;
+    end produceAnswer;
 
 BEGIN
     processInput;
