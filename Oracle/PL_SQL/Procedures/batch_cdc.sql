@@ -1,14 +1,14 @@
 create or replace procedure batch_cdc(p_table_owner in all_tables.owner%type
-				    , p_stage_table in all_tables.table_name%type
-				    , p_cdc_table in all_tables.table_name%type
-				   , p_target_table in all_tables.table_name%type)
-									
+                    , p_stage_table in all_tables.table_name%type
+                    , p_cdc_table in all_tables.table_name%type
+                   , p_target_table in all_tables.table_name%type)
+                                    
 as
-	type columns_list_t is table of all_tab_columns.column_name%type index by pls_integer;
+    type columns_list_t is table of all_tab_columns.column_name%type index by pls_integer;
 
-	cdc_list columns_list_t;
-	non_cdc_list columns_list_t;
-	subtype dynamic_statement_st is VARCHAR2(10000);
+    cdc_list columns_list_t;
+    non_cdc_list columns_list_t;
+    subtype dynamic_statement_st is VARCHAR2(10000);
     
     procedure print_or_execute(p_sql IN VARCHAR2)
     is
@@ -22,12 +22,12 @@ as
             commit;
         end if;
     end;
-	
-	procedure print_extra_line
-	is
-	begin
-		dbms_output.put_line(chr(10));
-	end;
+    
+    procedure print_extra_line
+    is
+    begin
+        dbms_output.put_line(chr(10));
+    end;
     
     
     function get_full_table_name(p_table_name IN VARCHAR2)
@@ -49,57 +49,57 @@ as
     is
     begin
         for i in p_collection.FIRST..p_collection.LAST
-	    loop
+        loop
             dbms_output.put_line(p_collection(i));
         end loop;
     end print_collection;
 
     
     --given 2 tables, ensure that the columns are consistent
-	function check_schemas(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
-						  , p_target_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE)
-	return boolean
+    function check_schemas(p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
+                          , p_target_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE)
+    return boolean
     IS
         v_differences NUMBER;
-	begin
+    begin
         with schema_check as (
-	        select a.owner, a.table_name, a.column_name
-	        , case nvl(substr(data_type, 1, instr(data_type, '(', 1)-1),data_type)
-			WHEN 'DATE' THEN 'DATE'
-			WHEN 'TIMESTAMP' then 'TIMESTAMP(' || a.data_scale || ')'
-			WHEN 'FLOAT' then 'FLOAT(' || a.data_precision || ',' || a.data_scale || ')'
-			WHEN 'NUMBER' then 'NUMBER(' || a.data_precision || ',' || a.data_scale || ')'
-			WHEN 'VARCHAR' THEN 'TEXT(' || a.data_length || ')'
-			WHEN 'VARCHAR2' THEN 'TEXT(' || a.data_length || ')'
-			WHEN 'CHAR' THEN 'TEXT(' || a.data_length || ')'
-			WHEN 'NVARCHAR2' THEN 'TEXT(' || a.data_length || ')'
-			WHEN 'RAW' THEN 'RAW(' || a.data_length || ')'
-			ELSE a.data_type end as data_type
+            select a.owner, a.table_name, a.column_name
+            , case nvl(substr(data_type, 1, instr(data_type, '(', 1)-1),data_type)
+            WHEN 'DATE' THEN 'DATE'
+            WHEN 'TIMESTAMP' then 'TIMESTAMP(' || a.data_scale || ')'
+            WHEN 'FLOAT' then 'FLOAT(' || a.data_precision || ',' || a.data_scale || ')'
+            WHEN 'NUMBER' then 'NUMBER(' || a.data_precision || ',' || a.data_scale || ')'
+            WHEN 'VARCHAR' THEN 'TEXT(' || a.data_length || ')'
+            WHEN 'VARCHAR2' THEN 'TEXT(' || a.data_length || ')'
+            WHEN 'CHAR' THEN 'TEXT(' || a.data_length || ')'
+            WHEN 'NVARCHAR2' THEN 'TEXT(' || a.data_length || ')'
+            WHEN 'RAW' THEN 'RAW(' || a.data_length || ')'
+            ELSE a.data_type end as data_type
             
-	        from all_tab_columns a
+            from all_tab_columns a
         )
 
-	        select nvl(count(1), 1) into v_differences
-	        from (
-	            select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_target_table
-	            MINUS
-	            select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_source_table
-	            UNION ALL
-	            select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_source_table
-	            MINUS
-	            select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_target_table
-	        );
+            select nvl(count(1), 1) into v_differences
+            from (
+                select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_target_table
+                MINUS
+                select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_source_table
+                UNION ALL
+                select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_source_table
+                MINUS
+                select column_name,data_type from schema_check where owner = p_table_owner and table_name = p_target_table
+            );
 
             dbms_output.put_line(v_differences);
 
-	        if v_differences > 0 
-	        then
-	            RETURN FALSE;
-	        end if;
+            if v_differences > 0 
+            then
+                RETURN FALSE;
+            end if;
 
-	        RETURN TRUE;
+            RETURN TRUE;
 
-	end check_schemas;
+    end check_schemas;
 
     procedure stg_to_cdc
     is
@@ -118,41 +118,41 @@ as
     end stg_to_cdc;
 
 
-	procedure gather_cdc_columns(p_collection in out nocopy columns_list_t)
-	is
-		cursor cdc_columns is
-        	select sort_order_number
-			, column_name
-		from update_match where UPPER(table_owner) = UPPER(p_table_owner)
-		and UPPER(table_name) = UPPER(p_target_table)
-        	order by sort_order_number asc;
-	begin
+    procedure gather_cdc_columns(p_collection in out nocopy columns_list_t)
+    is
+        cursor cdc_columns is
+            select sort_order_number
+            , column_name
+        from update_match where UPPER(table_owner) = UPPER(p_table_owner)
+        and UPPER(table_name) = UPPER(p_target_table)
+            order by sort_order_number asc;
+    begin
 
-		for rec_cdc in cdc_columns
-		loop
-			p_collection(rec_cdc.sort_order_number) := rec_cdc.column_name; 
-		end loop;
+        for rec_cdc in cdc_columns
+        loop
+            p_collection(rec_cdc.sort_order_number) := rec_cdc.column_name; 
+        end loop;
 
-	end gather_cdc_columns;
+    end gather_cdc_columns;
 
 
-	procedure gather_non_cdc_columns(p_collection in out nocopy columns_list_t)
-	is
-		cursor non_cdc_columns is
-		select column_id, column_name from all_tab_columns where owner = UPPER(p_table_owner) and table_name = UPPER(p_target_table)
-		AND COLUMN_NAME NOT IN ('EFF_DATE' , 'END_DATE' , 'CREATE_ID' , 'LAST_UPDATE_ID')
-		and column_name not in (
-          		select column_name from update_match where UPPER(table_owner) = UPPER(p_table_owner) and UPPER(table_name) = UPPER(p_target_table)
-		) 
-		order by column_id asc;
-		
-	begin
-		for rec_non_cdc in non_cdc_columns
-		loop
-			p_collection(rec_non_cdc.column_id) := rec_non_cdc.column_name; 
-		end loop;
+    procedure gather_non_cdc_columns(p_collection in out nocopy columns_list_t)
+    is
+        cursor non_cdc_columns is
+        select column_id, column_name from all_tab_columns where owner = UPPER(p_table_owner) and table_name = UPPER(p_target_table)
+        AND COLUMN_NAME NOT IN ('EFF_DATE' , 'END_DATE' , 'CREATE_ID' , 'LAST_UPDATE_ID')
+        and column_name not in (
+                  select column_name from update_match where UPPER(table_owner) = UPPER(p_table_owner) and UPPER(table_name) = UPPER(p_target_table)
+        ) 
+        order by column_id asc;
+        
+    begin
+        for rec_non_cdc in non_cdc_columns
+        loop
+            p_collection(rec_non_cdc.column_id) := rec_non_cdc.column_name; 
+        end loop;
 
-	end gather_non_cdc_columns;
+    end gather_non_cdc_columns;
 
     procedure insert_into_cdc(p_cdc_columns in columns_list_t)
     is
@@ -172,7 +172,7 @@ as
             sql_query_cdc2.f_from := get_full_table_name(p_cdc_table);
     
             for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
-        	loop
+            loop
                 sql_builder_pkg.add_select(sql_query_cdc1,p_cdc_columns(i)); 
                 sql_builder_pkg.add_where(sql_query_tgt,p_cdc_columns(i), ','); 
                 sql_builder_pkg.add_select(sql_query_where_in, p_cdc_columns(i));
@@ -336,11 +336,11 @@ as
                                                                     || ' FROM vt2 x1 LEFT OUTER JOIN vt2 x2 ON ');
                 
                 for i in p_cdc_columns.first..p_cdc_columns.last
-	            loop
+                loop
                     sql_builder_pkg.add_where(sql_query_cdc_to_stg_select,'x1.' || p_cdc_columns(i) || ' = ' || 'x2.' || p_cdc_columns(i), '');
                     
                     if i <> p_cdc_columns.LAST
-	                then
+                    then
                         string_utils_pkg.add_str_token(sql_query_cdc_to_stg_select.f_where, ' and ', '');
                     end if;
                 end loop;
@@ -407,18 +407,18 @@ BEGIN
     error_pkg.assert(check_schemas(p_cdc_table, p_stage_table) and check_schemas(p_cdc_table, p_target_table), 'SCHEMAS BETWEEN PROCESSING TABLES ARE NOT THE SAME. PLEASE INVESTIGATE');
     
     --debug_pkg.debug_on;
-	
+    
     step_separate('CDC_COLUMNS');
     gather_cdc_columns(cdc_list);
-	print_collection(cdc_list);
-	
-	print_extra_line;
+    print_collection(cdc_list);
+    
+    print_extra_line;
 
     step_separate('NON_CDC_COLUMNS');
-	gather_non_cdc_columns(non_cdc_list);
-	print_collection(non_cdc_list);
+    gather_non_cdc_columns(non_cdc_list);
+    print_collection(non_cdc_list);
     
-	print_extra_line;
+    print_extra_line;
 
     step_separate('STG_TO_CDC --> Lets assume that data is loaded into CDC first (before stg)');
     --stg_to_cdc;
@@ -434,11 +434,11 @@ BEGIN
     print_extra_line;
 
     step_separate('MOVE');
-	move_cdc_to_stage(cdc_list,non_cdc_list);
+    move_cdc_to_stage(cdc_list,non_cdc_list);
     print_extra_line;
 
     step_separate('REMOVE from TARGET');
-	remove_from_target(cdc_list);    
+    remove_from_target(cdc_list);    
     print_extra_line;
 
     step_separate('INSERT FROM STAGE TO TARGET');
