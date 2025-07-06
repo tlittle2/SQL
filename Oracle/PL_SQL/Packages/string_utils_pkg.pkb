@@ -16,7 +16,7 @@ as
     exception
         when others then
         cleanup_pkg.exception_cleanup(false);
-    end;
+    end bool_to_str;
     
     function str_to_bool(p_str in varchar2)
     return boolean
@@ -75,7 +75,6 @@ as
         l_returnvalue := to_date(p_str, p_date_format);
         
         return l_returnvalue;
-    
     exception
         when others then
         l_returnvalue := null;
