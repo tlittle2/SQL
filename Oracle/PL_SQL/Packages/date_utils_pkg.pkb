@@ -21,10 +21,11 @@ as
     function get_year_quarter(p_date in date)
     return varchar2
     is
-    	p_year number := extract(year from p_date);
-    	p_quarter number := to_char(p_date, 'Q');
+        p_year number := extract(year from p_date);
+        p_quarter number := to_char(p_date, 'Q');
     begin
-    	return format_year_quarter(p_year, p_quarter);
+        
+        return format_year_quarter(p_year, p_quarter);
     
     end get_year_quarter;
 
@@ -33,7 +34,7 @@ as
     return varchar2
     is
     begin
-    	return p_year || 'Q' ||  p_quarter;
+        return p_year || 'Q' ||  p_quarter;
 
     end format_year_quarter;
 
@@ -43,12 +44,13 @@ as
     is
     begin
         error_pkg.assert(p_month between 1 and 12, 'not a valid month');
-    	return case
-    		when p_month in (1,2,3)    then 1
-    		when p_month in (4,5,6)    then 2
-    		when p_month in (7,8,9)    then 3
-    		when p_month in (10,11,12) then 4
-            end;
+        return
+        case
+            when p_month in (1,2,3)    then 1
+            when p_month in (4,5,6)    then 2
+            when p_month in (7,8,9)    then 3
+            when p_month in (10,11,12) then 4
+        end;
     end get_quarter;
     
     function get_month(p_date in date)
@@ -205,6 +207,6 @@ as
             l_date_after := l_next_date;
         end loop;
         return;
-    end;
+    end get_date_table;
 
 end date_utils_pkg;
