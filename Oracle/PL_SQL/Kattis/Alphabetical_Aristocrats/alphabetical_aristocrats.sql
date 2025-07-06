@@ -13,8 +13,7 @@ DECLARE
 BEGIN
     for i in names_ip.FIRST..names_ip.LAST
     LOOP
-        --first letter that is uppercase to the end of the string is the key, the whole name is the value
-        ans(substr(names_ip(i), regexp_instr(names_ip(i), '[A-Z]'))) := names_ip(i); 
+        ans(substr(names_ip(i), regexp_instr(names_ip(i), '[A-Z]'))) := names_ip(i); --first letter that is uppercase to the end of the string is the key, the whole name is the value
     END LOOP;
 
     l_index := ans.FIRST;
