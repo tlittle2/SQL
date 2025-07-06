@@ -24,7 +24,6 @@ as
         p_year number := extract(year from p_date);
         p_quarter number := to_char(p_date, 'Q');
     begin
-        
         return format_year_quarter(p_year, p_quarter);
     
     end get_year_quarter;
@@ -44,13 +43,12 @@ as
     is
     begin
         error_pkg.assert(p_month between 1 and 12, 'not a valid month');
-        return
-        case
+        return case
             when p_month in (1,2,3)    then 1
             when p_month in (4,5,6)    then 2
             when p_month in (7,8,9)    then 3
             when p_month in (10,11,12) then 4
-        end;
+            end;
     end get_quarter;
     
     function get_month(p_date in date)
