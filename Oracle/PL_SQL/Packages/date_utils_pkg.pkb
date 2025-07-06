@@ -139,7 +139,7 @@ as
         
         return v_returnvalue;
     
-    end;
+    end format_time;
     
     function get_range_of_dates(p_start_date in date, p_num_of_days in number, p_direction in char)
     return date_table_t pipelined
