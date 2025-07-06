@@ -1,11 +1,11 @@
 create or replace package body report_utils_pkg
 AS
     type report_header_t is record(
-        rpt_name report_tab_str_len,
-        rpt_date report_tab_str_len,
-        rpt_line1 report_tab_str_len,
-        rpt_columns report_tab_str_len,
-        rpt_line2 report_tab_str_len
+        rpt_name string_utils_pkg.st_max_db_varchar2,
+        rpt_date string_utils_pkg.st_max_db_varchar2,
+        rpt_line1 string_utils_pkg.st_max_db_varchar2,
+        rpt_columns string_utils_pkg.st_max_db_varchar2,
+        rpt_line2 string_utils_pkg.st_max_db_varchar2
     );
     
     report_header report_header_t;
@@ -313,7 +313,7 @@ is
     row_count INTEGER := 0;
     max_int INTEGER := 32767;
     g_row_length INTEGER := 0;
-    v_line report_tab_str_len; --v_rpt_str in package spec
+    v_line string_utils_pkg.st_max_db_varchar2; --v_rpt_str in package spec
     report_out GENERAL_REPORT_O;
     
 begin
