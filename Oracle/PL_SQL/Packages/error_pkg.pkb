@@ -31,8 +31,7 @@ as
         , ERROR_STACK
         , BACKTRACE
         , ERROR_INFO
-        )
-        VALUES(
+        )VALUES(
             systimestamp
             , USER
             , c_code
