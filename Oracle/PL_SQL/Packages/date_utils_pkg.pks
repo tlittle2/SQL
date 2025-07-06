@@ -8,18 +8,20 @@ as
     function get_backward_flag
     return char deterministic;
 
-	function get_year_quarter(p_date in date)
+    function get_year_quarter(p_date in date)
     return varchar2;
-	
+    
     function format_year_quarter(p_year in number, p_quarter in number)
     return varchar2;
     
     function get_quarter(p_month in number)
-	return number;
+    return number;
     
     function get_month(p_date in date)
     return number;
     
+    function parse_year_qrtr_for_quarter(p_year_qrtr IN VARCHAR2)
+    return number;
     
     function format_time(p_days in number)
     return varchar2;
