@@ -28,7 +28,7 @@ AS
         is
         begin
             return rpad('=', g_row_length, '=');
-        end;
+        end header_separator;
         
         function center_content(p_input_str in varchar2)
         return varchar2 deterministic
@@ -37,7 +37,7 @@ AS
             l_left_pad   INTEGER := FLOOR(l_total_pad / 2);
         begin
             return rpad(lpad(p_input_str, length(p_input_str) + (l_left_pad), ' '), g_row_length, ' ');
-        end;
+        end center_content;
     
     begin
         p_report_header.rpt_name := center_content('Report Name: ' || p_title);
@@ -67,7 +67,7 @@ AS
         end if;
         
         return false;
-    end;
+    end generate_rolling_header;
 --===========================================================================================================================================================================
 
     function salary_data_report(p_report_title in varchar2)
@@ -242,7 +242,7 @@ AS
         if volume_report%isopen then
             close volume_report;
         end if;
-    end;
+    end table_volume_report;
 
 --===========================================================================================================================================================================
 
@@ -293,7 +293,7 @@ AS
             close salary_details;
         end if;
         
-    end;
+    end create_trxn_file;
 --===========================================================================================================================================================================
 
 
@@ -340,7 +340,7 @@ begin
     end loop;
 
     return;
-end;
+end general_report;
 
 --===========================================================================================================================================================================
 
