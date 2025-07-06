@@ -7,7 +7,7 @@ as
             debug_pkg.debug_off;
             raise_application_error (-20000, p_error_message);
         end if;
-    end;
+    end assert;
     
     
     procedure print_error(p_app_info in varchar2)
@@ -15,7 +15,7 @@ as
     begin
         dbms_output.put_line('ERROR IN' || p_app_info);
         dbms_output.put_line(SQLCODE || ':' || SQLERRM);
-    END;
+    END print_error;
     
     
     procedure log_error(p_app_info in varchar2) --this can be, for example, the procedure that called this 
@@ -31,7 +31,8 @@ as
         , ERROR_STACK
         , BACKTRACE
         , ERROR_INFO
-        )VALUES(
+        )
+        VALUES(
             systimestamp
             , USER
             , c_code
@@ -41,6 +42,6 @@ as
             , p_app_info
         );
         COMMIT;
-    end;
+    end log_error;
 
 end error_pkg;
