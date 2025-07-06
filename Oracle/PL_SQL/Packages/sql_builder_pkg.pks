@@ -7,6 +7,8 @@ as
     f_group_by   string_utils_pkg.st_max_pl_varchar2,
     f_order_by   string_utils_pkg.st_max_pl_varchar2
     );
+    
+    g_select_all CONSTANT CHAR(1) := '*';
 
     procedure set_from (p_query in out t_query,p_name in varchar2);
     
