@@ -10,10 +10,10 @@ as
         end if;
 
         debug_pkg.debug_off;
-    end;
+    end exception_cleanup;
 
 
-    procedure close_cursor (p_cursor in out sys_refcursor)
+    procedure close_cursor(p_cursor in out sys_refcursor)
     is
     begin
         if p_cursor%isopen
@@ -21,6 +21,6 @@ as
             close p_cursor;
         end if;
 
-    end;    
+    end close_cursor;
 
 end cleanup_pkg;
