@@ -21,13 +21,13 @@ as
             execute immediate p_sql;
             commit;
         end if;
-    end;
+    end print_or_execute;
     
     procedure print_extra_line
     is
     begin
         dbms_output.put_line(chr(10));
-    end;
+    end print_extra_line;
     
     
     function get_full_table_name(p_table_name IN VARCHAR2)
@@ -36,7 +36,7 @@ as
     is
     begin
         return p_table_owner || '.' || p_table_name;
-    end;
+    end get_full_table_name;
     
     procedure step_separate(p_step_name in VARCHAR2)
     is
@@ -163,48 +163,48 @@ as
         
         v_cdc_columns_equality dynamic_statement_st;
     begin
-            sql_query_cdc1.f_from := get_full_table_name(p_cdc_table);
-            
-            sql_query_tgt.f_select := sql_builder_pkg.g_select_all;
-            sql_query_tgt.f_from := get_full_table_name(p_target_table);
-            
-            sql_query_cdc2.f_select := '1';
-            sql_query_cdc2.f_from := get_full_table_name(p_cdc_table);
+        sql_query_cdc1.f_from := get_full_table_name(p_cdc_table);
+        
+        sql_query_tgt.f_select := sql_builder_pkg.g_select_all;
+        sql_query_tgt.f_from := get_full_table_name(p_target_table);
+        
+        sql_query_cdc2.f_select := '1';
+        sql_query_cdc2.f_from := get_full_table_name(p_cdc_table);
     
-            for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
-            loop
-                sql_builder_pkg.add_select(sql_query_cdc1,p_cdc_columns(i)); 
-                sql_builder_pkg.add_where(sql_query_tgt,p_cdc_columns(i), ','); 
-                sql_builder_pkg.add_select(sql_query_where_in, p_cdc_columns(i));
-            
-                if i <> p_cdc_columns.LAST
-                then
-                    string_utils_pkg.add_str_token(v_cdc_columns_equality, 'b.' || p_cdc_columns(i) || ' = a.' || p_cdc_columns(i) || ' and ', ' ');
-                else
-                    string_utils_pkg.add_str_token(v_cdc_columns_equality, 'b.' || p_cdc_columns(i) || ' = a.' || p_cdc_columns(i), ' ');
-                end if;
-            end loop;
-            
-            sql_query_cdc2.f_where := v_cdc_columns_equality;
-                                
-            print_or_execute('INSERT INTO '
-                                || sql_query_cdc1.f_from
-                                || ' '
-                                || sql_builder_pkg.get_select(sql_query_tgt)
-                                || sql_builder_pkg.get_from(sql_query_tgt)
-                                || ' a '
-                                || sql_builder_pkg.get_where_in(sql_query_where_in, true)
-                                || '('
-                                || sql_builder_pkg.get_select(sql_query_cdc1)
-                                || sql_builder_pkg.get_from(sql_query_cdc1)
-                                || ' b '
-                                || ') and exists ('
-                                || sql_builder_pkg.get_select(sql_query_cdc2)
-                                || sql_builder_pkg.get_from(sql_query_cdc2)
-                                || ' b'
-                                || sql_builder_pkg.get_where(sql_query_cdc2)
-                                || ' and ((b.EFF_DATE <= a.EFF_DATE and b.END_DATE >= a.EFF_DATE) OR (b.EFF_DATE >= a.EFF_DATE and b.EFF_DATE <= a.END_DATE)))'
-                            );
+        for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
+        loop
+            sql_builder_pkg.add_select(sql_query_cdc1,p_cdc_columns(i)); 
+            sql_builder_pkg.add_where(sql_query_tgt,p_cdc_columns(i), ','); 
+            sql_builder_pkg.add_select(sql_query_where_in, p_cdc_columns(i));
+        
+            if i <> p_cdc_columns.LAST
+            then
+                string_utils_pkg.add_str_token(v_cdc_columns_equality, 'b.' || p_cdc_columns(i) || ' = a.' || p_cdc_columns(i) || ' and ', ' ');
+            else
+                string_utils_pkg.add_str_token(v_cdc_columns_equality, 'b.' || p_cdc_columns(i) || ' = a.' || p_cdc_columns(i), ' ');
+            end if;
+        end loop;
+        
+        sql_query_cdc2.f_where := v_cdc_columns_equality;
+                            
+        print_or_execute('INSERT INTO '
+                       || sql_query_cdc1.f_from
+                       || ' '
+                       || sql_builder_pkg.get_select(sql_query_tgt)
+                       || sql_builder_pkg.get_from(sql_query_tgt)
+                       || ' a '
+                       || sql_builder_pkg.get_where_in(sql_query_where_in, true)
+                       || '('
+                       || sql_builder_pkg.get_select(sql_query_cdc1)
+                       || sql_builder_pkg.get_from(sql_query_cdc1)
+                       || ' b '
+                       || ') and exists ('
+                       || sql_builder_pkg.get_select(sql_query_cdc2)
+                       || sql_builder_pkg.get_from(sql_query_cdc2)
+                       || ' b'
+                       || sql_builder_pkg.get_where(sql_query_cdc2)
+                       || ' and ((b.EFF_DATE <= a.EFF_DATE and b.END_DATE >= a.EFF_DATE) OR (b.EFF_DATE >= a.EFF_DATE and b.EFF_DATE <= a.END_DATE)))'
+                       );
 
     end insert_into_cdc;
 
