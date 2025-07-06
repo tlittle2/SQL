@@ -19,7 +19,7 @@ DECLARE
     is
     begin
         return p_num / length(p_ipString);
-    end;
+    end calculation;
 
     procedure populateStaticCollections(p_letters IN OUT t_chars, p_isUpper IN BOOLEAN DEFAULT TRUE)
     is 
@@ -38,7 +38,7 @@ DECLARE
                 p_letters(i - ascii('a') + 1):= chr(i);
             end loop;
         end if;
-    end;
+    end populateStaticCollections;
 
     procedure populateIPTable(p_ipString IN VARCHAR2, p_ipLetters IN OUT t_chars)
     is
@@ -49,7 +49,7 @@ DECLARE
             p_ipLetters(i) := substr(p_ipString, i, 1);
         end loop;
 
-    end;
+    end populateIPTable;
     
     function isMember(p_chr IN CHAR, p_collection IN t_chars)
     return BOOLEAN
@@ -60,12 +60,12 @@ DECLARE
         end if;
         
         return false;
-    end;
+    end isMember;
 
     procedure printAnswer(p_ipNumber IN PLS_INTEGER, p_ipString VARCHAR2) is
     begin
         dbms_output.put_line(round(calculation(p_ipNumber, p_ipString),15));
-    end;
+    end printAnswer;
 
 BEGIN
     populateStaticCollections(upperLetters, TRUE);
@@ -80,7 +80,7 @@ BEGIN
             when isMember(ipLetters(i), t_chars('_')) then whiteSpacesNumber:= whiteSpacesNumber + 1;
             else symbols:= symbols + 1;
         end case;
-        end loop;
+    end loop;
 
     printAnswer(whiteSpacesNumber, ipString);
     printAnswer(lowerNumber, ipString);
