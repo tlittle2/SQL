@@ -131,8 +131,7 @@ as
             numberContainer number_container_t;
             c_default_number_value CONSTANT NUMBER = -1;
             
-            
-        
+
         FUNCTION is_string(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE) 
         RETURN BOOLEAN 
         IS 
@@ -282,6 +281,7 @@ as
                                             , p_key_column         in archive_rules.archive_column_key%type)
     is
     begin
+	    null;
     
     end unpartitioned_append_to_archive;
                                             
@@ -369,8 +369,8 @@ as
                                             , p_bulk_limit         in integer default 250000)
     is
     begin
-    
-    
+	    null;
+   
     end unpartitioned_collect_to_archive;
 
 
