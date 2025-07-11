@@ -29,6 +29,10 @@ as
     FUNCTION str_to_bool_str(p_str IN VARCHAR2)
     return varchar2;
     
+    function str_to_single_quoted_str(p_str IN VARCHAR2)
+    return varchar2
+    deterministic;
+    
     
     
     procedure add_str_token(p_text IN OUT VARCHAR2, p_token IN VARCHAR2, p_separator IN VARCHAR2 := g_default_separator);
