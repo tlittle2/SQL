@@ -43,6 +43,14 @@ as
         return g_no;
     end str_to_bool_str;
     
+    function str_to_single_quoted_str(p_str IN VARCHAR2)
+    return varchar2
+    deterministic
+    is
+    begin
+        return '''' || p_str || '''';
+    end str_to_single_quoted_str;
+    
     procedure add_str_token(p_text IN OUT VARCHAR2, p_token IN VARCHAR2, p_separator IN VARCHAR2 := g_default_separator)
     is
     begin
