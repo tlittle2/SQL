@@ -331,7 +331,7 @@ AS
             l_create_end_dte DATE;
         
         begin
-            l_create_end_dte := calculate_cutoff_date(date_utils_pkg.g_forwards_direction, g_create_begin_dte, p_years_to_create);
+            l_create_end_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_forwards_direction, g_create_begin_dte, p_years_to_create);
             
             for rec_parts in partitions_to_create
             loop
@@ -476,7 +476,7 @@ AS
             loop
                 populate_recon_table(rec_destroy.table_name, l_droparchive_recontable);
                 
-                l_drop_archive_begin_dte := calculate_cutoff_date(date_utils_pkg.g_backwards_direction, g_drop_begin_dte, rec_destroy.years_to_keep);
+                l_drop_archive_begin_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_backwards_direction, g_drop_begin_dte, rec_destroy.years_to_keep);
                 
                 manage_remove_cursor(c_open_cursor, rec_destroy.partition_type, rec_destroy.table_owner, rec_destroy.table_name, rec_destroy.partition_prefix, l_drop_archive_begin_dte
                                    , l_archive_cursor);
