@@ -87,11 +87,10 @@ as
             return add_months(p_input_date,   (date_utils_pkg.g_months_in_year * p_years_to_keep));
             
         end if;
-        
     exception
-    when others then
-        error_pkg.print_error('calculate_cutoff_date');
-        raise; 
+        when others then
+            error_pkg.print_error('calculate_cutoff_date');
+            raise; 
     end calculate_new_date;
     
     function get_range_of_dates(p_start_date in date, p_num_of_days in number, p_direction in char)
