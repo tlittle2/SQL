@@ -161,7 +161,7 @@ as
     
     
     
-        function format_time(p_from_date in date, p_to_date in date)
+    function format_time(p_from_date in date, p_to_date in date)
     return varchar2
     is
     begin
