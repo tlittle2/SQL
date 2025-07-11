@@ -2,8 +2,6 @@ create or replace package body partition_parm_pkg
 AS
     type reconTable_t is table of partition_table_parm.table_name%type;
     
-    
-    
     procedure debug_print_or_execute(p_sql IN VARCHAR2)
     is
     begin
