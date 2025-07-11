@@ -108,8 +108,7 @@ as
     IS
         v_column_datatype ALL_TAB_COLUMNS.DATA_TYPE%TYPE;
         insert_cursor sys_refcursor;
-		
-		l_insert_select_query sql_builder_pkg.t_query;
+        l_insert_select_query sql_builder_pkg.t_query;
         
         type date_container_t is RECORD(
               dateValue DATE
@@ -144,7 +143,7 @@ as
             END IF;
             
             RETURN FALSE;
-        END; 
+        END is_string; 
         
         FUNCTION is_number(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE) 
         RETURN BOOLEAN 
@@ -156,7 +155,7 @@ as
             END IF;
             
             RETURN FALSE;
-        END; 
+        END is_number; 
         
         FUNCTION is_date(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE) 
         RETURN BOOLEAN 
@@ -168,22 +167,22 @@ as
             END IF;
             
             RETURN FALSE;
-        END;
+        END is_date;
         
         procedure execute_insert(p_where_clause IN VARCHAR2)
         is
-		    l_insert_query sql_builder_pkg.t_query;
+            l_insert_query sql_builder_pkg.t_query;
         begin
-		    sql_builder_pkg.add_select(l_insert_query, sql_builder_pkg.g_select_all);
-			sql_builder_pkg.add_from(l_insert_query, sql_utils_pkg.get_full_table_name(p_src_owner, p_src_table) || sql_utils_pkg.get_partition_extension(p_src_partition_name));
-			sql_builder_pkg.add_where(l_insert_query, p_where_clause);
-		
+            sql_builder_pkg.add_select(l_insert_query, sql_builder_pkg.g_select_all);
+            sql_builder_pkg.add_from(l_insert_query, sql_utils_pkg.get_full_table_name(p_src_owner, p_src_table) || sql_utils_pkg.get_partition_extension(p_src_partition_name));
+            sql_builder_pkg.add_where(l_insert_query, p_where_clause);
+        
             debug_print_or_execute(
             'INSERT /*+ APPEND NOSORT NOLOGGING */ INTO '
-			|| sql_utils_pkg.get_full_table_name(p_arch_owner, p_arch_table) 
-			|| sql_builder_pkg.get_sql(l_insert_query);
+            || sql_utils_pkg.get_full_table_name(p_arch_owner, p_arch_table) 
+            || sql_builder_pkg.get_sql(l_insert_query);
             );
-        end;
+        end execute_insert;
         
     BEGIN
         select data_type
@@ -196,26 +195,26 @@ as
         error_pkg.assert(v_column_datatype is not null, 'SOMETHING IS WRONG WITH THE COLUMN NAME SPECIFIED. PLEASE INVESTIGATE');
         
         error_pkg.assert(is_string(v_column_datatype) or is_number(v_column_datatype) or is_string(v_column_datatype), 'UNSUPPORTED COLUMN DATATYPE FOR THIS PROCEDURE. PLEASE INVESTIGATE');
-		
-		sql_builder_pkg.add_from(l_insert_select_query, sql_utils_pkg.get_full_table_name(p_src_owner, p_src_table) || sql_utils_pkg.get_partition_extension(p_src_partition_name));
-		sql_builder_pkg.add_group_by(l_insert_select_query, p_column_name);
-		sql_builder_pkg.add_order_by(l_insert_select_query, 'count(1)');
+        
+        sql_builder_pkg.add_from(l_insert_select_query, sql_utils_pkg.get_full_table_name(p_src_owner, p_src_table) || sql_utils_pkg.get_partition_extension(p_src_partition_name));
+        sql_builder_pkg.add_group_by(l_insert_select_query, p_column_name);
+        sql_builder_pkg.add_order_by(l_insert_select_query, 'count(1)');
         
         if is_string(v_column_datatype)
         then
-			sql_builder_pkg.add_select(l_insert_select_query,'SELECT NVL(' || p_column_name || ', ' || c_default_string_value || '), count(1)');
+            sql_builder_pkg.add_select(l_insert_select_query,'SELECT NVL(' || p_column_name || ', ' || c_default_string_value || '), count(1)');
             
         elsif is_number(v_column_datatype)
         then
-		    sql_builder_pkg.add_select(l_insert_select_query,'SELECT NVL(' || p_column_name || ', ' || c_default_number_value || '), count(1)');
+            sql_builder_pkg.add_select(l_insert_select_query,'SELECT NVL(' || p_column_name || ', ' || c_default_number_value || '), count(1)');
             
         elsif is_date(v_column_datatype)
         then
             sql_builder_pkg.add_select(l_insert_select_query,'SELECT NVL(' || p_column_name || ', ' || c_default_date_value || '), count(1)');
 
         end if;
-		
-		open insert_cursor for sql_builder_pkg.get_sql(l_insert_select_query);
+        
+        open insert_cursor for sql_builder_pkg.get_sql(l_insert_select_query);
         
         LOOP
             if is_string(v_column_datatype)
@@ -256,8 +255,8 @@ as
     
     EXCEPTION
         WHEN OTHERS THEN
-			exception_cleanup;
-			cleanup_pkg.close_cursor(insert_cursor);
+            exception_cleanup;
+            cleanup_pkg.close_cursor(insert_cursor);
     END partitioned_append_to_archive;
                               
                               
@@ -295,14 +294,14 @@ as
                                           , p_arch_table         in archive_rules.table_name%type
                                           , p_bulk_limit         in integer default 250000)
     is
-		
+        
         l_insert_cursor ref_cursor_t
         type rowid_table_t is table of rowid index by pls_integer;
         rowid_table rowid_table_t;
-		
-		l_select_query        sql_builder_pkg.t_query;
-		
-		l_insert_select_query sql_builder_pkg.t_query;
+        
+        l_select_query        sql_builder_pkg.t_query;
+        
+        l_insert_select_query sql_builder_pkg.t_query;
         
         --l_select varchar2(10000) := 'SELECT rowid FROM '
         --                          || sql_utils_pkg.get_full_table_name(p_src_owner,p_src_table) || ' ' || sql_utils_pkg.get_partition_extension(p_src_partition_name);
@@ -317,15 +316,15 @@ as
         --                          || ' where rowid = :rwid';
                                   
     begin
-	
-		sql_builder_pkg.add_select(l_select_query, 'rowid');
-		sql_builder_pkg.add_from(l_select_query, sql_utils_pkg.get_full_table_name(p_src_owner,p_src_table) || ' ' || sql_utils_pkg.get_partition_extension(p_src_partition_name));
-		
-		sql_builder_pkg.add_select(l_insert_select_query, sql_builder_pkg.g_select_all);
-		sql_builder_pkg.add_from(l_insert_select_query, sql_utils_pkg.get_full_table_name(p_src_owner,p_src_table) || ' ' || sql_utils_pkg.get_partition_extension(p_src_partition_name));
-		sql_builder_pkg.add_where(l_insert_select_query, 'rowid = :rwid');
-		
-		
+    
+        sql_builder_pkg.add_select(l_select_query, 'rowid');
+        sql_builder_pkg.add_from(l_select_query, sql_utils_pkg.get_full_table_name(p_src_owner,p_src_table) || ' ' || sql_utils_pkg.get_partition_extension(p_src_partition_name));
+        
+        sql_builder_pkg.add_select(l_insert_select_query, sql_builder_pkg.g_select_all);
+        sql_builder_pkg.add_from(l_insert_select_query, sql_utils_pkg.get_full_table_name(p_src_owner,p_src_table) || ' ' || sql_utils_pkg.get_partition_extension(p_src_partition_name));
+        sql_builder_pkg.add_where(l_insert_select_query, 'rowid = :rwid');
+        
+        
         debug_print_or_execute('ALTER TABLE ' || p_arch_owner || '.' || p_arch_table || ' NOLOGGING');
         
         if not debug_pkg.get_debug_state
@@ -337,9 +336,9 @@ as
                 
                 forall rec_rowid in indices of rowid_table
                     execute immediate 'INSERT ' || '/*+ NOSORT NOLOGGING*/ INTO '
-					                || sql_utils_pkg.get_full_table_name(p_arch_owner,p_arch_table)
-									|| ' '
-									|| sql_builder_pkg.get_sql(l_insert_select_query) using rowid_table(rec_rowid);
+                                    || sql_utils_pkg.get_full_table_name(p_arch_owner,p_arch_table)
+                                    || ' '
+                                    || sql_builder_pkg.get_sql(l_insert_select_query) using rowid_table(rec_rowid);
                     commit;
             end loop;
             
