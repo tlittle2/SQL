@@ -12,6 +12,7 @@ AS
             dbms_output.put_line(p_sql);
         else
             execute immediate p_sql;
+        end if;
     exception
         when others then
             error_pkg.print_error('debug_print_or_execute');
