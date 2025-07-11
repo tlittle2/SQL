@@ -34,8 +34,6 @@ as
     procedure create_new_partitions(p_run_type IN CHAR, p_years_to_create IN INTEGER);
     
     procedure remove_archive_partitions(p_run_type IN CHAR);
-    
-    
-    
+
 
 end partition_parm_pkg;
