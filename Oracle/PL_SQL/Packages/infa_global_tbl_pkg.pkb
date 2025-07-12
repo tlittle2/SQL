@@ -26,7 +26,7 @@ as
 
     procedure global_resync(p_run_dte in date, p_run_type IN CHAR := global_constants_pkg.g_special_run)
 	is
-	   l_proc_name VARCHAR2(15) := 'GLOBAL_RESYNC';
+	   l_proc_name CONSTANT VARCHAR2(15) := 'GLOBAL_RESYNC';
 	begin
 		error_pkg.assert(p_run_type in (global_constants_pkg.g_special_run, global_constants_pkg.g_regular_run), 'INVALID RUN TYPE PROVIDED. PLEASE CORRECT');
 
