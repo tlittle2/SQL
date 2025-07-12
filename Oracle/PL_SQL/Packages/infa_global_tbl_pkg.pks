@@ -1,7 +1,10 @@
 create or replace package infa_global_tbl_pkg
 as
+    procedure get_global_row(p_rec_global IN OUT NOCOPY infa_global%rowtype, p_run_type IN CHAR := global_constants_pkg.g_regular_run);
+	
     procedure global_resync(p_run_dte in date, p_run_type IN CHAR := global_constants_pkg.g_special_run);
 
     procedure global_rollover;
+	
 
 end infa_global_tbl_pkg;
