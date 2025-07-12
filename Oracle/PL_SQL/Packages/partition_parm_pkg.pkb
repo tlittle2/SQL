@@ -183,11 +183,11 @@ AS
                 then
                     return 'to_date(' || '''' || to_char(to_date(p_high_value, g_monthly_partition_date_format), 'yyyy-mm-dd') || '''' || ',''yyyy-mm-dd'')';
                     return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_monthly_partition_date_format), 'yyyy-mm-dd')));
-					
+                    
                 when g_daily_partition_flag
                 then
                     --return 'to_date(' || '''' || to_char(to_date(p_high_value, g_daily_partition_date_format), 'yyyy-mm-dd') || '''' || ',''yyyy-mm-dd'')';
-					return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_daily_partition_date_format), 'yyyy-mm-dd')));
+                    return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_daily_partition_date_format), 'yyyy-mm-dd')));
                     
                 else
                     --return '''' || p_high_value || '''';
@@ -232,17 +232,17 @@ AS
                 debug_print_or_execute('select dummy from dual');
                 
             end if;
-			
-			debug_print_or_execute(
-			string_utils_pkg.get_str('ALTER TABLE %1 SPLIT PARTITION %2 AT (%3) INTO (PARTITION %4 TABLESPACE %5 PARTITION %6 TABLESPACE %7) UPDATE GLOBAL INDEXES'
-			                        , sql_utils_pkg.get_full_table_name(p_parm_table_row.table_owner, p_parm_table_row.table_name)
-									, l_partMax
-									, transform_split(p_parm_table_row.partition_type, p_part_create_row.high_value)
-									, l_partition_name
-									, p_parm_table_row.tablespace_name
-									, l_partMax
-									, p_parm_table_row.tablespace_name)
-								  );
+            
+            debug_print_or_execute(
+            string_utils_pkg.get_str('ALTER TABLE %1 SPLIT PARTITION %2 AT (%3) INTO (PARTITION %4 TABLESPACE %5 PARTITION %6 TABLESPACE %7) UPDATE GLOBAL INDEXES'
+                                    , sql_utils_pkg.get_full_table_name(p_parm_table_row.table_owner, p_parm_table_row.table_name)
+                                    , l_partMax
+                                    , transform_split(p_parm_table_row.partition_type, p_part_create_row.high_value)
+                                    , l_partition_name
+                                    , p_parm_table_row.tablespace_name
+                                    , l_partMax
+                                    , p_parm_table_row.tablespace_name)
+                                  );
                                   
             
             --debug_print_or_execute('ALTER TABLE ' || p_parm_table_row.table_owner || '.' || p_parm_table_row.table_name
@@ -394,7 +394,7 @@ AS
         end if;
         
         dbms_output.put_line(string_utils_pkg.get_str('Creating Partitions starting from : %1',  g_create_begin_dte));
-       		
+               
         create_partitions;
     
     exception
