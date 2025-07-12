@@ -85,7 +85,15 @@ as
                       p_value5 in varchar2 := null,
                       p_value6 in varchar2 := null,
                       p_value7 in varchar2 := null,
-                      p_value8 in varchar2 := null)
+                      p_value8 in varchar2 := null,
+                      p_value9 in varchar2 := null,
+                      p_value10 in varchar2 := null,
+                      p_value11 in varchar2 := null,
+                      p_value12 in varchar2 := null,
+                      p_value13 in varchar2 := null,
+                      p_value14 in varchar2 := null,
+                      p_value15 in varchar2 := null
+                      )
     return varchar2;
 
 end string_utils_pkg;
