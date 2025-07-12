@@ -173,14 +173,18 @@ AS
             case p_partition_type
                 when g_monthly_partition_flag
                 then
-                    return 'to_date(' || '''' || to_char(to_date(p_high_value, g_monthly_partition_date_format), 'yyyy-mm-dd') || '''' || ',''yyyy-mm-dd'')';
+                    --return 'to_date(' || '''' || to_char(to_date(p_high_value, g_monthly_partition_date_format), 'yyyy-mm-dd') || '''' || ',''yyyy-mm-dd'')';
+                    return 'to_date(' || string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_monthly_partition_date_format), 'yyyy-mm-dd')) || ',''yyyy-mm-dd'')';
+                    
                     
                 when g_daily_partition_flag
                 then
-                    return 'to_date(' || '''' || to_char(to_date(p_high_value, g_daily_partition_date_format), 'yyyy-mm-dd') || '''' || ',''yyyy-mm-dd'')';
-                
+                    --return 'to_date(' || '''' || to_char(to_date(p_high_value, g_daily_partition_date_format), 'yyyy-mm-dd') || '''' || ',''yyyy-mm-dd'')';
+                    return 'to_date(' || string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_daily_partition_date_format), 'yyyy-mm-dd'))   || ',''yyyy-mm-dd'')';
+                    
                 else
-                    return '''' || p_high_value || '''';
+                    --return '''' || p_high_value || '''';
+                    return string_utils_pkg.str_to_single_quoted_str(p_high_value);
             end case;
                 
         end transform_split;
