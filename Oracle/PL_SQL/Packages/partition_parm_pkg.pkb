@@ -274,7 +274,7 @@ AS
                         select partition_key, high_value from (
                             select distinct date_utils_pkg.get_year_quarter(to_char(last_day(to_date(a.column_value, l_default_date_format)))) as partition_key
                             ,               date_utils_pkg.get_year_quarter(to_char(last_day(to_date(b.column_value, l_default_date_format)))) as high_value
-                            from date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) a
+                                  from date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) a
                             inner join date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) b
                             on a.column_value + 1 = b.column_value
                         )where partition_key <> high_value
