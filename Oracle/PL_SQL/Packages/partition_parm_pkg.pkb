@@ -1,3 +1,4 @@
+--NEED TO CHANGE QUERIES TO PROPERLY USE ARCHIVE_RULES table
 create or replace package body partition_parm_pkg
 AS
     type reconTable_t is table of partition_table_parm.table_name%type;
@@ -18,7 +19,7 @@ AS
     end debug_print_or_execute;
     
     
-    procedure check_partition_type(p_partition_type);
+    procedure check_partition_type(p_partition_type IN partition_table_parm.partition_type%type)
     is
     begin
         error_pkg.assert(p_partition_type in (g_daily_partition_flag, g_monthly_partition_flag, g_quarterly_partition_flag, g_annual_partition_flag)
@@ -83,10 +84,11 @@ AS
     is
         l_bad_idx_count NUMBER;
     begin
-        select
+        select nvl(count(1), 0)
+        into l_bad_idx_count
         from all_ind_partitions ind_part
         inner join all_indexes idxs
-        on ind_part.index_name = ids.index_name
+        on ind_part.index_name = idxs.index_name
         
         inner join partition_table_parm parm
         on idxs.table_owner = parm.table_owner
@@ -203,7 +205,7 @@ AS
             from all_tab_partitions
             where table_owner = p_table_owner
             and table_name = p_table_name
-            and partition_name = p_partition_name
+            and partition_name = p_partition_name;
             
             if part_count > 0
             then
@@ -217,7 +219,7 @@ AS
         procedure create_partition_statement(p_part_create_row in partition_creation_t, p_parm_table_row in partition_table_parm%rowtype)
         is
             l_partition_name all_tab_partitions.partition_name%type := p_parm_table_row.partition_prefix || p_part_create_row.partition_key;
-            l_partMax all_tab_partitions.partition_name%type        := transform_max(p_parm_table_row.parittion_type, p_parm_table_row.partition_prefix, p_part_create_row.high_value);
+            l_partMax all_tab_partitions.partition_name%type        := transform_max(p_parm_table_row.partition_type, p_parm_table_row.partition_prefix, p_part_create_row.high_value);
         begin
             
             if partition_previously_created(p_parm_table_row.table_owner, p_parm_table_row.table_name, l_partition_name)
@@ -226,7 +228,7 @@ AS
                 
             end if;
             
-            debug_print_or_execute('ALTER TABLE ' || table_owner || '.' || table_name
+            debug_print_or_execute('ALTER TABLE ' || p_parm_table_row.table_owner || '.' || p_parm_table_row.table_name
                                  || ' SPLIT PARTITION ' || l_partMax
                                  || ' AT '
                                  || '('
@@ -234,9 +236,9 @@ AS
                                  || ')'
                                  || ' INTO '
                                  || '( PARTITION ' || l_partition_name
-                                 || ' TABLESPACE ' || p_parm_table_row.table_space_name
+                                 || ' TABLESPACE ' || p_parm_table_row.tablespace_name
                                  || ' partition ' || l_partMax
-                                 || ' TABLESPACE ' || p_parm_table_row.table_space_name
+                                 || ' TABLESPACE ' || p_parm_table_row.tablespace_name
                                  || ') UPDATE GLOBAL INDEXES');
          exception
              when others then
@@ -246,7 +248,7 @@ AS
         
         
         procedure manage_create_cursor(p_cur_op_flag IN CHAR
-                                     , p_partition_type IN partition_table_parms.partition_type%type
+                                     , p_partition_type IN partition_table_parm.partition_type%type
                                      , p_begin_dte IN DATE
                                      , p_end_dte IN DATE
                                      , io_cursor IN OUT ref_cursor_t)
@@ -261,8 +263,8 @@ AS
                     when g_monthly_partition_flag then
                         open io_cursor for
                         select partition_key, high_value from (
-                            select distinct to_char(last_day(to_date(a.column_value, l_default_format)), g_monthly_partition_date_format) as partition_key
-                            ,               to_char(last_day(to_date(b.column_value, l_default_format)), g_monthly_partition_date_format) as high_value
+                            select distinct to_char(last_day(to_date(a.column_value, l_default_date_format)), g_monthly_partition_date_format) as partition_key
+                            ,               to_char(last_day(to_date(b.column_value, l_default_date_format)), g_monthly_partition_date_format) as high_value
                                   from date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) a
                             inner join date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) b
                             on a.column_value + 1 = b.column_value
@@ -322,12 +324,12 @@ AS
         is
             cursor partitions_to_create is
             select *
-            from partition_table_parms
+            from partition_table_parm
             where partitioned = g_is_partitioned
             and upd_flag <> g_is_updated
             order by table_name asc;
         
-            l_create_cursor ref_cursor_t
+            l_create_cursor ref_cursor_t;
             l_part_create partition_creation_t;
             
             l_recontable reconTable_t := reconTable_t();
@@ -341,16 +343,16 @@ AS
             loop
                 populate_recon_table(rec_parts.table_name, l_recontable);
                 
-                manage_create_cursor(c_open_cursor, rec_part.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
+                manage_create_cursor(c_open_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
                 
                 loop
                     fetch l_create_cursor into l_part_create;
-                    exit when l_create_cursor%NOTFOUND
+                    exit when l_create_cursor%NOTFOUND;
                     
                     create_partition_statement(l_part_create, rec_parts);                
                 end loop;
                 
-                manage_create_cursor(c_close_cursor, rec_part.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
+                manage_create_cursor(c_close_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
                 
                 update_parm_table_progress(g_is_updated, rec_parts.table_owner, rec_parts.table_name);
             
@@ -380,14 +382,13 @@ AS
     
     exception
         when others then
-            cleanup_pkg.close_cursor(l_create_cursor);
             error_pkg.print_error('create_new_partitions');
             raise;
     end create_new_partitions;
         
         
     
-    procedure remove_archive_partitions(p_run_type IN CHAR);
+    procedure remove_archive_partitions(p_run_type IN CHAR)
     is
         g_drop_begin_dte DATE;
         
@@ -463,10 +464,10 @@ AS
         is
             cursor cur_dataToDestroy is
             select *
-            from partition_table_parms
+            from partition_table_parm
             where partitioned = g_is_partitioned
             and upd_flag <> g_is_updated
-            and substr(table_name, 1, length(g_archive_table_prefix)) = g_archive_table_prefix
+            and substr(table_name, 1, length(archive_rules_tbl_pkg.g_archive_table_prefix)) = archive_rules_tbl_pkg.g_archive_table_prefix
             order by table_name asc;
             
             l_droparchive_recontable reconTable_t := reconTable_t();
@@ -486,10 +487,10 @@ AS
                                    , l_archive_cursor);
                                    
                 loop
-                    fetch l_archive_cursor into l_all_tab_parts
+                    fetch l_archive_cursor into l_all_tab_parts;
                     exit when l_archive_cursor%notfound;
                     
-                    sql_utils_pkg.remove_data_from_partition(p_drop_flag, l_all_tab_parts.table_owner, l_all_tab_parts.rec_destroy.table_name, l_all_tab_parts.partition_name);
+                    sql_utils_pkg.remove_data_from_partition(l_all_tab_parts.rec_destroy.table_name, l_all_tab_parts.partition_name, true);
                     
                 end loop;
                 
@@ -504,7 +505,7 @@ AS
             
         exception
             when others then
-            cleanup_pkg.close_cursor(l_archive_cursor)
+            cleanup_pkg.close_cursor(l_archive_cursor);
             error_pkg.print_error('remove_data_from_archive_partitions');
             raise;
         end remove_data_from_archive_partitions;
@@ -522,3 +523,6 @@ AS
     
 
 end partition_parm_pkg;
+/
+
+select * from partition_table_parm;
