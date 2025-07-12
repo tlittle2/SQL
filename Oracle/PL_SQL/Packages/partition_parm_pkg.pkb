@@ -145,7 +145,7 @@ AS
         
     exception
         when others then
-        error_pkg.print_error('retrieve_cutoff_dates');
+        error_pkg.print_error('reset_partition_parm_table');
         raise;    
     end reset_partition_parm_table;
     
@@ -365,7 +365,7 @@ AS
         exception
            when others then
            cleanup_pkg.close_cursor(l_create_cursor);
-           error_pkg.print_error('manage_create_cursor');
+           error_pkg.print_error('create_partitions');
            raise;
         end create_partitions;
         
