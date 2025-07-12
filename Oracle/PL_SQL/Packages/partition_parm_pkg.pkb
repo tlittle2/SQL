@@ -102,6 +102,7 @@ AS
         where ind_part.status = 'UNUSABLE' or idxs.status = 'UNUSABLE';
         
         error_pkg.assert(l_bad_idx_count = 0, 'UNUSABLE OR INVALID INDEXES HAVE BEEN DETECTED. PLEASE INVESTIGATE');
+    
     exception
         when others then
         error_pkg.print_error('check_indexes');
