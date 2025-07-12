@@ -1,0 +1,8 @@
+create table infa_global_fix(
+    STATEMENT_PRD_YR_QRTR CHAR(6 BYTE)
+    , RUN_DTE DATE
+    , SOQ_DTE DATE
+    , EOQ_DTE DATE
+	, LAST_UPDATE_DTE DATE
+	, LAST_UPDATED_BY VARCHAR2(30)
+);
