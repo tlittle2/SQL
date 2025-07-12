@@ -81,6 +81,22 @@ as
 
     end reset_archive_parm_table;
     
+    procedure update_parm_table_progress(p_upd_flag_value IN CHAR, p_table_owner IN VARCHAR2, p_table_name IN VARCHAR2)
+    is
+    begin
+        update archive_rules
+        set upd_flag = p_upd_flag_value
+        where table_owner = p_table_owner
+        and table_name = p_table_name;
+        
+        commit;
+        
+    exception
+        when others then
+            error_pkg.print_error('update_parm_table_progress');
+            raise;
+    end update_parm_table_progress;
+    
 
 
     PROCEDURE partitioned_append_to_archive(p_src_owner          IN partition_table_parm.TABLE_OWNER%TYPE
