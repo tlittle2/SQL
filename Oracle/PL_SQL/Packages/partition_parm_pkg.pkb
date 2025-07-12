@@ -1,7 +1,14 @@
---NEED TO CHANGE QUERIES TO PROPERLY USE ARCHIVE_RULES table
 create or replace package body partition_parm_pkg
 AS
     type reconTable_t is table of partition_table_parm.table_name%type;
+    
+    function get_partition_name(p_partition_type in partition_table_parm.partition_type%type, p_date in date)
+    return varchar2
+    is
+    begin
+        error_pkg.assert(1=2, 'FUNCTION NOT CREATED');
+    end get_partition_name;
+    
     
     procedure debug_print_or_execute(p_sql IN VARCHAR2)
     is
@@ -463,12 +470,16 @@ AS
         procedure remove_data_from_archive_partitions
         is
             cursor cur_dataToDestroy is
-            select *
-            from partition_table_parm
-            where partitioned = g_is_partitioned
-            and upd_flag <> g_is_updated
-            and substr(table_name, 1, length(archive_rules_tbl_pkg.g_archive_table_prefix)) = archive_rules_tbl_pkg.g_archive_table_prefix
-            order by table_name asc;
+            select part.*, archive.years_to_keep
+            from partition_table_parm part
+            inner join archive_rules archive
+            on part.table_owner = archive.table_owner
+            and part.table_name = archive.table_name
+            and part.partitioned = archive.partitioned
+            where part.partitioned = g_is_partitioned
+            and part.upd_flag <> g_is_updated
+            and substr(part.table_name, 1, length(archive_rules_tbl_pkg.g_archive_table_prefix)) = archive_rules_tbl_pkg.g_archive_table_prefix
+            order by part.table_name asc;
             
             l_droparchive_recontable reconTable_t := reconTable_t();
             
@@ -490,7 +501,7 @@ AS
                     fetch l_archive_cursor into l_all_tab_parts;
                     exit when l_archive_cursor%notfound;
                     
-                    sql_utils_pkg.remove_data_from_partition(l_all_tab_parts.rec_destroy.table_name, l_all_tab_parts.partition_name, true);
+                    sql_utils_pkg.remove_data_from_partition(rec_destroy.table_name, l_all_tab_parts.partition_name, true);
                     
                 end loop;
                 
@@ -523,6 +534,3 @@ AS
     
 
 end partition_parm_pkg;
-/
-
-select * from partition_table_parm;
