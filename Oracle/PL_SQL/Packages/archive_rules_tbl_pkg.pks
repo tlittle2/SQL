@@ -8,8 +8,6 @@ as
     
     procedure run_archival(p_job_nbr IN archive_rules.job_nbr%type, p_partition_flag IN archive_rules.partitioned%type);
 
-    /*procedure remove_from_archive_rules(p_table_owner        IN archive_rules.table_owner%type
-                                      , p_table_name         IN archive_rules.table_name%type);*/
 
     PROCEDURE partitioned_append_to_archive(p_src_owner          IN partition_table_parm.TABLE_OWNER%TYPE
                                           , p_src_table          IN partition_table_parm.TABLE_NAME%TYPE
