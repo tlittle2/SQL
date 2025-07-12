@@ -240,20 +240,7 @@ AS
                                     , l_partMax
                                     , p_parm_table_row.tablespace_name)
                                   );
-                                  
-            
-            --debug_print_or_execute('ALTER TABLE ' || p_parm_table_row.table_owner || '.' || p_parm_table_row.table_name
-            --                     || ' SPLIT PARTITION ' || l_partMax
-            --                     || ' AT '
-            --                     || '('
-            --                     || transform_split(p_parm_table_row.partition_type, p_part_create_row.high_value)
-            --                     || ')'
-            --                     || ' INTO '
-            --                     || '( PARTITION ' || l_partition_name
-            --                     || ' TABLESPACE ' || p_parm_table_row.tablespace_name
-            --                     || ' partition ' || l_partMax
-            --                     || ' TABLESPACE ' || p_parm_table_row.tablespace_name
-            --                     || ') UPDATE GLOBAL INDEXES');
+
          exception
              when others then
              error_pkg.print_error('create_partition_statement');
