@@ -30,8 +30,27 @@ as
         end if;
     end print_or_execute;
     
+    
+    function get_full_table_name(p_owner IN all_tables.owner%type,p_table_name IN all_tables.table_name%type)
+    return varchar2
+    deterministic
+    is
+    begin
+        return string_utils_pkg.get_str('%1.%2', p_owner, p_table_name);
+        --return p_owner || '.' || p_table_name;
+    end get_full_table_name;
+    
+    function get_partition_extension(p_partition_name in all_tab_partitions.partition_name%type)
+    return varchar2
+    deterministic
+    is
+    begin
+        return string_utils_pkg.get_str('PARTITION (%1) ', p_partition_name);
+        --return 'PARTITION (' || p_partition_name || ')';
+    end get_partition_extension;
+    
     --given one or more tables, truncate the tables in the list
-    procedure truncate_table(p_table_names in varchar2)
+    procedure truncate_table(p_table_names in varchar2) 
     is
         cursor tbls is
         select trim(regexp_substr( p_table_names, '[^,]+', 1, level )) value
@@ -50,8 +69,8 @@ as
             
             error_pkg.assert(l_tbl_name is not null, 'PROVIDED INVALID TABLE! PLEASE INVESTIGATE');
             
-            print_or_execute('TRUNCATE TABLE ' || l_tbl_name);
-        
+            print_or_execute(string_utils_pkg.get_str('TRUNCATE TABLE %1', l_tbl_name));
+            
         end loop;
         
     exception
@@ -67,13 +86,10 @@ as
     is
     begin
         
-        print_or_execute('ALTER TABLE '
-                        || p_table_name
-                        || case when p_drop then ' DROP ' else ' TRUNCATE '  end
-                        || 'PARTITION '
-                        || p_partition_name
-                        || ' UPDATE GLOBAL INDEXES'
-                        );
+        print_or_execute(string_utils_pkg.get_str('ALTER TABLE %1 %2 PARTITION %3 UPDATE GLOBAL INDEXES'
+                                                , p_table_name
+                                                , case when p_drop then ' DROP ' else ' TRUNCATE '  end
+                                                , p_partition_name));
     
     end remove_data_from_partition;
     
@@ -117,25 +133,25 @@ as
         if upper(trim(l_row_movement)) = 'DISABLED'
         then
             l_row_movement_flag := TRUE;
-            l_sql_statement := 'ALTER TABLE ' || p_table_name || ' enable row movement';
+            l_sql_statement := string_utils_pkg.get_str('ALTER TABLE %1 enable row movement', p_table_name);
             print_or_execute(l_sql_statement);
         end if;
         
         reset_sql_statement(l_sql_statement);
-        l_sql_statement := 'ALTER TABLE ' || p_table_name || ' move';
+        l_sql_statement := string_utils_pkg.get_str('ALTER TABLE %1 move', p_table_name);
         print_or_execute(l_sql_statement);
         
         for rec in idxs
         loop
             reset_sql_statement(l_sql_statement);
-            l_sql_statement := 'alter index ' || rec.index_name || ' rebuild parallel (degree ' || rec.degree || ' instances 1) ';
+            l_sql_statement := string_utils_pkg.get_str('ALTER INDEX %1 rebuild parallel (degree %2 instances 1)', rec.index_name, rec.degree);
             print_or_execute(l_sql_statement);
         end loop;
         
         if l_row_movement_flag
         then
             reset_sql_statement(l_sql_statement);
-            l_sql_statement := 'alter index ' || p_table_name || ' disable row movement';
+            l_sql_statement := string_utils_pkg.get_str('ALTER TABLE %1 disable row movement', p_table_name);
             print_or_execute(l_sql_statement); 
             
         end if;
@@ -148,6 +164,31 @@ as
         end if;
          
     end reorg_table;
+    
+    
+    procedure dba_analyze_schema
+    is
+    begin
+        dbms_stats.gather_schema_stats(
+            ownname=>g_schema_name,
+            method_opt => 'FOR ALL INDEXED COLUMNS SIZE AUTO',
+            degree => dbms_stats.auto_degree,
+            estimate_percent => dbms_stats.auto_sample_size,
+            cascade => true
+        );
+    end;
+    
+    
+    procedure dba_analyze_table(p_table_name USER_TABLES.TABLE_NAME%TYPE)
+    is
+    begin
+        dbms_stats.gather_table_stats(
+            ownname => g_schema_name,
+            tabname => p_table_name,
+            estimate_percent => dbms_stats.auto_sample_size,
+            method_opt => 'FOR ALL INDEXED COLUMNS SIZE AUTO'
+        );
+    end;
     
 
 end sql_utils_pkg;
