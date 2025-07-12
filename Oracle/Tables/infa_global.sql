@@ -3,6 +3,6 @@ create table infa_global(
     , RUN_DTE DATE
     , SOQ_DTE DATE
     , EOQ_DTE DATE
-	, LAST_UPDATE_DTE DATE
-	, LAST_UPDATED_BY VARCHAR2(30)
+    , LAST_UPDATE_DTE DATE
+    , LAST_UPDATED_BY VARCHAR2(30)
 );
