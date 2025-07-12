@@ -136,16 +136,16 @@ as
         
         if is_string(v_column_datatype)
         then
-			sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_string_value));
+            sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_string_value));
 
         elsif is_number(v_column_datatype)
         then
-			sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_number_value));
+            sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_number_value));
 
 
         elsif is_date(v_column_datatype)
         then
-			sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_date_value));
+            sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_date_value));
 
         end if;
         
@@ -180,12 +180,12 @@ as
             elsif is_number(v_column_datatype)
             then
                 --execute_insert(' where nvl(' || p_column_name || ', ' || c_default_number_value || ') = ''' || numberContainer.numValue || '''');
-				execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, c_default_number_value, numberContainer.numValue));
+                execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, c_default_number_value, numberContainer.numValue));
 
             elsif is_number(v_column_datatype)
             then
                 --execute_insert(' where nvl(' || p_column_name || ', ''' || c_default_date_value || ''') = ''' || dateContainer.dateValue || '''');
-				execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, string_utils_pkg.str_to_single_quoted_str(c_default_date_value), string_utils_pkg.str_to_single_quoted_str(dateContainer.dateValue)));
+                execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, string_utils_pkg.str_to_single_quoted_str(c_default_date_value), string_utils_pkg.str_to_single_quoted_str(dateContainer.dateValue)));
 
             end if;
 
@@ -227,7 +227,7 @@ as
                                             , p_key_column         in archive_rules.archive_column_key%type)
     is
     begin
-	    error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
+        error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
     exception
         WHEN OTHERS THEN
             error_pkg.print_error('unpartitioned_append_to_archive');
@@ -267,7 +267,7 @@ as
         sql_builder_pkg.add_where(l_insert_select_query, 'rowid = :rwid', '');
 
 
-		debug_print_or_execute(string_utils_pkg.get_str('ALTER TABLE %1 NOLOGGING', sql_utils_pkg.get_full_table_name(p_arch_owner, p_arch_table)));
+        debug_print_or_execute(string_utils_pkg.get_str('ALTER TABLE %1 NOLOGGING', sql_utils_pkg.get_full_table_name(p_arch_owner, p_arch_table)));
 
         if not debug_pkg.get_debug_state
         then
@@ -310,7 +310,7 @@ as
                                             , p_bulk_limit         in integer default 250000)
     is
     begin
-	    error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
+        error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
         
     exception
         WHEN OTHERS THEN
@@ -322,7 +322,7 @@ as
     procedure run_archival(p_job_nbr IN archive_rules.job_nbr%type, p_partition_flag IN archive_rules.partitioned%type)
     is
     begin
-	    error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
+        error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
         
     exception
         WHEN OTHERS THEN
