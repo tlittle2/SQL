@@ -29,8 +29,7 @@ AS
     procedure check_partition_type(p_partition_type IN partition_table_parm.partition_type%type)
     is
     begin
-        error_pkg.assert(p_partition_type in (g_daily_partition_flag, g_monthly_partition_flag, g_quarterly_partition_flag, g_annual_partition_flag)
-                      , 'UNSUPPORTED PARTITION FLAG. PLEASE INVESTIGATE');
+        error_pkg.assert(p_partition_type in (g_daily_partition_flag, g_monthly_partition_flag, g_quarterly_partition_flag, g_annual_partition_flag), 'UNSUPPORTED PARTITION FLAG. PLEASE INVESTIGATE');
     end check_partition_type;
     
     
@@ -100,11 +99,9 @@ AS
         inner join partition_table_parm parm
         on idxs.table_owner = parm.table_owner
         and idxs.table_name = parm.table_name
-        
         where ind_part.status = 'UNUSABLE' or idxs.status = 'UNUSABLE';
         
         error_pkg.assert(l_bad_idx_count = 0, 'UNUSABLE OR INVALID INDEXES HAVE BEEN DETECTED. PLEASE INVESTIGATE');
-    
     exception
         when others then
         error_pkg.print_error('check_indexes');
@@ -116,8 +113,7 @@ AS
                                   , p_begin_cutoff_dte out date)
     is
     begin
-        error_pkg.assert(p_run_type in (global_constants_pkg.g_regular_run, global_constants_pkg.g_special_run)
-                                       , 'UNSUPPORTED RUNTYPE PASSED TO PROCEDURE. PLEASE CORRECT');
+        error_pkg.assert(p_run_type in (global_constants_pkg.g_regular_run, global_constants_pkg.g_special_run), 'UNSUPPORTED RUNTYPE PASSED TO PROCEDURE. PLEASE CORRECT');
         
         if p_run_type = global_constants_pkg.g_regular_run
         then
@@ -144,9 +140,12 @@ AS
     begin
         update partition_table_parm
         set upd_flag = 'N';
-        
         commit;
-    
+        
+    exception
+        when others then
+        error_pkg.print_error('retrieve_cutoff_dates');
+        raise;    
     end reset_partition_parm_table;
     
     procedure create_new_partitions(p_run_type IN CHAR, p_years_to_create IN INTEGER)
@@ -182,14 +181,13 @@ AS
             case p_partition_type
                 when g_monthly_partition_flag
                 then
-                    --return 'to_date(' || '''' || to_char(to_date(p_high_value, g_monthly_partition_date_format), 'yyyy-mm-dd') || '''' || ',''yyyy-mm-dd'')';
-                    return 'to_date(' || string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_monthly_partition_date_format), 'yyyy-mm-dd')) || ',''yyyy-mm-dd'')';
-                    
-                    
+                    return 'to_date(' || '''' || to_char(to_date(p_high_value, g_monthly_partition_date_format), 'yyyy-mm-dd') || '''' || ',''yyyy-mm-dd'')';
+                    return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_monthly_partition_date_format), 'yyyy-mm-dd')));
+					
                 when g_daily_partition_flag
                 then
                     --return 'to_date(' || '''' || to_char(to_date(p_high_value, g_daily_partition_date_format), 'yyyy-mm-dd') || '''' || ',''yyyy-mm-dd'')';
-                    return 'to_date(' || string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_daily_partition_date_format), 'yyyy-mm-dd'))   || ',''yyyy-mm-dd'')';
+					return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_daily_partition_date_format), 'yyyy-mm-dd')));
                     
                 else
                     --return '''' || p_high_value || '''';
@@ -234,19 +232,31 @@ AS
                 debug_print_or_execute('select dummy from dual');
                 
             end if;
+			
+			debug_print_or_execute(
+			string_utils_pkg.get_str('ALTER TABLE %1 SPLIT PARTITION %2 AT (%3) INTO (PARTITION %4 TABLESPACE %5 PARTITION %6 TABLESPACE %7) UPDATE GLOBAL INDEXES'
+			                        , sql_utils_pkg.get_full_table_name(p_parm_table_row.table_owner, p_parm_table_row.table_name)
+									, l_partMax
+									, transform_split(p_parm_table_row.partition_type, p_part_create_row.high_value)
+									, l_partition_name
+									, p_parm_table_row.tablespace_name
+									, l_partMax
+									, p_parm_table_row.tablespace_name)
+								  );
+                                  
             
-            debug_print_or_execute('ALTER TABLE ' || p_parm_table_row.table_owner || '.' || p_parm_table_row.table_name
-                                 || ' SPLIT PARTITION ' || l_partMax
-                                 || ' AT '
-                                 || '('
-                                 || transform_split(p_parm_table_row.partition_type, p_part_create_row.high_value)
-                                 || ')'
-                                 || ' INTO '
-                                 || '( PARTITION ' || l_partition_name
-                                 || ' TABLESPACE ' || p_parm_table_row.tablespace_name
-                                 || ' partition ' || l_partMax
-                                 || ' TABLESPACE ' || p_parm_table_row.tablespace_name
-                                 || ') UPDATE GLOBAL INDEXES');
+            --debug_print_or_execute('ALTER TABLE ' || p_parm_table_row.table_owner || '.' || p_parm_table_row.table_name
+            --                     || ' SPLIT PARTITION ' || l_partMax
+            --                     || ' AT '
+            --                     || '('
+            --                     || transform_split(p_parm_table_row.partition_type, p_part_create_row.high_value)
+            --                     || ')'
+            --                     || ' INTO '
+            --                     || '( PARTITION ' || l_partition_name
+            --                     || ' TABLESPACE ' || p_parm_table_row.tablespace_name
+            --                     || ' partition ' || l_partMax
+            --                     || ' TABLESPACE ' || p_parm_table_row.tablespace_name
+            --                     || ') UPDATE GLOBAL INDEXES');
          exception
              when others then
              error_pkg.print_error('create_partition_statement');
@@ -383,8 +393,8 @@ AS
             
         end if;
         
-        dbms_output.put_line('Creating Partitions starting from : ' || g_create_begin_dte);
-        
+        dbms_output.put_line(string_utils_pkg.get_str('Creating Partitions starting from : %1',  g_create_begin_dte));
+       		
         create_partitions;
     
     exception
@@ -393,8 +403,7 @@ AS
             raise;
     end create_new_partitions;
         
-        
-    
+
     procedure remove_archive_partitions(p_run_type IN CHAR)
     is
         g_drop_begin_dte DATE;
