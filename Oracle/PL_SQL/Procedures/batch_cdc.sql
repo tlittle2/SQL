@@ -1,14 +1,13 @@
 create or replace procedure batch_cdc(p_table_owner in all_tables.owner%type
-                    , p_stage_table in all_tables.table_name%type
-                    , p_cdc_table in all_tables.table_name%type
-                   , p_target_table in all_tables.table_name%type)
+                                    , p_stage_table in all_tables.table_name%type
+                                    , p_cdc_table in all_tables.table_name%type
+                                    , p_target_table in all_tables.table_name%type)
                                     
 as
     type columns_list_t is table of all_tab_columns.column_name%type index by pls_integer;
 
     cdc_list columns_list_t;
     non_cdc_list columns_list_t;
-    subtype dynamic_statement_st is VARCHAR2(10000);
     
     procedure print_or_execute(p_sql IN VARCHAR2)
     is
@@ -29,14 +28,6 @@ as
         dbms_output.put_line(chr(10));
     end print_extra_line;
     
-    
-    function get_full_table_name(p_table_name IN VARCHAR2)
-    return varchar2
-    deterministic
-    is
-    begin
-        return p_table_owner || '.' || p_table_name;
-    end get_full_table_name;
     
     procedure step_separate(p_step_name in VARCHAR2)
     is
@@ -65,15 +56,15 @@ as
         with schema_check as (
             select a.owner, a.table_name, a.column_name
             , case nvl(substr(data_type, 1, instr(data_type, '(', 1)-1),data_type)
-            WHEN 'DATE' THEN 'DATE'
-            WHEN 'TIMESTAMP' then 'TIMESTAMP(' || a.data_scale || ')'
-            WHEN 'FLOAT' then 'FLOAT(' || a.data_precision || ',' || a.data_scale || ')'
-            WHEN 'NUMBER' then 'NUMBER(' || a.data_precision || ',' || a.data_scale || ')'
-            WHEN 'VARCHAR' THEN 'TEXT(' || a.data_length || ')'
-            WHEN 'VARCHAR2' THEN 'TEXT(' || a.data_length || ')'
-            WHEN 'CHAR' THEN 'TEXT(' || a.data_length || ')'
-            WHEN 'NVARCHAR2' THEN 'TEXT(' || a.data_length || ')'
-            WHEN 'RAW' THEN 'RAW(' || a.data_length || ')'
+            WHEN 'DATE'      THEN 'DATE'
+            WHEN 'TIMESTAMP' then string_utils_pkg.get_str('TIMESTAMP(%1)', a.data_scale)
+            WHEN 'FLOAT'     then string_utils_pkg.get_str('FLOAT(%1,%2)',  a.data_precision, a.data_scale)
+            WHEN 'NUMBER'    then string_utils_pkg.get_str('NUMBER(%1,%2)', a.data_precision, a.data_scale)
+            WHEN 'VARCHAR'   THEN string_utils_pkg.get_str('TEXT(%1)', a.data_length)
+            WHEN 'VARCHAR2'  THEN string_utils_pkg.get_str('TEXT(%1)', a.data_length)
+            WHEN 'CHAR'      THEN string_utils_pkg.get_str('TEXT(%1)', a.data_length)
+            WHEN 'NVARCHAR2' THEN string_utils_pkg.get_str('TEXT(%1)', a.data_length)
+            WHEN 'RAW'       THEN string_utils_pkg.get_str('RAW(%1)', a.data_length)
             ELSE a.data_type end as data_type
             
             from all_tab_columns a
@@ -106,14 +97,14 @@ as
         sql_query_c1 sql_builder_pkg.t_query;
     begin
         sql_query_c1.f_select := sql_builder_pkg.g_select_all;
-        sql_query_c1.f_from := get_full_table_name(p_stage_table);
+        sql_query_c1.f_from := sql_utils_pkg.get_full_table_name(p_table_owner,p_stage_table);
     
         sql_utils_pkg.truncate_table(p_cdc_table);
-        print_or_execute('INSERT INTO '
-                        || get_full_table_name(p_cdc_table)
-                        || ' '
-                        || sql_builder_pkg.get_select(sql_query_c1)
-                        || sql_builder_pkg.get_from(sql_query_c1)
+        
+        print_or_execute(string_utils_pkg.get_str('INSERT INTO %1 %2 %3'
+                         , sql_utils_pkg.get_full_table_name(p_table_owner,p_cdc_table)
+                         , sql_builder_pkg.get_select(sql_query_c1)
+                         , sql_builder_pkg.get_from(sql_query_c1)) 
                         );
     end stg_to_cdc;
 
@@ -161,15 +152,15 @@ as
         sql_query_cdc2 sql_builder_pkg.t_query;
         sql_query_where_in sql_builder_pkg.t_query;
         
-        v_cdc_columns_equality dynamic_statement_st;
+        v_cdc_columns_equality string_utils_pkg.st_max_pl_varchar2;
     begin
-        sql_query_cdc1.f_from := get_full_table_name(p_cdc_table);
+        sql_query_cdc1.f_from := sql_utils_pkg.get_full_table_name(p_table_owner,p_cdc_table);
         
         sql_query_tgt.f_select := sql_builder_pkg.g_select_all;
-        sql_query_tgt.f_from := get_full_table_name(p_target_table);
+        sql_query_tgt.f_from := sql_utils_pkg.get_full_table_name(p_table_owner,p_target_table);
         
         sql_query_cdc2.f_select := '1';
-        sql_query_cdc2.f_from := get_full_table_name(p_cdc_table);
+        sql_query_cdc2.f_from := sql_utils_pkg.get_full_table_name(p_table_owner,p_cdc_table);
     
         for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
         loop
@@ -179,14 +170,14 @@ as
         
             if i <> p_cdc_columns.LAST
             then
-                string_utils_pkg.add_str_token(v_cdc_columns_equality, 'b.' || p_cdc_columns(i) || ' = a.' || p_cdc_columns(i) || ' and ', ' ');
+                string_utils_pkg.add_str_token(v_cdc_columns_equality, string_utils_pkg.get_str('b.%1 = a.%2 and ', p_cdc_columns(i), p_cdc_columns(i)), ' ');
             else
-                string_utils_pkg.add_str_token(v_cdc_columns_equality, 'b.' || p_cdc_columns(i) || ' = a.' || p_cdc_columns(i), ' ');
+                string_utils_pkg.add_str_token(v_cdc_columns_equality, string_utils_pkg.get_str('b.%1 = a.%2', p_cdc_columns(i), p_cdc_columns(i)), ' ');
             end if;
         end loop;
         
         sql_query_cdc2.f_where := v_cdc_columns_equality;
-                            
+                                                         
         print_or_execute('INSERT INTO '
                        || sql_query_cdc1.f_from
                        || ' '
@@ -225,7 +216,7 @@ as
                 if i = p_collection.LAST
                 then
                     sql_builder_pkg.add_select(sql_query_v1,'EFF_DATE) as row_id, k.*');
-                    sql_builder_pkg.add_from(sql_query_v1,get_full_table_name(p_cdc_table) || ' k)');
+                    sql_builder_pkg.add_from(sql_query_v1,sql_utils_pkg.get_full_table_name(p_table_owner,p_cdc_table) || ' k)');
                 end if;
             
             END LOOP;
@@ -249,7 +240,7 @@ as
             begin
                 for i in p_collection.FIRST..p_collection.LAST
                 loop
-                    sql_builder_pkg.add_where(sql_query_join, 'x1.' || p_collection(i) || ' = ' || 'x2.' || p_collection(i), '');
+                    sql_builder_pkg.add_where(sql_query_join, string_utils_pkg.get_str('x1.%1 = x2.%2', p_collection(i), p_collection(i)), '');
                     
                     if i <> p_collection.LAST
                     then
@@ -279,16 +270,14 @@ as
                                                 || '(x1.' || p_collection(i) || ' is null' || ' and ' || 'x2.' || p_collection(i) || ' is not null)'
                                                 || ' or '
                                                 || '(x1.' || p_collection(i) || ' is not null' || ' and' || ' x2.' || p_collection(i) || ' is null)';
-                                            
+                                              
                     if i <> p_collection.LAST
                     then
                         string_utils_pkg.add_str_token(sql_query_v2_where.f_where, ' OR ', '');  
                     end if;
                 end loop;
                 
-                string_utils_pkg.prepend_str_token(sql_query_v2_where.f_where
-                                                , ' where x2.row_id is null or '
-                                                , '');
+                string_utils_pkg.prepend_str_token(sql_query_v2_where.f_where, ' where x2.row_id is null or ', '');
                 
                 return sql_query_v2_where.f_where;
                 
@@ -301,10 +290,7 @@ as
                 
                 if i = p_cdc_columns.LAST
                 then
-                sql_builder_pkg.add_select(sql_query_v2
-                                        , 'x1.EFF_DATE) as row_id2, x1.* '
-                                        || ' from vt1 x1 left outer join vt1 x2'
-                                        || ' on x1.row_id=x2.row_id+1');
+                    sql_builder_pkg.add_select(sql_query_v2, 'x1.EFF_DATE) as row_id2, x1.* from vt1 x1 left outer join vt1 x2 on x1.row_id=x2.row_id+1');
                 end if;
             end loop;
             
@@ -321,13 +307,13 @@ as
         for i in p_cdc_columns.first..p_cdc_columns.last
         loop
             sql_builder_pkg.add_select(sql_query_cdc_to_stg_insert, p_cdc_columns(i));
-            sql_builder_pkg.add_select(sql_query_cdc_to_stg_select, 'x1.' || p_cdc_columns(i));
+            sql_builder_pkg.add_select(sql_query_cdc_to_stg_select, string_utils_pkg.get_str('x1.%1', p_cdc_columns(i)));
         end loop;
 
         for i in p_non_cdc_columns.first..p_non_cdc_columns.last
         loop
             sql_builder_pkg.add_select(sql_query_cdc_to_stg_insert, p_non_cdc_columns(i));
-            sql_builder_pkg.add_select(sql_query_cdc_to_stg_select, 'x1.' || p_non_cdc_columns(i));
+            sql_builder_pkg.add_select(sql_query_cdc_to_stg_select, string_utils_pkg.get_str('x1.%1', p_non_cdc_columns(i)));
             
             if i = p_non_cdc_columns.last
             THEN
@@ -337,7 +323,7 @@ as
                 
                 for i in p_cdc_columns.first..p_cdc_columns.last
                 loop
-                    sql_builder_pkg.add_where(sql_query_cdc_to_stg_select,'x1.' || p_cdc_columns(i) || ' = ' || 'x2.' || p_cdc_columns(i), '');
+                    sql_builder_pkg.add_where(sql_query_cdc_to_stg_select, string_utils_pkg.get_str('x1.%1 = x2.%2', p_cdc_columns(i), p_cdc_columns(i)), '');
                     
                     if i <> p_cdc_columns.LAST
                     then
@@ -350,14 +336,15 @@ as
         
         string_utils_pkg.add_str_token(sql_query_cdc_to_stg_select.f_where, 'and x1.row_id2 = x2.row_id2-1', '');
         
-        string_utils_pkg.prepend_str_token(sql_query_cdc_to_stg_insert.f_select, 'INSERT INTO ' || get_full_table_name(p_stage_table) || '(', '');
-
-        print_or_execute(sql_query_cdc_to_stg_insert.f_select
-                        || create_view_1(p_cdc_columns)
-                        || create_view_2(p_cdc_columns,p_non_cdc_columns)
-                        || sql_builder_pkg.get_select(sql_query_cdc_to_stg_select)
-                        || sql_query_cdc_to_stg_select.f_where
-                        );
+        string_utils_pkg.prepend_str_token(sql_query_cdc_to_stg_insert.f_select, 'INSERT INTO ' || sql_utils_pkg.get_full_table_name(p_table_owner,p_stage_table) || '(', '');
+        
+        print_or_execute(string_utils_pkg.get_str('%1 %2 %3 %4 %5'
+                                , sql_query_cdc_to_stg_insert.f_select
+                                , create_view_1(p_cdc_columns)
+                                , create_view_2(p_cdc_columns,p_non_cdc_columns)
+                                , sql_builder_pkg.get_select(sql_query_cdc_to_stg_select)
+                                , sql_query_cdc_to_stg_select.f_where
+                                ));
                                 
     end move_cdc_to_stage;
 
@@ -369,24 +356,17 @@ as
         
         sql_query_where_in sql_builder_pkg.t_query;
         
-        sql_query dynamic_statement_st;    
+        sql_query string_utils_pkg.st_max_pl_varchar2;
     begin
-        sql_builder_pkg.add_from(sql_query_tgt, get_full_table_name(p_target_table));
-        sql_builder_pkg.add_from(sql_query_stg, get_full_table_name(p_stage_table));
+        sql_builder_pkg.add_from(sql_query_tgt, sql_utils_pkg.get_full_table_name(p_table_owner,p_target_table));
+        sql_builder_pkg.add_from(sql_query_stg, sql_utils_pkg.get_full_table_name(p_table_owner,p_stage_table));
         
         for i in p_cdc_columns.first..p_cdc_columns.last
         loop
             sql_builder_pkg.add_select(sql_query_where_in, p_cdc_columns(i));
         end loop;
         
-        print_or_execute('DELETE '
-                        || sql_builder_pkg.get_from(sql_query_tgt)
-                        || sql_builder_pkg.get_where_in(sql_query_where_in)
-                        || '('
-                        || sql_builder_pkg.get_select(sql_query_where_in)
-                        || sql_builder_pkg.get_from(sql_query_stg)
-                        || ')'
-                        );
+        print_or_execute(string_utils_pkg.get_str('DELETE %1 %2 (%3 %4)', sql_builder_pkg.get_from(sql_query_tgt), sql_builder_pkg.get_where_in(sql_query_where_in), sql_builder_pkg.get_select(sql_query_where_in), sql_builder_pkg.get_from(sql_query_stg)));
     
     end remove_from_target;
     
@@ -395,12 +375,10 @@ as
         sql_query_c1 sql_builder_pkg.t_query;
     begin
         sql_builder_pkg.add_select(sql_query_c1, sql_builder_pkg.g_select_all);
-        sql_builder_pkg.add_from(sql_query_c1, get_full_table_name(p_stage_table));
+        sql_builder_pkg.add_from(sql_query_c1, sql_utils_pkg.get_full_table_name(p_table_owner,p_stage_table));
     
-        print_or_execute('INSERT INTO ' 
-                    || get_full_table_name(p_target_table)
-                    || ' '
-                    || sql_builder_pkg.get_sql(sql_query_c1));
+        print_or_execute(string_utils_pkg.get_str('INSERT INTO %1 %2', sql_utils_pkg.get_full_table_name(p_table_owner,p_target_table), sql_builder_pkg.get_sql(sql_query_c1)));
+        
     end insert_to_target;
         
 BEGIN
