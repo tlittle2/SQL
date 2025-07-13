@@ -184,7 +184,7 @@ as
                        || sql_builder_pkg.get_select(sql_query_tgt)
                        || sql_builder_pkg.get_from(sql_query_tgt)
                        || ' a '
-                       || sql_builder_pkg.get_where_in(sql_query_where_in, true)
+                       || sql_builder_pkg.get_where_in(sql_query_where_in, true) --false will bring in the data from the permanent table
                        || '('
                        || sql_builder_pkg.get_select(sql_query_cdc1)
                        || sql_builder_pkg.get_from(sql_query_cdc1)
