@@ -6,4 +6,4 @@ select 'procedure insert_' || lower(table_name) || '(' || LISTAGG('p_' || COLUMN
 from user_tab_columns
 where table_name = 'ASTROLOGY'
 GROUP BY TABLE_NAME
-);
+); --modify procedure accordingly for your particular where clause
