@@ -157,10 +157,11 @@ AS
                     v_cdc_columns_equality := v_cdc_columns_equality || 'b.' || p_cdc_columns(i) || ' = a.' || p_cdc_columns(i);
                 end if;
             end loop;
-            
+
+            --7/13/25 -> change where clause to IN from NOT IN
             v_insert_statement := 'INSERT INTO ' || p_table_owner || '.' || p_cdc_table 
                                 || ' SELECT * FROM ' || p_table_owner || '.' || p_target_table || ' a '
-                                || ' WHERE (' || v_cdc_columns_string || ') not in ' 
+                                || ' WHERE (' || v_cdc_columns_string || ') in '
                                 || '(select ' || v_cdc_columns_string || ' from ' || p_table_owner || '.' || p_cdc_table || ' b )'
                                 || ' and exists (select 1 from '  || p_table_owner || '.' || p_cdc_table || ' b where '
                                 || v_cdc_columns_equality
