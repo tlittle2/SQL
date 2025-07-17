@@ -2,11 +2,10 @@ create or replace package archive_rules_tbl_pkg
 as
     g_archive_table_prefix CONSTANT VARCHAR2(5) := 'ARCH_';
     
-    type ref_cursor_t is ref cursor;
-
     procedure reset_archive_parm_table;
     
-    procedure run_archival(p_job_nbr IN archive_rules.job_nbr%type, p_partition_flag IN archive_rules.partitioned%type);
+    PROCEDURE run_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
+    PROCEDURE run_non_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
 
 
     PROCEDURE partitioned_append_to_archive(p_src_owner          IN partition_table_parm.TABLE_OWNER%TYPE
