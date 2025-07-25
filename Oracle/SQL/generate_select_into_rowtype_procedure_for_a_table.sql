@@ -9,6 +9,6 @@ inner join user_cons_columns columns
 on constraints.table_name  = columns.table_name
 and constraints.constraint_name = columns.constraint_name
 where constraints.table_name = 'ARCHIVE_RULES'
-and constraints.constraint_type = 'P'
+and constraints.constraint_type = 'P' --for columns that are the primary key (most practical)
 GROUP BY columns.TABLE_NAME
 );
