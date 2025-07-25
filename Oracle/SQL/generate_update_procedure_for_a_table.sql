@@ -12,6 +12,7 @@ GROUP BY tab.TABLE_NAME
 
 
 --Kinda close for adding a where claused based on constraints on a table (could be used for primary key constraints, indexes, partitions)
+  --Need to have some way for not allowing the WHERE clause to not be DEFAULT NULL (and maybe even be the starting parameters to the procedure)
 select lower(stmnt) from (
 select 'procedure update_' || tab.table_name
 || '(' || LISTAGG('p_' || tab.COLUMN_NAME || ' ' || tab.table_name || '.' || tab.column_name || '%type DEFAULT NULL', ' , ') WITHIN GROUP (ORDER BY tab.COLUMN_ID) || ')'
