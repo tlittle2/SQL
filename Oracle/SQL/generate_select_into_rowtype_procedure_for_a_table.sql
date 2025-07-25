@@ -18,11 +18,11 @@ GROUP BY columns.TABLE_NAME
 
 --for custom columns
 select lower(stmnt) from (
-select 'procedure get_' || columns.table_name || '_1'
+select 'procedure get_' || columns.table_name || '_1' -- change number here if you want multiple "getter" procedures
 || '(' || LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ',') WITHIN GROUP (ORDER BY columns.column_id)
 || ',p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype)'
 || 'is begin select * into  p_' || columns.table_name || '_row' || ' from ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.column_id)
-|| '; end get_' || columns.table_name || '_1;'
+|| '; end get_' || columns.table_name || '_1;'        -- change number here if you want multiple "getter" procedures
 as stmnt
 from user_tab_columns columns
 where columns.table_name = 'SALARY_DATA_STG'
