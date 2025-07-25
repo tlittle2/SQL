@@ -1,5 +1,5 @@
 select lower(stmnt) from (
-select 'procedure insert_' || table_name || '(' || LISTAGG('p_' || COLUMN_NAME || ' ' || column_name || '%type DEFAULT NULL', ' , ') WITHIN GROUP (ORDER BY COLUMN_ID) || ')'
+select 'procedure insert_' || table_name || '(' || LISTAGG('p_' || COLUMN_NAME || ' ' || table_name || '.' || column_name || '%type DEFAULT NULL', ' , ') WITHIN GROUP (ORDER BY COLUMN_ID) || ')'
 || 'is begin INSERT INTO '
 || table_name
 || ' VALUES (' || LISTAGG('p_' || COLUMN_NAME, ' , ')  WITHIN GROUP (ORDER BY COLUMN_ID)
