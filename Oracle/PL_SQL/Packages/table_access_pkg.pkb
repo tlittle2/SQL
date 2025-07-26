@@ -1,21 +1,83 @@
 create or replace package body table_access_pkg
-AS
+as
+--======================================================archive_rules======================================================================================================================
+    procedure update_archive_rules (
+        p_table_owner        archive_rules.table_owner%type
+      , p_table_name         archive_rules.table_name%type
+      , p_partitioned        archive_rules.partitioned%type default null
+      , p_years_to_keep      archive_rules.years_to_keep%type default null
+      , p_upd_flag           archive_rules.upd_flag%type default null
+      , p_archive_column_key archive_rules.archive_column_key%type default null
+      , p_archive_group_key  archive_rules.archive_group_key%type default null
+      , p_job_nbr            archive_rules.job_nbr%type default null)
+      is
+      begin
+        update archive_rules
+        set
+          partitioned = nvl(p_partitioned, partitioned)
+        , years_to_keep = nvl(p_years_to_keep, years_to_keep)
+        , upd_flag = nvl(p_upd_flag, upd_flag)
+        , archive_column_key = nvl(p_archive_column_key, archive_column_key)
+        , archive_group_key = nvl(p_archive_group_key, archive_group_key)
+        , job_nbr = nvl(p_job_nbr, job_nbr)
+        where table_owner = p_table_owner
+        and table_name = p_table_name;
+    end update_archive_rules;
+    
+    
+    procedure insert_archive_rules (
+        p_table_owner        archive_rules.table_owner%type default null
+      , p_table_name         archive_rules.table_name%type default null
+      , p_partitioned        archive_rules.partitioned%type default null
+      , p_years_to_keep      archive_rules.years_to_keep%type default null
+      , p_upd_flag           archive_rules.upd_flag%type default null
+      , p_archive_column_key archive_rules.archive_column_key%type default null
+      , p_archive_group_key  archive_rules.archive_group_key%type default null
+      , p_job_nbr            archive_rules.job_nbr%type default null)
+      is
+      begin
+          insert into archive_rules values ( p_table_owner
+                                         , p_table_name
+                                         , p_partitioned
+                                         , p_years_to_keep
+                                         , p_upd_flag
+                                         , p_archive_column_key
+                                         , p_archive_group_key
+                                         , p_job_nbr );
+
+    end insert_archive_rules;
+    
+    procedure delete_archive_rules (
+        p_table_owner archive_rules.table_owner%type
+      , p_table_name  archive_rules.table_name%type)
+    is
+    begin
+        delete from archive_rules
+        where
+                table_owner = p_table_owner
+            and table_name = p_table_name;
+
+    end delete_archive_rules;
+--======================================================archive_rules======================================================================================================================      
+
+--======================================================salary_data_stg======================================================================================================================
+
     procedure insert_salary_data_stg(
-    p_CASE_NUM       salary_data_stg.CASE_NUM%type DEFAULT NULL
-  , p_ID             salary_data_stg.ID%type DEFAULT NULL
-  , p_GENDER         salary_data_stg.GENDER%type DEFAULT NULL
-  , p_DEGREE         salary_data_stg.DEGREE%type DEFAULT NULL
-  , p_YEAR_DEGREE    salary_data_stg.YEAR_DEGREE%type DEFAULT NULL
-  , p_FIELD          salary_data_stg.FIELD%type DEFAULT NULL
-  , p_START_YEAR     salary_data_stg.START_YEAR%type DEFAULT NULL
-  , p_YEAR           salary_data_stg.YEAR%type DEFAULT NULL
-  , p_RANK           salary_data_stg.RANK%type DEFAULT NULL
-  , p_ADMIN          salary_data_stg.ADMIN%type DEFAULT NULL
-  , p_SALARY         salary_data_stg.SALARY%type DEFAULT NULL
-  , p_EFF_DATE       salary_data_stg.EFF_DATE%type DEFAULT NULL
-  , p_END_DATE       salary_data_stg.END_DATE%type DEFAULT NULL
-  , p_CREATE_ID      salary_data_stg.CREATE_ID%type DEFAULT NULL
-  , p_LAST_UPDATE_ID salary_data_stg.LAST_UPDATE_ID%type DEFAULT NULL)
+    p_case_num       salary_data_stg.case_num%type default null
+  , p_id             salary_data_stg.id%type default null
+  , p_gender         salary_data_stg.gender%type default null
+  , p_degree         salary_data_stg.degree%type default null
+  , p_year_degree    salary_data_stg.year_degree%type default null
+  , p_field          salary_data_stg.field%type default null
+  , p_start_year     salary_data_stg.start_year%type default null
+  , p_year           salary_data_stg.year%type default null
+  , p_rank           salary_data_stg.rank%type default null
+  , p_admin          salary_data_stg.admin%type default null
+  , p_salary         salary_data_stg.salary%type default null
+  , p_eff_date       salary_data_stg.eff_date%type default null
+  , p_end_date       salary_data_stg.end_date%type default null
+  , p_create_id      salary_data_stg.create_id%type default null
+  , p_last_update_id salary_data_stg.last_update_id%type default null)
     is
     begin
         insert into salary_data_stg values(
@@ -35,55 +97,52 @@ AS
         , p_create_id
         , p_last_update_id
         );
-
     exception
         when others then
         error_pkg.print_error('insert_salary_data_stg');
         raise;
-
     end insert_salary_data_stg;
 
 
-    procedure update_salary_data_stg(
-    p_CASE_NUM       salary_data_stg.CASE_NUM%type
-  , p_ID             salary_data_stg.ID%type DEFAULT NULL
-  , p_GENDER         salary_data_stg.GENDER%type DEFAULT NULL
-  , p_DEGREE         salary_data_stg.DEGREE%type DEFAULT NULL
-  , p_YEAR_DEGREE    salary_data_stg.YEAR_DEGREE%type DEFAULT NULL
-  , p_FIELD          salary_data_stg.FIELD%type DEFAULT NULL
-  , p_START_YEAR     salary_data_stg.START_YEAR%type DEFAULT NULL
-  , p_YEAR           salary_data_stg.YEAR%type DEFAULT NULL
-  , p_RANK           salary_data_stg.RANK%type DEFAULT NULL
-  , p_ADMIN          salary_data_stg.ADMIN%type DEFAULT NULL
-  , p_SALARY         salary_data_stg.SALARY%type DEFAULT NULL
-  , p_EFF_DATE       salary_data_stg.EFF_DATE%type DEFAULT NULL
-  , p_END_DATE       salary_data_stg.END_DATE%type DEFAULT NULL
-  , p_CREATE_ID      salary_data_stg.CREATE_ID%type DEFAULT NULL
-  , p_LAST_UPDATE_ID salary_data_stg.LAST_UPDATE_ID%type DEFAULT NULL)
+    procedure update_salary_data_stg_1(
+    p_case_num       salary_data_stg.case_num%type
+  , p_id             salary_data_stg.id%type default null
+  , p_gender         salary_data_stg.gender%type default null
+  , p_degree         salary_data_stg.degree%type default null
+  , p_year_degree    salary_data_stg.year_degree%type default null
+  , p_field          salary_data_stg.field%type default null
+  , p_start_year     salary_data_stg.start_year%type default null
+  , p_year           salary_data_stg.year%type default null
+  , p_rank           salary_data_stg.rank%type default null
+  , p_admin          salary_data_stg.admin%type default null
+  , p_salary         salary_data_stg.salary%type default null
+  , p_eff_date       salary_data_stg.eff_date%type default null
+  , p_end_date       salary_data_stg.end_date%type default null
+  , p_create_id      salary_data_stg.create_id%type default null
+  , p_last_update_id salary_data_stg.last_update_id%type default null)
     is
     begin
     update salary_data_stg
     set
-    CASE_NUM = nvl(p_CASE_NUM, CASE_NUM),
-    ID = nvl(p_ID, ID),
-    GENDER = nvl(p_GENDER, GENDER),
-    DEGREE = nvl(p_DEGREE, DEGREE),
-    YEAR_DEGREE = nvl(p_YEAR_DEGREE, YEAR_DEGREE),
-    FIELD = nvl(p_FIELD, FIELD),
-    START_YEAR = nvl(p_START_YEAR, START_YEAR),
-    YEAR = nvl(p_YEAR, YEAR),
-    RANK = nvl(p_RANK, RANK),
-    ADMIN = nvl(p_ADMIN, ADMIN),
-    SALARY = nvl(p_SALARY, SALARY),
-    EFF_DATE = nvl(p_EFF_DATE, EFF_DATE),
-    END_DATE = nvl(p_END_DATE, END_DATE),
-    CREATE_ID = nvl(p_CREATE_ID, CREATE_ID),
-    LAST_UPDATE_ID = nvl(p_LAST_UPDATE_ID, LAST_UPDATE_ID)
-    where CASE_NUM = p_CASE_NUM;
+    id = nvl(p_id, id),
+    gender = nvl(p_gender, gender),
+    degree = nvl(p_degree, degree),
+    year_degree = nvl(p_year_degree, year_degree),
+    field = nvl(p_field, field),
+    start_year = nvl(p_start_year, start_year),
+    year = nvl(p_year, year),
+    rank = nvl(p_rank, rank),
+    admin = nvl(p_admin, admin),
+    salary = nvl(p_salary, salary),
+    eff_date = nvl(p_eff_date, eff_date),
+    end_date = nvl(p_end_date, end_date),
+    create_id = nvl(p_create_id, create_id),
+    last_update_id = nvl(p_last_update_id, last_update_id)
+    where case_num = p_case_num;
 
     if sql%rowcount = 0
     then
-        error_pkg.assert(1 = 2, string_utils_pkg.get_str('CASE_NUM %1 DOES NOT EXIST! PLEASE INVESTIGATE', p_CASE_NUM));
+        error_pkg.assert(1 = 2, string_utils_pkg.get_str('case_num %1 does not exist! please investigate', p_case_num));
     end if;
 
 	exception
@@ -91,25 +150,58 @@ AS
         error_pkg.print_error('update_salary_data_stg');
         raise;
 
-    end update_salary_data_stg;
+    end update_salary_data_stg_1;
 
 
-    procedure delete_salary_data_stg(p_CASE_NUM salary_data_stg.CASE_NUM%type)
+    procedure delete_salary_data_stg_1(p_case_num salary_data_stg.case_num%type)
     is
     begin
     delete from salary_data_stg
-    where CASE_NUM = p_CASE_NUM;
+    where case_num = p_case_num;
 
     if sql%rowcount = 0
     then
-        error_pkg.assert(1 = 2, string_utils_pkg.get_str('CASE_NUM %1 DOES NOT EXIST! PLEASE INVESTIGATE', p_CASE_NUM));
+        error_pkg.assert(1 = 2, string_utils_pkg.get_str('case_num %1 does not exist! please investigate', p_case_num));
     end if;
 
     exception
         when others then
         error_pkg.print_error('delete_salary_data_stg');
         raise;
-    end delete_salary_data_stg;
+    end delete_salary_data_stg_1;
+    
+   procedure get_salary_data_stg_1(p_case_num salary_data_stg.case_num%type, p_salary_stg_row in out salary_data_stg%rowtype)
+   is
+   begin
+       select *
+       into p_salary_stg_row
+       from salary_data_stg
+       where case_num = p_case_num;
+   end get_salary_data_stg_1;
+   
+--======================================================salary_data_stg======================================================================================================================
 
+
+--================================================================_infa_global============================================================================================================
+    procedure update_infa_global(
+      p_statement_prd_yr_qrtr infa_global.statement_prd_yr_qrtr%type default null
+    , p_run_dte infa_global.run_dte%type default null
+    , p_soq_dte infa_global.soq_dte%type default null
+    , p_eoq_dte infa_global.eoq_dte%type default null
+    , p_last_update_dte infa_global.last_update_dte%type default null
+    , p_last_updated_by infa_global.last_updated_by%type default null)
+    is
+    begin
+        update infa_global
+    	set
+    	  statement_prd_yr_qrtr = nvl(p_statement_prd_yr_qrtr, statement_prd_yr_qrtr)
+        , run_dte = nvl(p_run_dte, run_dte)
+        , soq_dte = nvl(p_soq_dte, soq_dte)
+        , eoq_dte = nvl(p_eoq_dte, eoq_dte)
+        , last_update_dte = nvl(p_last_update_dte, last_update_dte)
+        , last_updated_by = nvl(p_last_updated_by, last_updated_by);
+    	
+    end update_infa_global;
+--================================================================_infa_global============================================================================================================
 
 end table_access_pkg;
