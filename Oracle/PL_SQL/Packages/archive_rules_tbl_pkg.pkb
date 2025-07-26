@@ -45,7 +45,7 @@ as
     is
         l_pfx_instr NUMBER := instr(p_table_name, archive_rules_tbl_pkg.g_archive_table_prefix);
     begin
-        if l_pfx_instr <> 1
+        if l_pfx_instr > 1
         then
             return false;
         else
