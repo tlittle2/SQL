@@ -8,6 +8,9 @@ as
     function get_arch_prefix_from_tab(p_table_name in varchar2)
     return varchar2;
     
+    function is_correct_arch_prefix(p_table_name in varchar2)
+    return boolean;
+    
     PROCEDURE run_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
     PROCEDURE run_non_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
 
