@@ -15,7 +15,6 @@ AS
     is
         l_date_suffix varchar2(8);
     begin
-        
         check_partition_type(p_partition_type);
         
         case p_partition_type
@@ -222,7 +221,7 @@ AS
             end if;
             
             debug_print_or_execute(
-            string_utils_pkg.get_str('ALTER TABLE %1 SPLIT PARTITION %2 AT (%3) INTO (PARTITION %4 TABLESPACE %5 PARTITION %6 TABLESPACE %7) UPDATE GLOBAL INDEXES'
+            string_utils_pkg.get_str('ALTER TABLE %1 SPLIT PARTITION %2 AT (%3) INTO (PARTITION %4 TABLESPACE %5, PARTITION %6 TABLESPACE %7) UPDATE GLOBAL INDEXES'
                                     , sql_utils_pkg.get_full_table_name(p_parm_table_row.table_owner, p_parm_table_row.table_name)
                                     , l_partMax
                                     , transform_split(p_parm_table_row.partition_type, p_part_create_row.high_value)
@@ -362,9 +361,6 @@ AS
         
     begin
         --reset_partition_parm_table  --> run this outside of the driver proc
-        table_access_pkg.update_partition_table_parm_1(p_upd_flag => global_constants_pkg.g_record_is_not_updated);
-        commit;
-    
         retrieve_cutoff_dates(p_run_type, g_create_begin_dte);
         
         if p_run_type = global_constants_pkg.g_regular_run
