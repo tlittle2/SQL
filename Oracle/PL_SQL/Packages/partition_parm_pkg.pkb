@@ -1,20 +1,30 @@
 create or replace package body partition_parm_pkg
 AS
     type reconTable_t is table of partition_table_parm.table_name%type;
-        
+    
+    g_default_date_format CONSTANT VARCHAR2(9) := 'DD-MON-RR';
+    
     procedure check_partition_type(p_partition_type IN partition_table_parm.partition_type%type)
     is
     begin
-        assert_pkg.is_true(p_partition_type in (g_daily_partition_flag, g_monthly_partition_flag, g_quarterly_partition_flag, g_annual_partition_flag), 'UNSUPPORTED PARTITION FLAG. PLEASE INVESTIGATE');
+        error_pkg.assert(p_partition_type in (g_daily_partition_flag, g_monthly_partition_flag, g_quarterly_partition_flag, g_annual_partition_flag), 'UNSUPPORTED PARTITION FLAG. PLEASE INVESTIGATE');
     end check_partition_type;
     
-    function get_partition_name(p_prefix in partition_table_parm.partition_prefix%type, p_date in date)
+    function get_partition_name(p_partition_type IN partition_table_parm.partition_type%type, p_prefix in partition_table_parm.partition_prefix%type, p_date in date)
     return varchar2
     is
+        l_date_suffix varchar2(8);
     begin
-        return p_prefix || p_date;
-        error_pkg.assert(1=2, 'FUNCTION NOT CREATED');
+        check_partition_type(p_partition_type);
         
+        case p_partition_type
+        when g_daily_partition_flag then l_date_suffix:= to_char(to_date(p_date,g_default_date_format) , g_daily_partition_date_format);
+        when g_monthly_partition_flag then l_date_suffix:= to_char(to_date(p_date,g_default_date_format), g_monthly_partition_date_format);
+        when g_quarterly_partition_flag then l_date_suffix:= date_utils_pkg.get_year_quarter(to_char(last_day(to_date(p_date,g_default_date_format))));
+        when g_annual_partition_flag then l_date_suffix:= to_char(to_date(p_date,g_default_date_format), g_annual_partition_date_format);
+        end case;
+        
+        return p_prefix || l_date_suffix;
     end get_partition_name;
     
     
@@ -32,27 +42,10 @@ AS
             error_pkg.print_error('debug_print_or_execute');
             raise;    
     end debug_print_or_execute;
-
-    
-    procedure check_parm_table_updates
-    is
-        l_tableUpdateCount NUMBER;
-    begin
-        select nvl(count(1), 0)
-        into l_tableUpdateCount
-        from partition_table_parm
-        where PARTITIONED = g_is_partitioned
-        and upd_flag <> global_constants_pkg.g_record_is_updated;
-        
-        assert_pkg.is_true(l_tableUpdateCount = 0, 'Record(s) from the PARM table have not been updated. Please investigate');
-    exception
-        when others then
-            error_pkg.print_error('check_parm_table_updates');
-            raise;
-    end check_parm_table_updates;
     
     
-    procedure check_parm_table_updates(p_reconTable IN reconTable_t)
+    
+    procedure check_parm_table_updates (p_reconTable IN reconTable_t)
     is
         l_tableUpdateCount NUMBER;
     begin
@@ -64,7 +57,7 @@ AS
             where table_name = p_reconTable(i)
             and upd_flag <> global_constants_pkg.g_record_is_updated;
             
-            assert_pkg.is_true(l_tableUpdateCount = 0, 'Record(s) from the PARM table have not been updated. Please investigate');
+            error_pkg.assert(l_tableUpdateCount = 0, 'Record(s) from the PARM table have not been updated. Please investigate');
         
         end loop;
     
@@ -83,10 +76,27 @@ AS
     
     exception
         when others then
-            error_pkg.print_error('populate_recon_table');
+            error_pkg.print_error('check_indexes');
             raise;
     end populate_recon_table;
+    
+    
+    procedure update_parm_table_progress(p_upd_flag_value IN CHAR, p_table_owner IN VARCHAR2, p_table_name IN VARCHAR2)
+    is
+    begin
+        update partition_table_parm
+        set upd_flag = p_upd_flag_value
+        where table_owner = p_table_owner
+        and table_name = p_table_name;
         
+        commit;
+        
+    exception
+        when others then
+            error_pkg.print_error('update_parm_table_progress');
+            raise;
+    end update_parm_table_progress;
+    
     
     procedure check_indexes
     is
@@ -103,7 +113,8 @@ AS
         and idxs.table_name = parm.table_name
         where ind_part.status = 'UNUSABLE' or idxs.status = 'UNUSABLE';
         
-        assert_pkg.is_true(l_bad_idx_count = 0, 'UNUSABLE OR INVALID INDEXES HAVE BEEN DETECTED. PLEASE INVESTIGATE');
+        error_pkg.assert(l_bad_idx_count = 0, 'UNUSABLE OR INVALID INDEXES HAVE BEEN DETECTED. PLEASE INVESTIGATE');
+    
     exception
         when others then
         error_pkg.print_error('check_indexes');
@@ -114,17 +125,41 @@ AS
     procedure retrieve_cutoff_dates(p_run_type          in char
                                   , p_begin_cutoff_dte out date)
     is
-        l_rec_global infa_global%rowtype;
     begin
-        table_access_pkg.get_global_row_logic(l_rec_global, p_run_type);
-        p_begin_cutoff_dte := l_rec_global.run_dte;
+        error_pkg.assert(p_run_type in (global_constants_pkg.g_regular_run, global_constants_pkg.g_special_run), 'UNSUPPORTED RUNTYPE PASSED TO PROCEDURE. PLEASE CORRECT');
+        
+        if p_run_type = global_constants_pkg.g_regular_run
+        then
+            select run_dte
+            into p_begin_cutoff_dte
+            from infa_global;
+        else
+            select run_dte
+            into p_begin_cutoff_dte
+            from infa_global_fix;
+        end if;
+        
         error_pkg.assert(p_begin_cutoff_dte is not null or trim(p_begin_cutoff_dte) <> '', 'DATE RETRIEVED IS NOT VALID PLEASE INVESTIGATE');
+        
     exception
         when others then
         error_pkg.print_error('retrieve_cutoff_dates');
         raise;
     end retrieve_cutoff_dates;
     
+
+    procedure reset_partition_parm_table
+    is
+    begin
+        update partition_table_parm
+        set upd_flag = 'N';
+        commit;
+        
+    exception
+        when others then
+        error_pkg.print_error('reset_partition_parm_table');
+        raise;    
+    end reset_partition_parm_table;
     
     procedure create_new_partitions(p_run_type IN CHAR, p_years_to_create IN INTEGER)
     is
@@ -144,11 +179,10 @@ AS
         begin
             if p_partition_type = g_quarterly_partition_flag
             then
-                return get_partition_name(p_partition_prefix,substr(p_high_value,1,2) || g_max_part_suffix);
-                --return p_partition_prefix || substr(p_high_value,1,2) || g_max_part_suffix;
+                return p_partition_prefix || substr(p_high_value,1,2) || g_max_part_suffix;
             else
-                return get_partition_name(p_partition_prefix,g_max_part_suffix);
-                ---return p_partition_prefix || g_max_part_suffix;
+                return p_partition_prefix || g_max_part_suffix;
+                
             end if;
         end transform_max;
         
@@ -199,7 +233,7 @@ AS
         
         procedure create_partition_statement(p_part_create_row in partition_creation_t, p_parm_table_row in partition_table_parm%rowtype)
         is
-            l_partition_name all_tab_partitions.partition_name%type := get_partition_name(p_parm_table_row.partition_prefix,p_part_create_row.partition_key);
+            l_partition_name all_tab_partitions.partition_name%type := p_parm_table_row.partition_prefix || p_part_create_row.partition_key;
             l_partMax all_tab_partitions.partition_name%type        := transform_max(p_parm_table_row.partition_type, p_parm_table_row.partition_prefix, p_part_create_row.high_value);
         begin
             
@@ -207,8 +241,10 @@ AS
             then
                 debug_print_or_execute('select dummy from dual');
                 
-            else
-                debug_print_or_execute(string_utils_pkg.get_str('ALTER TABLE %1 SPLIT PARTITION %2 AT (%3) INTO (PARTITION %4 TABLESPACE %5 PARTITION %6 TABLESPACE %7) UPDATE GLOBAL INDEXES'
+            end if;
+            
+            debug_print_or_execute(
+            string_utils_pkg.get_str('ALTER TABLE %1 SPLIT PARTITION %2 AT (%3) INTO (PARTITION %4 TABLESPACE %5 PARTITION %6 TABLESPACE %7) UPDATE GLOBAL INDEXES'
                                     , sql_utils_pkg.get_full_table_name(p_parm_table_row.table_owner, p_parm_table_row.table_name)
                                     , l_partMax
                                     , transform_split(p_parm_table_row.partition_type, p_part_create_row.high_value)
@@ -216,8 +252,7 @@ AS
                                     , p_parm_table_row.tablespace_name
                                     , l_partMax
                                     , p_parm_table_row.tablespace_name)
-                                    );
-            end if;
+                                  );
 
          exception
              when others then
@@ -320,21 +355,21 @@ AS
             
             for rec_parts in partitions_to_create
             loop
-                table_access_pkg.update_partition_table_parm_2(rec_parts.table_owner, rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);--populate_recon_table(rec_parts.table_name, l_recontable);
-                commit;
+                populate_recon_table(rec_parts.table_name, l_recontable);
                 
                 manage_create_cursor(sql_utils_pkg.c_open_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
                 
                 loop
                     fetch l_create_cursor into l_part_create;
                     exit when l_create_cursor%NOTFOUND;
+                    
                     create_partition_statement(l_part_create, rec_parts);                
                 end loop;
                 
                 manage_create_cursor(sql_utils_pkg.c_close_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
                 
-                table_access_pkg.update_partition_table_parm_2(rec_parts.table_owner, rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
-                commit;
+                update_parm_table_progress(global_constants_pkg.g_record_is_updated, rec_parts.table_owner, rec_parts.table_name);
+            
             end loop;
             
             check_parm_table_updates(l_recontable);
@@ -461,8 +496,7 @@ AS
         begin
             for rec_destroy in cur_dataToDestroy
             loop
-                table_access_pkg.update_partition_table_parm_2(rec_destroy.table_owner, rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed); --populate_recon_table(rec_destroy.table_name, l_droparchive_recontable);
-                commit;
+                populate_recon_table(rec_destroy.table_name, l_droparchive_recontable);
                 
                 l_drop_archive_begin_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_backwards_direction, g_drop_begin_dte, rec_destroy.years_to_keep);
                 
@@ -473,15 +507,15 @@ AS
                     fetch l_archive_cursor into l_all_tab_parts;
                     exit when l_archive_cursor%notfound;
                     
-                    sql_utils_pkg.remove_data_from_partition(rec_destroy.table_name, l_all_tab_parts.partition_name, p_drop=>true);
+                    sql_utils_pkg.remove_data_from_partition(rec_destroy.table_name, l_all_tab_parts.partition_name, true);
                     
                 end loop;
                 
                 manage_remove_cursor(sql_utils_pkg.c_close_cursor, rec_destroy.partition_type, rec_destroy.table_owner, rec_destroy.table_name, rec_destroy.partition_prefix, l_drop_archive_begin_dte
                                    , l_archive_cursor);
                                    
-                table_access_pkg.update_partition_table_parm_2(rec_destroy.table_owner, rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated); --update_parm_table_progress
-                commit;
+                update_parm_table_progress(global_constants_pkg.g_record_is_updated, rec_destroy.table_owner, rec_destroy.table_name);
+            
             end loop;
             
             check_parm_table_updates(l_droparchive_recontable);
