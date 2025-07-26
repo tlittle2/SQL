@@ -52,7 +52,7 @@ as
         commit;
     exception
         when others then
-        error_pkg.print_error('global_resync');
+        error_pkg.print_error('global_resync');
         raise;
     end global_resync;
 
