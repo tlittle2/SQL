@@ -1,29 +1,5 @@
 create or replace package body infa_global_tbl_pkg
 as
-
-    procedure get_global_row(p_rec_global IN OUT NOCOPY infa_global%rowtype, p_run_type IN CHAR := global_constants_pkg.g_regular_run)
-    is
-    begin
-        error_pkg.assert(p_run_type in (global_constants_pkg.g_special_run, global_constants_pkg.g_regular_run), 'INVALID RUN TYPE PROVIDED. PLEASE CORRECT');
-
-        if p_run_type = global_constants_pkg.g_regular_run
-        then
-            select *
-            into p_rec_global
-            from infa_global;
-        else
-            select *
-            into p_rec_global
-            from infa_global_fix;
-        end if;
-    exception
-        when others then
-        error_pkg.print_error('get_global_row');
-        raise;
-    end get_global_row;
-
-
-
     procedure global_resync(p_run_dte in date, p_run_type IN CHAR := global_constants_pkg.g_special_run)
     is
        l_proc_name CONSTANT VARCHAR2(15) := 'GLOBAL_RESYNC';
@@ -32,21 +8,23 @@ as
 
         if p_run_type = global_constants_pkg.g_special_run
         then
-            update infa_global_fix
-            set statement_prd_yr_qrtr = date_utils_pkg.get_year_quarter(trunc(p_run_dte, 'Q'))
-              , run_dte = trunc(p_run_dte)
-              , soq_dte = trunc(p_run_dte, 'Q')
-              , eoq_dte = add_months(trunc(p_run_dte + 1, 'Q'), date_utils_pkg.get_months_in_quarter)-1
-              , last_update_dte = sysdate
-              , last_updated_by = l_proc_name;
+            table_access_pkg.update_infa_global_fix_1(
+               p_statement_prd_yr_qrtr => date_utils_pkg.get_year_quarter(trunc(p_run_dte, 'Q'))
+             , p_run_dte => trunc(p_run_dte)
+             , p_soq_dte => trunc(p_run_dte, 'Q')
+             , p_eoq_dte => add_months(trunc(p_run_dte + 1, 'Q'), date_utils_pkg.get_months_in_quarter)-1
+             , p_last_update_dte => sysdate
+             , p_last_updated_by => l_proc_name
+            );
         else
-            update infa_global
-            set statement_prd_yr_qrtr = date_utils_pkg.get_year_quarter(trunc(p_run_dte, 'Q'))
-              , run_dte = trunc(p_run_dte)
-              , soq_dte = trunc(p_run_dte, 'Q')
-              , eoq_dte = add_months(trunc(p_run_dte + 1, 'Q'), date_utils_pkg.get_months_in_quarter)-1
-              , last_update_dte = sysdate
-              , last_updated_by = l_proc_name;
+            table_access_pkg.update_infa_global_1(
+              p_statement_prd_yr_qrtr => date_utils_pkg.get_year_quarter(trunc(p_run_dte, 'Q'))
+            , p_run_dte => trunc(p_run_dte)
+            , p_soq_dte => trunc(p_run_dte, 'Q')
+            , p_eoq_dte => add_months(trunc(p_run_dte + 1, 'Q'), date_utils_pkg.get_months_in_quarter)-1
+            , p_last_update_dte => sysdate
+            , p_last_updated_by => l_proc_name
+            );
         end if;
         
         commit;
@@ -56,24 +34,27 @@ as
         raise;
     end global_resync;
 
-    procedure global_rollover
-    is
-    begin
-        update infa_global
-        set statement_prd_yr_qrtr = date_utils_pkg.get_year_quarter(add_months(trunc(run_dte, 'Q'), date_utils_pkg.get_months_in_quarter))
-        , run_dte = add_months(trunc(run_dte, 'Q'), date_utils_pkg.get_months_in_quarter)
-        , soq_dte = add_months(trunc(run_dte, 'Q'), date_utils_pkg.get_months_in_quarter)
-        , eoq_dte = add_months(add_months(trunc(run_dte + 1, 'Q'), date_utils_pkg.get_months_in_quarter)-1, date_utils_pkg.get_months_in_quarter)
-        , last_update_dte = sysdate
-        , last_updated_by = 'GLOBAL_ROLLOVER';
-
-        commit;
+	procedure global_rollover
+	is
+    l_rec_global infa_global%rowtype;
+	begin
+        table_access_pkg.get_infa_global_row(l_rec_global);
         
+        table_access_pkg.update_infa_global_1(
+              p_statement_prd_yr_qrtr => date_utils_pkg.get_year_quarter(sysdate)
+            , p_run_dte => add_months(trunc(sysdate, 'Q'), date_utils_pkg.get_months_in_quarter)
+            , p_soq_dte => add_months(trunc(sysdate, 'Q'), date_utils_pkg.get_months_in_quarter)
+            , p_eoq_dte => add_months(trunc(l_rec_global.run_dte + 1, 'Q'), date_utils_pkg.get_months_in_quarter)-1
+            , p_last_update_dte => sysdate
+            , p_last_updated_by => 'GLOBAL_ROLLOVER'
+            );
+ 
+ 		commit;
     exception
         when others then
         error_pkg.print_error('global_rollover');
         raise;
 
-    end global_rollover;
+	end global_rollover;
 
 end infa_global_tbl_pkg;
