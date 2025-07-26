@@ -11,13 +11,12 @@ GROUP BY tab.TABLE_NAME
 );
 
 
---where clause (need to find away to isolate PK constraints only for this particular query)
+--where clause is primary key columns (with primary key columns at the front)
 with ds as (
 SELECT
     tab.table_name   tbl
   , tab.column_name  AS tab_column
   , cons.column_name AS cons_column
-  --, coalesce(cons.column_name , tab.column_name) as all_cols
   , tab.column_id
 from 
 user_tab_columns tab
