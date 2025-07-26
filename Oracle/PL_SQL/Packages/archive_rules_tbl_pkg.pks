@@ -5,6 +5,9 @@ as
     function get_base_tab_name_from_archive(p_table_name in varchar2)
     return varchar2;
     
+    function get_arch_prefix_from_tab(p_table_name in varchar2)
+    return varchar2;
+    
     PROCEDURE run_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
     PROCEDURE run_non_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
 
@@ -20,8 +23,8 @@ as
                                             , p_src_table        in archive_rules.table_name%type
                                             , p_arch_owner       in archive_rules.table_owner%type
                                             , p_arch_table       in archive_rules.table_name%type
-                                            , p_time_column       in archive_rules.archive_column_key%type
-                                            , p_group_column       in archive_rules.archive_column_key%type);
+                                            , p_time_column      in archive_rules.archive_column_key%type
+                                            , p_group_column     in archive_rules.archive_column_key%type);
 
 
 
