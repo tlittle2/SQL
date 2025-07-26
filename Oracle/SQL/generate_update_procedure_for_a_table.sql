@@ -21,10 +21,10 @@ SELECT
   , tab.column_id
 from 
 user_tab_columns tab
-left outer join user_cons_columns cons
+left outer join (select cons.table_name, cons.column_name from user_cons_columns cons inner join user_constraints constraints on cons.table_name = constraints.table_name and cons.constraint_name = constraints.constraint_name where constraints.constraint_type = 'P') cons
 on tab.table_name = cons.table_name
 and tab.column_name = cons.column_name
-where tab.table_name = 'SALARY_DATA_STG'
+where tab.table_name = 'ARCHIVE_RULES'
 order by case when cons.column_name is not null then 0 else 1 end asc nulls first, column_id
 )
 
