@@ -13,7 +13,7 @@ AS
 
 --======================================================archive_rules======================================================================================================================
 
-      PROCEDURE insert_archive_rules (
+    PROCEDURE insert_archive_rules (
         p_table_owner        archive_rules.table_owner%TYPE DEFAULT NULL
       , p_table_name         archive_rules.table_name%TYPE DEFAULT NULL
       , p_partitioned        archive_rules.partitioned%TYPE DEFAULT NULL
@@ -23,7 +23,7 @@ AS
       , p_archive_group_key  archive_rules.archive_group_key%TYPE DEFAULT NULL
       , p_job_nbr            archive_rules.job_nbr%TYPE DEFAULT NULL);
       
-        PROCEDURE update_archive_rules_1 (
+    PROCEDURE update_archive_rules_1 (
         p_table_owner        archive_rules.table_owner%TYPE DEFAULT NULL
       , p_table_name         archive_rules.table_name%TYPE DEFAULT NULL
       , p_partitioned        archive_rules.partitioned%TYPE DEFAULT NULL
@@ -34,7 +34,7 @@ AS
       , p_job_nbr            archive_rules.job_nbr%TYPE DEFAULT NULL);
       
       
-        PROCEDURE update_archive_rules_2 (
+    PROCEDURE update_archive_rules_2 (
         p_table_owner        archive_rules.table_owner%TYPE
       , p_table_name         archive_rules.table_name%TYPE
       , p_partitioned        archive_rules.partitioned%TYPE DEFAULT NULL
@@ -45,7 +45,7 @@ AS
       , p_job_nbr            archive_rules.job_nbr%TYPE DEFAULT NULL);
       
       
-      procedure delete_archive_rules_2(p_table_owner archive_rules.table_owner%type , p_table_name archive_rules.table_name%type);
+    procedure delete_archive_rules_2(p_table_owner archive_rules.table_owner%type , p_table_name archive_rules.table_name%type);
       
 --======================================================archive_rules======================================================================================================================
 
