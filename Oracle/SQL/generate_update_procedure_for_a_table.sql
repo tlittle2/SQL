@@ -36,7 +36,7 @@ select
 || ' UPDATE '
 || tbl || ' set ' || (select LISTAGG(tab_column || ' = nvl(' ||'p_' || tab_column || ',' || tab_column || ')' , ' , ') WITHIN GROUP (ORDER BY rownum) from ds where cons_column is null)
 || ' where ' || (select LISTAGG(cons_column || ' = p_' || cons_column , ' and ') WITHIN GROUP (ORDER BY rownum) from ds where cons_column is not null)
-|| '; end update_' || tbl || ';' as stmnt
+|| '; end update_' || tbl || '_2;' as stmnt
 from ds ds
 group by tbl
 );
