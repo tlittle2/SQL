@@ -166,4 +166,23 @@ AS
     
 --================================================================infa_global/infa_global_fix============================================================================================================
 
+
+--================================================================process_ranges_parm====================================================================================================================
+    PROCEDURE update_process_ranges_parm_2 (
+        p_process_name process_ranges_parm.process_name%TYPE
+      , p_run_number   process_ranges_parm.run_number%TYPE
+      , p_run_total    process_ranges_parm.run_total%TYPE DEFAULT NULL
+      , p_lower_bound  process_ranges_parm.lower_bound%TYPE DEFAULT NULL
+      , p_upper_bound  process_ranges_parm.upper_bound%TYPE DEFAULT NULL);
+      
+    type process_ranges_parm_bounds_t is record(
+        lower_bound process_ranges_parm.lower_bound%type,
+        upper_bound process_ranges_parm.upper_bound%type
+    );
+    
+    procedure get_process_ranges_bounds(p_process_name in process_ranges_parm.process_name%type, p_run_number in process_ranges_parm.run_number%type, p_parms out process_ranges_parm_bounds_t);
+
+
+--================================================================process_ranges_parm====================================================================================================================
+
 END table_access_pkg;
