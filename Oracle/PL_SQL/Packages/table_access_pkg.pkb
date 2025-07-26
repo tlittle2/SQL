@@ -3,7 +3,7 @@ AS
 /*                                                    GUIDE
                                                  ----------------
    any update/delete procedure whose postfix is _1 a GLOBAL update of the table (all parameters are default null and the procedure body does not have a where clause)
-   any update/delete procedure whose postfix is _2 an update based on the primary key
+   any update/delete procedure whose postfix is _2 is based on the primary key columns
    any update/delete procedure whose postfix is _3 or above can be index columns
    
     For _2 and above, where clause parameters shall be required, and all other columns are default as null
