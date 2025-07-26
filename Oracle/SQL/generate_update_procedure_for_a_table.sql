@@ -24,7 +24,7 @@ user_tab_columns tab
 left outer join (select cons.table_name, cons.column_name from user_cons_columns cons inner join user_constraints constraints on cons.table_name = constraints.table_name and cons.constraint_name = constraints.constraint_name where constraints.constraint_type = 'P') cons
 on tab.table_name = cons.table_name
 and tab.column_name = cons.column_name
-where tab.table_name = 'ARCHIVE_RULES'
+where tab.table_name = 'SALARY_DATA_STG'
 order by case when cons.column_name is not null then 0 else 1 end asc nulls first, column_id
 )
 
@@ -32,7 +32,7 @@ select lower(stmnt) as stmnt from (
 select
 'procedure update_' || tbl
 || '_2('
-|| LISTAGG('p_' || case when tab_column = cons_column then cons_column || ' ' || tbl || '.' || cons_column || '%type' else tab_column || ' ' || tbl || '.' || tab_column || '%type DEFAULT NULL' end, ' , ') WITHIN GROUP (ORDER BY column_id) || ')'
+|| LISTAGG('p_' || case when tab_column = cons_column then cons_column || ' ' || tbl || '.' || cons_column || '%type' else tab_column || ' ' || tbl || '.' || tab_column || '%type DEFAULT NULL' end, ' , ') WITHIN GROUP (ORDER BY rownum) || ')'
 || 'is begin'
 || ' UPDATE '
 || tbl || ' set ' || (select LISTAGG(tab_column || ' = nvl(' ||'p_' || tab_column || ',' || tab_column || ')' , ' , ') WITHIN GROUP (ORDER BY column_id) from ds where cons_column is null)
