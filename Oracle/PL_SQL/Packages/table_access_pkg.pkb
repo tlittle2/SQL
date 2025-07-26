@@ -15,7 +15,7 @@ as
       begin
         UPDATE archive_rules
         SET
-            table_owner = nvl(p_table_owner, table_owner)
+          table_owner = nvl(p_table_owner, table_owner)
         , table_name = nvl(p_table_name, table_name)
         , partitioned = nvl(p_partitioned, partitioned)
         , years_to_keep = nvl(p_years_to_keep, years_to_keep)
@@ -170,7 +170,7 @@ as
         error_pkg.assert(1 = 2, string_utils_pkg.get_str('case_num %1 does not exist! please investigate', p_case_num));
     end if;
 
-	exception
+    exception
         when others then
         error_pkg.print_error('update_salary_data_stg1');
         raise;
@@ -220,7 +220,7 @@ as
         error_pkg.assert(1 = 2, string_utils_pkg.get_str('case_num %1 does not exist! please investigate', p_case_num));
     end if;
 
-	exception
+    exception
         when others then
         error_pkg.print_error('update_salary_data_stg2');
         raise;
@@ -320,8 +320,8 @@ as
     is
     begin
         update infa_global
-    	set
-    	  statement_prd_yr_qrtr = nvl(p_statement_prd_yr_qrtr, statement_prd_yr_qrtr)
+        set
+          statement_prd_yr_qrtr = nvl(p_statement_prd_yr_qrtr, statement_prd_yr_qrtr)
         , run_dte = nvl(p_run_dte, run_dte)
         , soq_dte = nvl(p_soq_dte, soq_dte)
         , eoq_dte = nvl(p_eoq_dte, eoq_dte)
@@ -346,8 +346,8 @@ as
     )is
     begin
         update infa_global_fix
-    	set
-    	  statement_prd_yr_qrtr = nvl(p_statement_prd_yr_qrtr, statement_prd_yr_qrtr)
+        set
+          statement_prd_yr_qrtr = nvl(p_statement_prd_yr_qrtr, statement_prd_yr_qrtr)
         , run_dte = nvl(p_run_dte, run_dte)
         , soq_dte = nvl(p_soq_dte, soq_dte)
         , eoq_dte = nvl(p_eoq_dte, eoq_dte)
@@ -363,21 +363,21 @@ as
     end get_global_fix_row;
     
     procedure get_global_row_logic(p_rec_global IN OUT NOCOPY infa_global%rowtype, p_run_type IN CHAR := global_constants_pkg.g_regular_run)
-	is
-	begin
+    is
+    begin
         assert_pkg.is_valid_run_mode(p_run_type, 'INVALID RUN TYPE PROVIDED. PLEASE CORRECT');
         
-		if p_run_type = global_constants_pkg.g_special_run
-		then
-		    get_global_fix_row(p_rec_global);
-		else
+        if p_run_type = global_constants_pkg.g_special_run
+        then
+            get_global_fix_row(p_rec_global);
+        else
             get_infa_global_row(p_rec_global);
-		end if;
+        end if;
     exception
         when others then
         error_pkg.print_error('get_global_row');
         raise;
-	end get_global_row_logic;
+    end get_global_row_logic;
 --================================================================infa_global/infa_global_fix============================================================================================================
 
 end table_access_pkg;
