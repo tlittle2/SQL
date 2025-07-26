@@ -427,7 +427,7 @@ AS
                         where table_owner = p_table_owner
                         and table_name = p_table_name
                         and not regexp_like(partition_name, g_max_part_suffix_regex)
-                        and substr(partition_name, length(p_prefix) + 1, 4) || substr(partition_name, length(partition_name)) < to_char(to_date(p_cutoff_dte, 'DD-MON-RR'), 'YYYYQ');
+                        and substr(partition_name, length(p_prefix) + 1, 4) || substr(partition_name, length(partition_name)) < to_char(to_date(p_cutoff_dte, g_default_date_format), 'YYYYQ');
                         
                     when g_annual_partition_flag
                     then
@@ -463,7 +463,7 @@ AS
             and part.partitioned = archive.partitioned
             where part.partitioned = g_is_partitioned
             and part.upd_flag <> global_constants_pkg.g_record_is_updated
-            and substr(part.table_name, 1, length(archive_rules_tbl_pkg.g_archive_table_prefix)) = archive_rules_tbl_pkg.g_archive_table_prefix
+            and archive_rules_tbl_pkg.get_arch_prefix_from_tab(part.table_name) = archive_rules_tbl_pkg.g_archive_table_prefix
             order by part.table_name asc;
             
             l_droparchive_recontable reconTable_t := reconTable_t();
