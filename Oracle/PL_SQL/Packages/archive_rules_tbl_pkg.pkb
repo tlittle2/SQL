@@ -32,6 +32,14 @@ as
     end get_base_tab_name_from_archive;
     
     
+    function get_arch_prefix_from_tab(p_table_name in varchar2)
+    return varchar2
+    is
+    begin
+        return substr(p_table_name, 1, length(archive_rules_tbl_pkg.g_archive_table_prefix));
+    end get_arch_prefix_from_tab;
+    
+    
     FUNCTION is_string(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE) 
     RETURN BOOLEAN 
     IS 
