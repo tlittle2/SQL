@@ -13,6 +13,17 @@ and constraints.constraint_type = 'P'
 GROUP BY columns.TABLE_NAME
 );
 
+--indexed columns
+select lower(stmnt) from (
+select 'procedure delete_' || columns.table_name || '(' || LISTAGG('p_' || columns.COLUMN_NAME || ' ' || columns.table_name || '.' || columns.column_name || '%type', ' , ') WITHIN GROUP (ORDER BY columns.COLUMN_POSITION) || ')'
+|| 'is begin DELETE FROM ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.COLUMN_POSITION)
+|| '; end delete_' || columns.table_name || ';'
+as stmnt
+from user_ind_columns columns
+where columns.table_name = 'ARCHIVE_RULES'
+GROUP BY columns.TABLE_NAME
+);
+
 
 --custom columns
 select lower(stmnt) from (
