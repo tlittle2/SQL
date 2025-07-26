@@ -40,6 +40,20 @@ as
     end get_arch_prefix_from_tab;
     
     
+    function is_correct_arch_prefix(p_table_name in varchar2)
+    return boolean
+    is
+        l_pfx_instr NUMBER := instr(p_table_name, archive_rules_tbl_pkg.g_archive_table_prefix);
+    begin
+        if l_pfx_instr <> 1
+        then
+            return false;
+        else
+            return true;
+        end if;
+    end is_correct_arch_prefix;
+    
+    
     FUNCTION is_string(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE) 
     RETURN BOOLEAN 
     IS 
