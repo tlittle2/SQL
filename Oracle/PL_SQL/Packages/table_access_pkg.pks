@@ -2,9 +2,9 @@ create or replace PACKAGE table_access_pkg
 AS
 /*                                                    GUIDE
                                                  ----------------
-   any update/delete procedure whose postfix is _1 a GLOBAL update of the table (all parameters are default null and the procedure body does not have a where clause)
+   any update/delete procedure whose postfix is _1 is a GLOBAL update of the table (all parameters are default null and the procedure body does not have a where clause)
    any update/delete procedure whose postfix is _2 is based on the primary key columns
-   any update/delete procedure whose postfix is _3 or above can be index columns
+   any update/delete procedure whose postfix is _3 or above is index columns
    
     For _2 and above, where clause parameters shall be required, and all other columns are default as null
         in procedure body, where clause will have required fields, and all other fields are default null
