@@ -2,7 +2,8 @@ create or replace package archive_rules_tbl_pkg
 as
     g_archive_table_prefix CONSTANT VARCHAR2(5) := 'ARCH_';
     
-    procedure reset_archive_parm_table;
+    function get_base_tab_name_from_archive(p_table_name in varchar2)
+    return varchar2;
     
     PROCEDURE run_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
     PROCEDURE run_non_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
