@@ -1,7 +1,5 @@
 create or replace package body archive_rules_tbl_pkg 
 as
-    l_executing constant char(1) := 'E';
-    
     p_global_rec infa_global%rowtype;
 
     type date_container_t is RECORD(
@@ -24,8 +22,16 @@ as
     );
         numberContainer number_container_t;
         c_default_number_value CONSTANT NUMBER := -1;
-
-
+    
+    
+    function get_base_tab_name_from_archive(p_table_name in varchar2)
+    return varchar2
+    is
+    begin
+        return substr(p_table_name, length(g_archive_table_prefix)+1,length(p_table_name));
+    end get_base_tab_name_from_archive;
+    
+    
     FUNCTION is_string(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE) 
     RETURN BOOLEAN 
     IS 
@@ -61,6 +67,16 @@ as
 
         RETURN FALSE;
     END is_date;
+    
+    function is_valid_data_type(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE)
+    return boolean is
+    begin
+        if is_string(p_column_datatype) or is_number(p_column_datatype) or is_date(p_column_datatype)
+        then
+            return true;
+        end if;
+        return false;
+    end is_valid_data_type;
     
     function check_schemas(p_source_owner in ALL_TAB_COLUMNS.owner%TYPE
                              , p_source_table IN ALL_TAB_COLUMNS.TABLE_NAME%TYPE
@@ -122,47 +138,22 @@ as
 
     end debug_print_or_execute;
 
-    procedure reset_archive_parm_table
-    is
-    begin
-        update archive_rules
-        set upd_flag = string_utils_pkg.g_no;
-
-        commit;
-
-    end reset_archive_parm_table;
-    
-    procedure update_parm_table_progress(p_upd_flag_value IN CHAR, p_table_owner IN VARCHAR2, p_table_name IN VARCHAR2)
-    is
-    begin
-        update archive_rules
-        set upd_flag = p_upd_flag_value
-        where table_owner = p_table_owner
-        and table_name = p_table_name;
-        
-        commit;
-        
-    exception
-        when others then
-            error_pkg.print_error('update_parm_table_progress');
-            raise;
-    end update_parm_table_progress;
-    
+  
     procedure check_parm_table_updates
-    is
-    l_count NUMBER;
-    begin
-        select nvl(count(1),1)
-        into l_count
-        from archive_rules
-        where UPD_FLAG = string_utils_pkg.g_no;
-        
-        error_pkg.assert(l_count = 0, 'SOME RECORDS WERE NOT UPDATED DURING ARCHIVAL. PLEASE INVESTIGATE');
+	is
+	l_count NUMBER;
+	begin
+	    select nvl(count(1),1)
+		into l_count
+		from archive_rules
+		where UPD_FLAG =  global_constants_pkg.g_record_is_not_updated;
+		
+		assert_pkg.is_true(l_count = 0, 'SOME RECORDS WERE NOT UPDATED DURING ARCHIVAL. PLEASE INVESTIGATE');
 
-    exception
-        when others then
-            raise;
-    end check_parm_table_updates;
+	exception
+	    when others then
+	        raise;
+	end check_parm_table_updates;
     
     
     procedure check_indexes
@@ -185,7 +176,7 @@ as
         where ind_part.status = 'UNUSABLE' or idxs.status = 'UNUSABLE'
         );
         
-        error_pkg.assert(l_bad_idx_count = 0, 'UNUSABLE OR INVALID INDEXES HAVE BEEN DETECTED. PLEASE INVESTIGATE');
+        assert_pkg.is_true(l_bad_idx_count = 0, 'UNUSABLE OR INVALID INDEXES HAVE BEEN DETECTED. PLEASE INVESTIGATE');
         
     exception
         when others then
@@ -203,13 +194,13 @@ as
         and table_name = p_table
         and upper(column_name) = upper(p_column);
 
-        error_pkg.assert(p_column_datatype is not null, 'SOMETHING IS WRONG WITH THE COLUMN NAME SPECIFIED. PLEASE INVESTIGATE');
-        error_pkg.assert(is_string(p_column_datatype) or is_number(p_column_datatype) or is_date(p_column_datatype), 'UNSUPPORTED COLUMN DATATYPE FOR THIS PROCEDURE. PLEASE INVESTIGATE');
+        assert_pkg.is_true(p_column_datatype is not null, 'SOMETHING IS WRONG WITH THE COLUMN NAME SPECIFIED. PLEASE INVESTIGATE');
+		assert_pkg.is_true(is_string(p_column_datatype) or is_number(p_column_datatype) or is_date(p_column_datatype), 'UNSUPPORTED COLUMN DATATYPE FOR THIS PROCEDURE. PLEASE INVESTIGATE');
     
-    exception
-        when others then
-            raise;
-    end check_column_datatype;
+	exception
+		when others then
+		    raise;
+	end check_column_datatype;
     
 
     PROCEDURE partitioned_append_to_archive(p_src_owner          IN partition_table_parm.TABLE_OWNER%TYPE
@@ -241,15 +232,15 @@ as
         
         if is_string(v_column_datatype)
         then
-            sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_string_value));
+			sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_string_value));
 
         elsif is_number(v_column_datatype)
         then
-            sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_number_value));
+			sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_number_value));
 
         elsif is_date(v_column_datatype)
         then
-            sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_date_value));
+			sql_builder_pkg.add_select(l_insert_select_query,string_utils_pkg.get_str('NVL(%1,%2), count(1)', p_column_name, c_default_date_value));
         end if;
         
         sql_builder_pkg.add_from(l_insert_select_query, string_utils_pkg.get_str('%1 %2', sql_utils_pkg.get_full_table_name(p_src_owner, p_src_table), sql_utils_pkg.get_partition_extension(p_src_partition_name)));
@@ -283,12 +274,12 @@ as
             elsif is_number(v_column_datatype)
             then
                 --execute_insert(' where nvl(' || p_column_name || ', ' || c_default_number_value || ') = ''' || numberContainer.numValue || '''');
-                execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, c_default_number_value, numberContainer.numValue));
+				execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, c_default_number_value, numberContainer.numValue));
 
             elsif is_date(v_column_datatype)
             then
                 --execute_insert(' where nvl(' || p_column_name || ', ''' || c_default_date_value || ''') = ''' || dateContainer.dateValue || '''');
-                execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, string_utils_pkg.str_to_single_quoted_str(c_default_date_value), string_utils_pkg.str_to_single_quoted_str(dateContainer.dateValue)));
+				execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, string_utils_pkg.str_to_single_quoted_str(c_default_date_value), string_utils_pkg.str_to_single_quoted_str(dateContainer.dateValue)));
 
             end if;
 
@@ -330,7 +321,7 @@ as
                                             , p_key_column         in archive_rules.archive_column_key%type)
     is
     begin
-        error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
+	    error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
     exception
         WHEN OTHERS THEN
             error_pkg.print_error('unpartitioned_append_to_archive');
@@ -368,7 +359,7 @@ as
         sql_builder_pkg.add_where(l_insert_select_query, 'rowid = :rwid', '');
 
 
-        debug_print_or_execute(string_utils_pkg.get_str('ALTER TABLE %1 NOLOGGING', sql_utils_pkg.get_full_table_name(p_arch_owner, p_arch_table)));
+		debug_print_or_execute(string_utils_pkg.get_str('ALTER TABLE %1 NOLOGGING', sql_utils_pkg.get_full_table_name(p_arch_owner, p_arch_table)));
 
         if not debug_pkg.get_debug_state
         then
@@ -410,7 +401,7 @@ as
                                             , p_bulk_limit         in integer default 250000)
     is
     begin
-        error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
+	    error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
         
     exception
         WHEN OTHERS THEN
@@ -434,13 +425,13 @@ as
             inner join archive_rules arch
             on src.job_nbr = arch.job_nbr
             and src.partitioned = arch.partitioned
-            and src.UPD_FLAG = arch.UPD_FLAG
-            and src.table_name = substr(arch.table_name, length(g_archive_table_prefix)+1,length(arch.table_name))
+    		and src.UPD_FLAG = arch.UPD_FLAG
+            and src.table_name = get_base_tab_name_from_archive(arch.table_name)
             where src.job_nbr = p_job_nbr
             and src.partitioned = partition_parm_pkg.g_is_partitioned
-            and src.UPD_FLAG = string_utils_pkg.g_no;
-            
-            type t_all_tab_parts is RECORD(
+    		and src.UPD_FLAG =  global_constants_pkg.g_record_is_not_updated;
+    		
+    		type t_all_tab_parts is RECORD(
                 source_table_owner all_tab_partitions.table_owner%type
               , source_table_name all_tab_partitions.table_name%type
               , source_partition_name all_tab_partitions.table_name%type
@@ -448,23 +439,23 @@ as
               , archive_table_name all_tab_partitions.table_name%type
               , archive_partition_name all_tab_partitions.table_name%type);
             
-            v_all_tab_parts t_all_tab_parts;
-          
-            p_global_rec infa_global%rowtype;
+    		v_all_tab_parts t_all_tab_parts;
+    	  
+    	    p_global_rec infa_global%rowtype;
             
             l_archive_cutoff_dte DATE;
             
             procedure partition_archive_prechecks
-            is
-                l_column_datatype all_tab_columns.column_name%type;
-                l_table_partitioned_in_parm partition_table_parm.partitioned%type;
+    		is
+    		    l_column_datatype all_tab_columns.column_name%type;
+                l_partitioned_table_in_parm partition_table_parm.partitioned%type;
                 l_partitioned_table_in_db NUMBER;
                 
                 procedure check_parm_table_and_db(p_table_owner all_tab_partitions.table_owner%type, p_table_name all_tab_partitions.table_name%type)
                 is
                 begin
                     select partitioned
-                    into l_table_partitioned_in_parm
+                    into l_partitioned_table_in_parm
                     from partition_table_parm
                     where table_owner = p_table_owner 
                     and table_name =  p_table_name;
@@ -475,27 +466,27 @@ as
                     where table_owner = p_table_owner
                     and table_name = p_table_name;
                     
-                    error_pkg.assert(l_table_partitioned_in_parm = partition_parm_pkg.g_is_partitioned, 'TABLE IS NOT PARTITIONED IN THE PARM TABLE. PLEASE INVESTIGATE');
-                    error_pkg.assert(l_partitioned_table_in_db = 1, 'TABLE DOESNT EXIST AS PARTITIONED TABLE IN THE DATABASE. PLEASE INVESTIGATE');
+                    assert_pkg.is_true(l_partitioned_table_in_parm = partition_parm_pkg.g_is_partitioned, 'TABLE IS NOT PARTITIONED IN THE PARM TABLE. PLEASE INVESTIGATE');
+                    assert_pkg.is_true(l_partitioned_table_in_db = 1, 'TABLE DOESNT EXIST AS PARTITIONED TABLE IN THE DATABASE. PLEASE INVESTIGATE');
                 
                 end check_parm_table_and_db;
                 
-            begin
-                error_pkg.assert(p_move_run_mode in (global_constants_pkg.g_special_run, global_constants_pkg.g_regular_run), 'INVALID RUN MODE PROVIDED. PLEASE CORRECT');
-                
-                for rec_dataToArchive in cur_dataToArchive
-                loop
-                    error_pkg.assert(check_schemas(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name), string_utils_pkg.get_str('Table Schema for %1 and %2 are not consistent. Please investigate.', rec_dataToArchive.src_table_name, rec_dataToArchive.arch_table_name));
+    		begin
+    		    assert_pkg.is_valid_run_mode(p_move_run_mode, 'INVALID RUN MODE PROVIDED. PLEASE CORRECT');
+    		    
+    		    for rec_dataToArchive in cur_dataToArchive
+    		    loop
+    		        assert_pkg.is_true(check_schemas(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name), string_utils_pkg.get_str('Table Schema for %1 and %2 are not consistent. Please investigate.', rec_dataToArchive.src_table_name, rec_dataToArchive.arch_table_name));
                     
                     check_parm_table_and_db(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name);
                     check_parm_table_and_db(rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name);
                     
                     --check group by column first, then the where clause so we can reuse variable for an extra check of the where clause
-                    check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_group_key, l_column_datatype);
-                    check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_where_key, l_column_datatype);
-                    
+    				check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_group_key, l_column_datatype);
+    				check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_where_key, l_column_datatype);
+    				
                     error_pkg.assert(is_date(l_column_datatype) or (is_string(l_column_datatype) AND rec_dataToArchive.src_where_key in ('STATEMENT_PRD_YR_QRTR')), 'UNSUPPORTED COLUMN DATATYPE FOR WHERE CLAUSE FOR THIS PROCEDURE. PLEASE INVESTIGATE');
-                end loop;
+    			end loop;
             exception
             when others then
                 error_pkg.print_error('partition_archive_prechecks');
@@ -503,19 +494,25 @@ as
             end partition_archive_prechecks;
     begin
         partition_archive_prechecks;
-            
-        infa_global_tbl_pkg.get_global_row(p_global_rec, p_move_run_mode);
+    	
+        table_access_pkg.get_global_row_logic(p_global_rec, p_move_run_mode);
         
         for rec_dataToArchive in cur_dataToArchive
         loop
             error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
-            update_parm_table_progress(l_executing, rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name);
-            update_parm_table_progress(l_executing, rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name);
-        
+            
+            table_access_pkg.update_archive_rules_2(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);            
+            table_access_pkg.update_archive_rules_2(rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
+            commit;
+            
             l_archive_cutoff_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_backwards_direction,p_global_rec.run_dte, rec_dataToArchive.src_yrs_to_keep);
-        
+            
         end loop;
-    
+        
+    exception
+        when others then
+            error_pkg.print_error('run_partition_archival');
+            raise;
     end run_partition_archival;
     
     
@@ -534,11 +531,11 @@ as
         inner join archive_rules arch
         on src.job_nbr = arch.job_nbr
         and src.partitioned = arch.partitioned
-        and src.UPD_FLAG = arch.UPD_FLAG
-        and src.table_name = substr(arch.table_name, length(g_archive_table_prefix)+1,length(arch.table_name))
+    	and src.UPD_FLAG = arch.UPD_FLAG
+        and src.table_name = get_base_tab_name_from_archive(arch.table_name)
         where src.job_nbr = p_job_nbr
         and src.partitioned = partition_parm_pkg.g_is_not_partitioned
-        and src.UPD_FLAG = string_utils_pkg.g_no;
+    	and src.UPD_FLAG = global_constants_pkg.g_record_is_not_updated;
         
         l_archive_cutoff_dte DATE;
             
@@ -546,13 +543,13 @@ as
         is
             l_column_datatype all_tab_columns.column_name%type;
         begin
-            error_pkg.assert(p_move_run_mode in (global_constants_pkg.g_special_run, global_constants_pkg.g_regular_run), 'INVALID RUN MODE PROVIDED. PLEASE CORRECT');
+            assert_pkg.is_valid_run_mode(p_move_run_mode, 'INVALID RUN MODE PROVIDED. PLEASE CORRECT');
             
             for rec_dataToArchive in cur_dataToArchive
             loop
-                error_pkg.assert(check_schemas(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name), string_utils_pkg.get_str('Table Schema for %1 and %2 are not consistent. Please investigate.', rec_dataToArchive.src_table_name, rec_dataToArchive.arch_table_name));
+                assert_pkg.is_true(check_schemas(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name), string_utils_pkg.get_str('Table Schema for %1 and %2 are not consistent. Please investigate.', rec_dataToArchive.src_table_name, rec_dataToArchive.arch_table_name));
                 
-                --check group by column first, then the where clause so we can reuse variable for an extra check of the where clause
+                --check group by column first, then the where clause so we can reuse variable for an extra check of the where clause (in the case of STATEMENT_PRD_YR_QRTR)
                 check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_group_key, l_column_datatype);
                 check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_where_key, l_column_datatype);
                 
@@ -566,15 +563,22 @@ as
     begin
         archive_non_partition_prechecks;
         
-        infa_global_tbl_pkg.get_global_row(p_global_rec, p_move_run_mode);
+        table_access_pkg.get_global_row_logic(p_global_rec, p_move_run_mode);
         
         for rec_dataToArchive in cur_dataToArchive
         loop
             error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
-            update_parm_table_progress(l_executing, rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name);
-            update_parm_table_progress(l_executing, rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name);
+            
+            table_access_pkg.update_archive_rules_2(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
+            table_access_pkg.update_archive_rules_2(rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
+            commit;
             
             l_archive_cutoff_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_backwards_direction,p_global_rec.run_dte, rec_dataToArchive.src_yrs_to_keep);
+            
+            
+            table_access_pkg.update_archive_rules_2(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
+            table_access_pkg.update_archive_rules_2(rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
+            commit;
             
         end loop;
     end run_non_partition_archival;
