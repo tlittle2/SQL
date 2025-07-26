@@ -15,7 +15,7 @@ as
       begin
         UPDATE archive_rules
         SET
-          table_owner = nvl(p_table_owner, table_owner)
+            table_owner = nvl(p_table_owner, table_owner)
         , table_name = nvl(p_table_name, table_name)
         , partitioned = nvl(p_partitioned, partitioned)
         , years_to_keep = nvl(p_years_to_keep, years_to_keep)
@@ -23,7 +23,10 @@ as
         , archive_column_key = nvl(p_archive_column_key, archive_column_key)
         , archive_group_key = nvl(p_archive_group_key, archive_group_key)
         , job_nbr = nvl(p_job_nbr, job_nbr);
-      
+    exception
+        when others then
+        error_pkg.print_error('update_archive_rules_2');
+        raise;
       end update_archive_rules_1;
       
       
@@ -48,6 +51,10 @@ as
         , job_nbr = nvl(p_job_nbr, job_nbr)
         where table_owner = p_table_owner
         and table_name = p_table_name;
+    exception
+        when others then
+        error_pkg.print_error('update_archive_rules_2');
+        raise;
     end update_archive_rules_2;
     
     
@@ -70,7 +77,10 @@ as
                                          , p_archive_column_key
                                          , p_archive_group_key
                                          , p_job_nbr );
-
+    exception
+        when others then
+        error_pkg.print_error('insert_archive_rules');
+        raise;
     end insert_archive_rules;
     
     procedure delete_archive_rules_2 (
@@ -82,7 +92,10 @@ as
         where
                 table_owner = p_table_owner
             and table_name = p_table_name;
-
+    exception
+        when others then
+        error_pkg.print_error('delete_archive_rules_2');
+        raise;
     end delete_archive_rules_2;
 --======================================================archive_rules======================================================================================================================      
 
@@ -170,12 +183,10 @@ as
         error_pkg.assert(1 = 2, string_utils_pkg.get_str('case_num %1 does not exist! please investigate', p_case_num));
     end if;
 
-    exception
+	exception
         when others then
         error_pkg.print_error('update_salary_data_stg1');
-        raise;
-
-  
+        raise;  
   end update_salary_data_stg_1;
 
 
@@ -220,11 +231,10 @@ as
         error_pkg.assert(1 = 2, string_utils_pkg.get_str('case_num %1 does not exist! please investigate', p_case_num));
     end if;
 
-    exception
+	exception
         when others then
         error_pkg.print_error('update_salary_data_stg2');
         raise;
-
     end update_salary_data_stg_2;
 
 
@@ -252,6 +262,10 @@ as
        into p_salary_stg_row
        from salary_data_stg
        where case_num = p_case_num;
+	exception
+        when others then
+        error_pkg.print_error('get_salary_data_stg_1');
+        raise;
    end get_salary_data_stg_1;
    
 --======================================================salary_data_stg======================================================================================================================
@@ -320,8 +334,8 @@ as
     is
     begin
         update infa_global
-        set
-          statement_prd_yr_qrtr = nvl(p_statement_prd_yr_qrtr, statement_prd_yr_qrtr)
+    	set
+    	  statement_prd_yr_qrtr = nvl(p_statement_prd_yr_qrtr, statement_prd_yr_qrtr)
         , run_dte = nvl(p_run_dte, run_dte)
         , soq_dte = nvl(p_soq_dte, soq_dte)
         , eoq_dte = nvl(p_eoq_dte, eoq_dte)
@@ -333,6 +347,11 @@ as
     is
     begin
         select * into p_rec_global from infa_global;
+
+    exception
+        when others then
+        error_pkg.print_error('get_infa_global_row');
+        raise;
     end get_infa_global_row;
     
     
@@ -346,38 +365,100 @@ as
     )is
     begin
         update infa_global_fix
-        set
-          statement_prd_yr_qrtr = nvl(p_statement_prd_yr_qrtr, statement_prd_yr_qrtr)
+    	set
+    	  statement_prd_yr_qrtr = nvl(p_statement_prd_yr_qrtr, statement_prd_yr_qrtr)
         , run_dte = nvl(p_run_dte, run_dte)
         , soq_dte = nvl(p_soq_dte, soq_dte)
         , eoq_dte = nvl(p_eoq_dte, eoq_dte)
         , last_update_dte = nvl(p_last_update_dte, last_update_dte)
         , last_updated_by = nvl(p_last_updated_by, last_updated_by);
-    
+    exception
+        when others then
+        error_pkg.print_error('update_infa_global_fix_1');
+        raise;
     end update_infa_global_fix_1;
     
     procedure get_global_fix_row(p_rec_global_fix IN OUT NOCOPY infa_global_fix%rowtype)
     is
     begin
         select * into p_rec_global_fix from infa_global_fix;
+    exception
+        when others then
+        error_pkg.print_error('get_global_fix_row');
+        raise;
     end get_global_fix_row;
     
     procedure get_global_row_logic(p_rec_global IN OUT NOCOPY infa_global%rowtype, p_run_type IN CHAR := global_constants_pkg.g_regular_run)
-    is
-    begin
+	is
+	begin
         assert_pkg.is_valid_run_mode(p_run_type, 'INVALID RUN TYPE PROVIDED. PLEASE CORRECT');
         
-        if p_run_type = global_constants_pkg.g_special_run
-        then
-            get_global_fix_row(p_rec_global);
-        else
+		if p_run_type = global_constants_pkg.g_special_run
+		then
+		    get_global_fix_row(p_rec_global);
+		else
             get_infa_global_row(p_rec_global);
-        end if;
+		end if;
     exception
         when others then
-        error_pkg.print_error('get_global_row');
+        error_pkg.print_error('get_global_row_logic');
         raise;
-    end get_global_row_logic;
+	end get_global_row_logic;
 --================================================================infa_global/infa_global_fix============================================================================================================
+
+
+
+--================================================================process_ranges_parm====================================================================================================================
+    PROCEDURE update_process_ranges_parm_2 (
+        p_process_name process_ranges_parm.process_name%TYPE
+      , p_run_number   process_ranges_parm.run_number%TYPE
+      , p_run_total    process_ranges_parm.run_total%TYPE DEFAULT NULL
+      , p_lower_bound  process_ranges_parm.lower_bound%TYPE DEFAULT NULL
+      , p_upper_bound  process_ranges_parm.upper_bound%TYPE DEFAULT NULL
+    ) IS
+    BEGIN
+        UPDATE process_ranges_parm
+        SET
+            run_total = nvl(p_run_total, run_total)
+        , lower_bound = nvl(p_lower_bound, lower_bound)
+        , upper_bound = nvl(p_upper_bound, upper_bound)
+        WHERE
+                process_name = p_process_name
+            AND run_number = p_run_number;
+    exception
+        when others then
+        error_pkg.print_error('update_process_ranges_parm_2');
+        raise;
+    END update_process_ranges_parm_2;
+    
+    
+    procedure get_process_ranges_bounds(p_process_name in process_ranges_parm.process_name%type, p_run_number in process_ranges_parm.run_number%type, p_parms out process_ranges_parm_bounds_t)
+    is
+    begin
+        assert_pkg.is_true(
+            p_process_name in (
+                process_preanalysis_pkg.c_process_salaries
+                ), 'CONSTANT NOT RECOGNIZED! PLEASE INVESTIGATE!'
+        );
+
+        select lower_bound, upper_bound
+        into p_parms.lower_bound, p_parms.upper_bound
+        from process_ranges_parm
+        where process_name = p_process_name
+        and run_number = p_run_number;
+        
+        dbms_output.put_line(string_utils_pkg.get_str('lower bound: %1', p_parms.lower_bound));
+        dbms_output.put_line(string_utils_pkg.get_str('upper bound: %1',p_parms.upper_bound));
+                
+        assert_pkg.is_true(p_parms.lower_bound is not null and p_parms.upper_bound is not null, 'NO RANGE FOUND FOR PARAMETERS PROVIDED! PLEASE INVESTIGATE!');
+    exception
+        when others then
+        error_pkg.print_error('get_process_ranges_bounds');
+        raise;
+    end get_process_ranges_bounds;
+
+
+--================================================================process_ranges_parm====================================================================================================================
+
 
 end table_access_pkg;
