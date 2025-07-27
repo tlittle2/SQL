@@ -1,7 +1,7 @@
 --generic update for all columns
 select lower(stmnt) from (
 select 'procedure update_' || tab.table_name
-|| '_1(' || LISTAGG('p_' || tab.COLUMN_NAME || ' ' || tab.table_name || '.' || tab.column_name || '%type DEFAULT NULL', ' , ') WITHIN GROUP (ORDER BY tab.COLUMN_ID) || ')'
+|| '_1(' || LISTAGG('p_' || tab.COLUMN_NAME || ' IN ' || tab.table_name || '.' || tab.column_name || '%type DEFAULT NULL', ' , ') WITHIN GROUP (ORDER BY tab.COLUMN_ID) || ')'
 || 'is begin UPDATE '
 || tab.table_name || ' set ' || LISTAGG(tab.COLUMN_NAME || ' = nvl(' ||'p_' || tab.COLUMN_NAME || ',' || tab.column_name || ')', ' , ') WITHIN GROUP (ORDER BY tab.COLUMN_ID)
 || '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
