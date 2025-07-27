@@ -111,3 +111,22 @@ where columns.table_name = 'SALARY_DATA_STG'
 and column_name in ('CASE_NUM', 'ID')
 GROUP BY columns.TABLE_NAME
 );
+
+
+--custom columns AND rowid
+select lower(stmnt) from (
+select 'procedure get_' || columns.table_name || '_1' -- change number here if you want multiple "getter" procedures
+|| '('
+|| 'p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype,'
+|| ' p_rowid in rowid,'
+|| LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ',') WITHIN GROUP (ORDER BY columns.column_id)
+|| ')'
+|| 'is begin select * into  p_' || columns.table_name || '_row' || ' from ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.column_id)
+|| ' and rowid = p_rowid'
+|| '; exception when no_data_found then raise; when too_many_rows then raise; when others then raise; end get_' || columns.table_name || '_1;' -- change number here if you want multiple "getter" procedures
+as stmnt
+from user_tab_columns columns
+where columns.table_name = 'SALARY_DATA_STG'
+and column_name in ('CASE_NUM', 'ID')
+GROUP BY columns.TABLE_NAME
+);
