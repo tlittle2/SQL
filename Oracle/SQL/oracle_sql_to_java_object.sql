@@ -4,7 +4,8 @@
 with ds as(
 select column_name, data_type, data_length, data_precision,replace(initcap(replace(column_name, '_', ' ')), ' ') as converted
 from all_tab_columns
-where table_name = 'ERROR_LOG'
+where table_name = 'SALARY_DATA_STG'
+--and column_name in ('CASE_NUM' , 'FIELD' , 'YEAR' , 'SALARY')
 order by column_id asc
 )
 
@@ -41,4 +42,5 @@ select column_name, data_type, data_length, data_precision
     end || ' ' || replace(initcap(replace(column_name, '_', ' ')), ' ') || ';' as java_type 
  from all_tab_columns
 where table_name = 'SALARY_DATA_STG'
+--and column_name in ('CASE_NUM' , 'FIELD' , 'YEAR' , 'SALARY')
 order by column_id asc;
