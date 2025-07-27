@@ -1,3 +1,5 @@
+--let modern IDEs take care of creating getters and setters for you
+
 --camel case
 with ds as(
 select column_name, data_type, data_length, data_precision,replace(initcap(replace(column_name, '_', ' ')), ' ') as converted
