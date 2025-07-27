@@ -10,6 +10,19 @@ where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
 );
 
+--update by rowid
+select lower(stmnt) from (
+select 'procedure update_' || tab.table_name
+|| '_rowid( p_rowid IN rowid, ' || LISTAGG('p_' || tab.COLUMN_NAME || ' IN ' || tab.table_name || '.' || tab.column_name || '%type DEFAULT NULL', ' , ') WITHIN GROUP (ORDER BY tab.COLUMN_ID) || ')'
+|| 'is begin UPDATE '
+|| tab.table_name || ' set ' || LISTAGG(tab.COLUMN_NAME || ' = nvl(' ||'p_' || tab.COLUMN_NAME || ',' || tab.column_name || ')', ' , ') WITHIN GROUP (ORDER BY tab.COLUMN_ID)
+|| ' where rowid = p_rowid'
+|| '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
+from user_tab_columns tab
+where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
+GROUP BY tab.TABLE_NAME
+);
+
 --where clause is primary key columns (with primary key columns at the front)
 with ds as (
 SELECT
