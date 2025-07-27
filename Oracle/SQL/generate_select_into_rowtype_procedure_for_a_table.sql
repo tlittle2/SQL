@@ -18,6 +18,27 @@ GROUP BY columns.TABLE_NAME
 );
 
 
+--by rowid
+select lower(stmnt) from (
+select 'procedure get_' || columns.table_name || '_rowid' -- change number here if you want multiple "getter" procedures
+|| '(p_rowid IN rowid'
+|| ',p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype'
+|| ')'
+|| 'is begin select * into  p_' || columns.table_name || '_row' || ' from ' || columns.table_name
+|| ' WHERE rowid = p_rowid'
+|| '; exception when no_data_found then raise; when too_many_rows then raise; when others then raise; end get_' || columns.table_name || '_1;' -- change number here if you want multiple "getter" procedures
+as stmnt
+from user_constraints constraints
+inner join user_cons_columns columns
+on constraints.table_name  = columns.table_name
+and constraints.constraint_name = columns.constraint_name
+where constraints.table_name = 'SALARY_DATA_STG'
+and constraints.constraint_type = 'P'
+GROUP BY columns.TABLE_NAME
+);
+
+
+
 --for indexed columns
 select lower(stmnt) from (
 select 'procedure get_' || columns.table_name || '_2' -- change number here if you want multiple "getter" procedures
