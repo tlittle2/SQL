@@ -1,6 +1,6 @@
 --primary key columns
 select lower(stmnt) from (
-select 'procedure delete_' || columns.table_name || '_2(' || LISTAGG('p_' || columns.COLUMN_NAME || ' ' || columns.table_name || '.' || columns.column_name || '%type', ' , ') WITHIN GROUP (ORDER BY columns.position) || ')'
+select 'procedure delete_' || columns.table_name || '_2(' || LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ' , ') WITHIN GROUP (ORDER BY columns.position) || ')'
 || 'is begin DELETE FROM ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.position)
 || '; exception when others then raise; end delete_' || columns.table_name || ';'
 as stmnt
@@ -13,9 +13,10 @@ and constraints.constraint_type = 'P'
 GROUP BY columns.TABLE_NAME
 );
 
+
 --indexed columns
 select lower(stmnt) from (
-select 'procedure delete_' || columns.table_name || '_3(' || LISTAGG('p_' || columns.COLUMN_NAME || ' ' || columns.table_name || '.' || columns.column_name || '%type', ' , ') WITHIN GROUP (ORDER BY columns.COLUMN_POSITION) || ')'
+select 'procedure delete_' || columns.table_name || '_3(' || LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ' , ') WITHIN GROUP (ORDER BY columns.COLUMN_POSITION) || ')'
 || 'is begin DELETE FROM ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.COLUMN_POSITION)
 || '; exception when others then raise; end delete_' || columns.table_name || ';'
 as stmnt
@@ -27,7 +28,7 @@ GROUP BY columns.TABLE_NAME
 
 --custom columns
 select lower(stmnt) from (
-select 'procedure delete_' || columns.table_name || '(' || LISTAGG('p_' || columns.COLUMN_NAME || ' ' || columns.table_name || '.' || columns.column_name || '%type', ' , ') WITHIN GROUP (ORDER BY columns.column_Id) || ')'
+select 'procedure delete_' || columns.table_name || '(' || LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ' , ') WITHIN GROUP (ORDER BY columns.column_Id) || ')'
 || 'is begin DELETE FROM ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.column_Id)
 || '; exception when others then raise; end delete_' || columns.table_name || ';'
 as stmnt
