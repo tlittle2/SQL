@@ -10,7 +10,8 @@ order by column_id asc
 
 select 'private ' || case 
     when upper(data_type) = 'CHAR' then 'char'
-    when upper(data_type) = 'NUMBER' and nvl(data_precision,0) = 0 then 'int'
+    when upper(data_type) = 'NUMBER' and nvl(data_precision,0) = 0 then
+        case when data_length <= 10 then 'int' else 'double' end
     when upper(data_type) = 'NUMBER' and nvl(data_precision,0) > 0 then 'double'
     when upper(data_type) = 'INTEGER' then 'int'
     when upper(data_type) = 'DATE' then 'java.util.Date'
@@ -28,7 +29,8 @@ select 'private ' || case
 select column_name, data_type, data_length, data_precision
 , 'private ' || case 
     when upper(data_type) = 'CHAR' then 'char'
-    when upper(data_type) = 'NUMBER' and nvl(data_precision,0) = 0 then 'int'
+    when upper(data_type) = 'NUMBER' and nvl(data_precision,0) = 0 then
+        case when data_length <= 10 then 'int' else 'double' end
     when upper(data_type) = 'NUMBER' and nvl(data_precision,0) > 0 then 'double'
     when upper(data_type) = 'INTEGER' then 'int'
     when upper(data_type) = 'DATE' then 'java.util.Date'
