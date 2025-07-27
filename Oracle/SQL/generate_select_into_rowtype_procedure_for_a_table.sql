@@ -2,8 +2,8 @@
 select lower(stmnt) from (
 select 'procedure get_' || columns.table_name || '_1' -- change number here if you want multiple "getter" procedures
 || '('
+|| 'p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype,'
 || LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ',') WITHIN GROUP (ORDER BY columns.position)
-|| ',p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype'
 || ')'
 || 'is begin select * into  p_' || columns.table_name || '_row' || ' from ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.position)
 || '; exception when no_data_found then raise; when too_many_rows then raise; when others then raise; end get_' || columns.table_name || '_1;' -- change number here if you want multiple "getter" procedures
@@ -18,11 +18,12 @@ GROUP BY columns.TABLE_NAME
 );
 
 
+
 --by rowid
 select lower(stmnt) from (
 select 'procedure get_' || columns.table_name || '_rowid' -- change number here if you want multiple "getter" procedures
-|| '(p_rowid IN rowid'
-|| ',p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype'
+|| '(p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype'
+|| ',p_rowid IN rowid'
 || ')'
 || 'is begin select * into  p_' || columns.table_name || '_row' || ' from ' || columns.table_name
 || ' WHERE rowid = p_rowid'
@@ -39,10 +40,10 @@ GROUP BY columns.TABLE_NAME
 
 --by rowid AND primary key
 select lower(stmnt) from (
-select 'procedure get_' || columns.table_name || '_rowid' -- change number here if you want multiple "getter" procedures
-|| '(p_rowid IN rowid, '
+select 'procedure get_' || columns.table_name || '_rowid_pk' -- change number here if you want multiple "getter" procedures
+|| '(p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype,'
+|| 'p_rowid IN rowid, '
 || LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ',') WITHIN GROUP (ORDER BY columns.position)
-|| ',p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype'
 || ')'
 || 'is begin select * into  p_' || columns.table_name || '_row' || ' from ' || columns.table_name
 || ' WHERE '
@@ -61,6 +62,7 @@ GROUP BY columns.TABLE_NAME
 
 
 
+
 --for indexed columns
 select lower(stmnt) from (
 select 'procedure get_' || columns.table_name || '_2' -- change number here if you want multiple "getter" procedures
@@ -69,6 +71,23 @@ select 'procedure get_' || columns.table_name || '_2' -- change number here if y
 || LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ',') WITHIN GROUP (ORDER BY columns.COLUMN_POSITION)
 || ')'
 || 'is begin select * into  p_' || columns.table_name || '_row' || ' from ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.COLUMN_POSITION)
+|| '; exception when no_data_found then raise; when too_many_rows then raise; when others then raise; end get_' || columns.table_name || '_2;' -- change number here if you want multiple "getter" procedures
+as stmnt
+from user_ind_columns columns
+where columns.table_name in('DIM_APP_TABLES', 'UPDATE_MATCH')
+GROUP BY columns.TABLE_NAME
+);
+
+--indexed columns AND rowid
+select lower(stmnt) from (
+select 'procedure get_' || columns.table_name || '_2' -- change number here if you want multiple "getter" procedures
+|| '('
+|| 'p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype,'
+|| 'p_rowid IN rowid,'
+|| LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ',') WITHIN GROUP (ORDER BY columns.COLUMN_POSITION)
+|| ')'
+|| 'is begin select * into  p_' || columns.table_name || '_row' || ' from ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.COLUMN_POSITION)
+|| ' and rowid = p_rowid'
 || '; exception when no_data_found then raise; when too_many_rows then raise; when others then raise; end get_' || columns.table_name || '_2;' -- change number here if you want multiple "getter" procedures
 as stmnt
 from user_ind_columns columns
