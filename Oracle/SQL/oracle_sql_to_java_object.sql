@@ -24,6 +24,31 @@ select 'private ' || case
  from ds;
 
 
+--camel case for wrapper classes
+with ds as(
+select column_name, data_type, data_length, data_precision,replace(initcap(replace(column_name, '_', ' ')), ' ') as converted
+from all_tab_columns
+where table_name = 'SALARY_DATA_STG'
+--and column_name in ('CASE_NUM' , 'FIELD' , 'YEAR' , 'SALARY')
+order by column_id asc
+)
+
+select 'private ' || case 
+    when upper(data_type) = 'CHAR' then 'Character'
+    when upper(data_type) = 'NUMBER' and nvl(data_precision,0) = 0 then
+        case when data_length <= 10 then 'Integer' else 'Double' end
+    when upper(data_type) = 'NUMBER' and nvl(data_precision,0) > 0 then 'Double'
+    when upper(data_type) = 'INTEGER' then 'Integer'
+    when upper(data_type) = 'DATE' then 'java.sql.Date'
+    when upper(substr(data_type, 1,9)) = 'TIMESTAMP' then 'java.sql.Date'
+    when upper(data_type) = 'FLOAT' then 'Float'
+    when upper(data_type) = 'VARCHAR2' then 'String'
+    when upper(data_type) = 'NVARCHAR2' then 'String'
+    end || ' ' || replace(converted, substr(converted,1,1), lower(substr(converted,1,1))) || ';' as java_type 
+ from ds;
+
+
+
 --Create Java Record out of datatypes
 with ds as(
 select column_name, data_type, data_length, data_precision,replace(initcap(replace(column_name, '_', ' ')), ' ') as converted
