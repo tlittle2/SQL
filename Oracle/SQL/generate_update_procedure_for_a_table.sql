@@ -30,7 +30,7 @@ select lower(stmnt) as stmnt from (
 select
 'procedure update_' || tbl
 || '_2('
-|| LISTAGG('p_' || case when tab_column = cons_column then cons_column || ' ' || tbl || '.' || cons_column || '%type' else tab_column || ' ' || tbl || '.' || tab_column || '%type DEFAULT NULL' end, ' , ') WITHIN GROUP (ORDER BY rownum) || ')'
+|| LISTAGG('p_' || case when tab_column = cons_column then cons_column || ' IN ' || tbl || '.' || cons_column || '%type' else tab_column || ' IN ' || tbl || '.' || tab_column || '%type DEFAULT NULL' end, ' , ') WITHIN GROUP (ORDER BY rownum) || ')'
 || 'is begin'
 || ' UPDATE '
 || tbl || ' set ' || (select LISTAGG(tab_column || ' = nvl(' ||'p_' || tab_column || ',' || tab_column || ')' , ' , ') WITHIN GROUP (ORDER BY rownum) from ds where cons_column is null)
