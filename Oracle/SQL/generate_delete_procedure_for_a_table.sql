@@ -1,3 +1,19 @@
+--delete by rowid
+select lower(stmnt) from (
+select 'procedure delete_' || columns.table_name || '_rowid(p_rowid IN rowid)'
+|| 'is begin DELETE FROM ' || columns.table_name || ' WHERE rowid = p_rowid'
+|| '; exception when others then raise; end delete_' || columns.table_name || ';'
+as stmnt
+from user_constraints constraints
+inner join user_cons_columns columns
+on constraints.table_name  = columns.table_name
+and constraints.constraint_name = columns.constraint_name
+where constraints.table_name = 'ARCHIVE_RULES'
+and constraints.constraint_type = 'P'
+GROUP BY columns.TABLE_NAME
+);
+
+
 --primary key columns
 select lower(stmnt) from (
 select 'procedure delete_' || columns.table_name || '_2(' || LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ' , ') WITHIN GROUP (ORDER BY columns.position) || ')'
