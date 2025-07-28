@@ -1,5 +1,5 @@
 create table infa_global(
-    STATEMENT_PRD_YR_QRTR CHAR(6 BYTE)
+    STATEMENT_PRD_YR_QRTR CHAR(6 BYTE) --2025Q2
     , RUN_DTE DATE
     , SOQ_DTE DATE
     , EOQ_DTE DATE
