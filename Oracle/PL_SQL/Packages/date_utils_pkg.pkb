@@ -31,13 +31,22 @@ as
         return g_months_in_quarter;
     end;
     
-    function get_date_no_ts
+    function get_date_no_ts(p_date in date)
     return date
     deterministic
     is
     begin
-        return trunc(sysdate);
+        return trunc(p_date);
     end get_date_no_ts;
+    
+    function get_curr_date
+    return date
+    deterministic
+    is
+    begin
+        return get_date_no_ts(sysdate);
+    end get_curr_date;
+
 
     function get_year_quarter(p_date in date)
     return varchar2
