@@ -22,6 +22,22 @@ as
     begin
         return g_months_in_year;
     end get_months_in_year;
+    
+    function get_months_in_quarter
+    return number
+    deterministic
+    is
+    begin
+        return g_months_in_quarter;
+    end;
+    
+    function get_date_no_ts
+    return date
+    deterministic
+    is
+    begin
+        return trunc(sysdate);
+    end get_date_no_ts;
 
     function get_year_quarter(p_date in date)
     return varchar2
@@ -47,7 +63,7 @@ as
     return number
     is
     begin
-        error_pkg.assert(p_month between 1 and 12, 'not a valid month');
+        assert_pkg.is_true(p_month between 1 and 12, 'not a valid month');
         return case
             when p_month in (1,2,3)    then 1
             when p_month in (4,5,6)    then 2
@@ -64,33 +80,37 @@ as
     end get_month;
     
     
-    function parse_year_qrtr_for_quarter(p_year_qrtr IN VARCHAR2)
+    function parse_year_qrtr_for_quarter(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
     return number
     is
     begin
-        return to_number(string_utils_pkg.get_nth_token(p_year_qrtr, 2, 'Q'));
+        assert_pkg.is_true(string_utils_pkg.char_at(p_year_qrtr, 5) = 'Q', 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
+        return to_number(string_utils_pkg.char_at(p_year_qrtr, 6));
     end parse_year_qrtr_for_quarter;
     
         
-    function calculate_new_date(p_calc_mode      in char
-                                  , p_input_date    in date
-                                  , p_years_to_keep in NUMBER)
+    function calculate_new_date(p_direction      in char
+                              , p_input_date    in date
+                              , p_years_to_keep in NUMBER)
     return date
     is
     begin
-        error_pkg.assert(p_input_date is not null or trim(p_input_date) <> '', 'DATE VALUE PASSED IS NOT VALID. PLEASE INVESTIGATE');
+        error_pkg.assert(p_direction in (g_backwards_direction,g_forwards_direction), 'Please specify a direction for calculation!');
+        assert_pkg.is_not_null_nor_blank(p_input_date, 'DATE VALUE PASSED IS NOT VALID. PLEASE INVESTIGATE');
+        --error_pkg.assert(p_input_date is not null or trim(p_input_date) <> '', 'DATE VALUE PASSED IS NOT VALID. PLEASE INVESTIGATE');
         
-        if p_calc_mode = date_utils_pkg.g_backwards_direction
+        if p_direction = date_utils_pkg.g_backwards_direction
         then
-            return add_months(p_input_date, - (date_utils_pkg.g_months_in_year * p_years_to_keep));
+            return add_months(p_input_date, -(date_utils_pkg.g_months_in_year * p_years_to_keep));
         else
-            return add_months(p_input_date,   (date_utils_pkg.g_months_in_year * p_years_to_keep));
+            return add_months(p_input_date,  (date_utils_pkg.g_months_in_year * p_years_to_keep));
             
         end if;
+        
     exception
-        when others then
-            error_pkg.print_error('calculate_cutoff_date');
-            raise; 
+    when others then
+        error_pkg.print_error('calculate_cutoff_date');
+        raise; 
     end calculate_new_date;
     
     function get_range_of_dates(p_start_date in date, p_num_of_days in number, p_direction in char)
@@ -98,7 +118,7 @@ as
     is
         date_table date_table_t;
     begin
-        error_pkg.assert(p_direction in (g_backwards_direction,g_forwards_direction), 'Please specify a direction to generate dates for!');
+        assert_pkg.is_true(p_direction in (g_backwards_direction,g_forwards_direction), 'Please specify a direction to generate dates for!');
         
         if p_direction = g_backwards_direction then
             for i in 0..p_num_of_days
