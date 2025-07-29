@@ -1,7 +1,5 @@
 create or replace package body partition_parm_pkg
 AS
-    type reconTable_t is table of partition_table_parm.table_name%type;
-    
     g_default_date_format CONSTANT VARCHAR2(9) := 'DD-MON-RR';
     
     procedure check_partition_type(p_partition_type IN partition_table_parm.partition_type%type)
@@ -84,20 +82,7 @@ AS
             raise;
     end check_parm_table_updates;
     
-    
-    procedure populate_recon_table(p_table_name IN VARCHAR2, p_reconTable in out nocopy reconTable_t)
-    is
-    begin
-        p_reconTable.EXTEND;
-        p_reconTable(p_reconTable.LAST):= p_table_name;
-    
-    exception
-        when others then
-            error_pkg.print_error('check_indexes');
-            raise;
-    end populate_recon_table;
-    
-    
+        
     procedure check_indexes
     is
         l_bad_idx_count NUMBER;
@@ -160,7 +145,6 @@ AS
         l_create_cursor sql_utils_pkg.ref_cursor_t;
         l_part_create partition_creation_t;
         
-        l_recontable reconTable_t := reconTable_t();
         
         l_create_end_dte DATE;
         
@@ -456,8 +440,6 @@ AS
             and part.upd_flag <> global_constants_pkg.g_record_is_updated
             and archive_rules_tbl_pkg.get_arch_prefix_from_tab(part.table_name) = archive_rules_tbl_pkg.g_archive_table_prefix
             order by part.table_name asc;
-            
-            l_droparchive_recontable reconTable_t := reconTable_t();
             
             l_archive_cursor sql_utils_pkg.ref_cursor_t;
             l_all_tab_parts all_tab_partitions%rowtype;
