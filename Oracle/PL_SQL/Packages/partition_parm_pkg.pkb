@@ -27,7 +27,9 @@ AS
         return p_prefix || l_date_suffix;
     end get_partition_name;
     
-    function get_partition_for_table(p_table_owner IN partition_table_parm.table_owner%type, p_table_name IN partition_table_parm.table_name%type, p_run_type global_constants_pkg.flag_st := global_constants_pkg.g_regular_run)
+    function get_partition_for_table(p_table_owner IN partition_table_parm.table_owner%type
+                                   , p_table_name IN partition_table_parm.table_name%type
+                                   , p_run_type global_constants_pkg.flag_st := global_constants_pkg.g_regular_run)
     return varchar2
     is
        l_prefix partition_table_parm.partition_prefix%type;
@@ -258,7 +260,6 @@ AS
         end create_partition_statement;
                 
 
-        --setting prefix to null when calling helper function in order to recalculate the "MAX" partition later --> maybe change parameters of create partition statement?
         procedure manage_create_cursor(p_cur_op_flag IN CHAR
                                      , p_partition_type IN partition_table_parm.partition_type%type
                                      , p_begin_dte IN DATE
