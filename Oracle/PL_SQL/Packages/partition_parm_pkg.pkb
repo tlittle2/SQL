@@ -294,8 +294,8 @@ AS
                     when g_annual_partition_flag then
                         open io_cursor for
                          select partition_key, high_value from (
-                            select distinct last_day(to_date(a.column_value, g_default_date_format)) as partition_key
-                            ,               last_day(to_date(b.column_value, g_default_date_format)) as high_value
+                            select distinct trunc(last_day(to_date(a.column_value, g_default_date_format)), 'YYYY') as partition_key
+                            ,               trunc(last_day(to_date(b.column_value, g_default_date_format)), 'YYYY') as high_value
                                   from date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) a
                             inner join date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) b
                             on a.column_value + 1 = b.column_value
