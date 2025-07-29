@@ -238,7 +238,7 @@ AS
         end create_partition_statement;
                 
 
-        --setting prefix to null when calling helper function in order to recalculate the "MAX" partition later
+        --setting prefix to null when calling helper function in order to recalculate the "MAX" partition later --> maybe change parameters of create partition statement?
         procedure manage_create_cursor(p_cur_op_flag IN CHAR
                                      , p_partition_type IN partition_table_parm.partition_type%type
                                      , p_begin_dte IN DATE
