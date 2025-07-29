@@ -333,7 +333,6 @@ AS
         end manage_create_cursor;
                 
     begin
-        --reset_partition_parm_table  --> run this outside of the driver proc
         retrieve_cutoff_dates(p_run_type, g_create_begin_dte);
         
         if p_run_type = global_constants_pkg.g_regular_run
@@ -343,7 +342,6 @@ AS
         end if;
         
         dbms_output.put_line(string_utils_pkg.get_str('Creating Partitions starting from : %1',  g_create_begin_dte));
-               
         l_create_end_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_forwards_direction, g_create_begin_dte, p_years_to_create);
             
         for rec_parts in partitions_to_create
@@ -354,7 +352,6 @@ AS
             
             loop
                 fetch l_create_cursor into l_part_create;
-                dbms_output.put_line(l_part_create.partition_key || ' ' || l_part_create.high_value);
                 exit when l_create_cursor%NOTFOUND;
                 create_partition_statement(l_part_create, rec_parts);                
             end loop;
@@ -476,18 +473,14 @@ AS
                 
                 manage_remove_cursor(sql_utils_pkg.c_open_cursor, rec_destroy.partition_type, rec_destroy.table_owner, rec_destroy.table_name, rec_destroy.partition_prefix, l_drop_archive_begin_dte
                                    , l_archive_cursor);
-                                   
                 loop
                     fetch l_archive_cursor into l_all_tab_parts;
                     exit when l_archive_cursor%notfound;
-                    
                     sql_utils_pkg.remove_data_from_partition(rec_destroy.table_name, l_all_tab_parts.partition_name, true);
-                    
                 end loop;
                 
                 manage_remove_cursor(sql_utils_pkg.c_close_cursor, rec_destroy.partition_type, rec_destroy.table_owner, rec_destroy.table_name, rec_destroy.partition_prefix, l_drop_archive_begin_dte
                                    , l_archive_cursor);
-                                   
                 table_access_pkg.update_partition_table_parm_2(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
                 commit;
                 
@@ -513,5 +506,4 @@ AS
       
     end remove_archive_partitions;
     
-
 end partition_parm_pkg;
