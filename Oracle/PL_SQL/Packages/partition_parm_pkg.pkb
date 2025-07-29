@@ -144,9 +144,23 @@ AS
         g_create_end_dte DATE;
         
         type partition_creation_t is record(
-            partition_key all_tab_partitions.partition_name%type,
-            high_value all_tab_partitions.partition_name%type
+            partition_key DATE,
+            high_value DATE
         );
+        
+        cursor partitions_to_create is
+        select *
+        from partition_table_parm
+        where partitioned = g_is_partitioned
+        and upd_flag = global_constants_pkg.g_record_is_not_updated
+        order by table_name asc;
+        
+        l_create_cursor sql_utils_pkg.ref_cursor_t;
+        l_part_create partition_creation_t;
+        
+        l_recontable reconTable_t := reconTable_t();
+        
+        l_create_end_dte DATE;
         
         function transform_max(p_partition_type in partition_table_parm.partition_type%type
                              , p_partition_prefix in partition_table_parm.partition_prefix%type
@@ -156,7 +170,7 @@ AS
         begin
             if p_partition_type = g_quarterly_partition_flag
             then
-                return p_partition_prefix || substr(p_high_value,1,2) || g_max_part_suffix;
+                return p_partition_prefix || substr(p_high_value,2,2) || g_max_part_suffix;
             else
                 return p_partition_prefix || g_max_part_suffix;
                 
@@ -167,18 +181,24 @@ AS
         function transform_split(p_partition_type in partition_table_parm.partition_type%type, p_high_value in all_tab_partitions.partition_name%type)
         return all_tab_partitions.partition_name%type
         is
+            l_high_value all_tab_partitions.partition_name%type := p_high_value;
         begin
+            if p_partition_type = g_quarterly_partition_flag
+            then
+               l_high_value := date_utils_pkg.get_year_quarter(p_high_value);
+            end if;
+        
             case p_partition_type
                 when g_monthly_partition_flag
                 then
-                    return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_monthly_partition_date_format), 'yyyy-mm-dd')));
+                    return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(l_high_value, g_default_date_format), 'yyyy-mm-dd')));
                     
                 when g_daily_partition_flag
                 then
-                    return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(p_high_value, g_daily_partition_date_format), 'yyyy-mm-dd')));
+                    return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(l_high_value, g_default_date_format), 'yyyy-mm-dd')));
                     
                 else
-                    return string_utils_pkg.str_to_single_quoted_str(p_high_value);
+                    return string_utils_pkg.str_to_single_quoted_str(l_high_value);
             end case;
                 
         end transform_split;
@@ -210,8 +230,8 @@ AS
         
         procedure create_partition_statement(p_part_create_row in partition_creation_t, p_parm_table_row in partition_table_parm%rowtype)
         is
-            l_partition_name all_tab_partitions.partition_name%type:= p_parm_table_row.partition_prefix || p_part_create_row.partition_key; 
-            l_partMax all_tab_partitions.partition_name%type := transform_max(p_parm_table_row.partition_type, p_parm_table_row.partition_prefix, p_part_create_row.high_value);
+            l_partition_name all_tab_partitions.partition_name%type:= partition_parm_pkg.get_partition_name(p_parm_table_row.partition_type,p_parm_table_row.partition_prefix,p_part_create_row.partition_key);
+            l_partMax all_tab_partitions.partition_name%type := transform_max(p_parm_table_row.partition_type, p_parm_table_row.partition_prefix, partition_parm_pkg.get_partition_name(p_parm_table_row.partition_type,p_parm_table_row.partition_prefix,p_part_create_row.high_value));
         begin
             
             if partition_previously_created(p_parm_table_row.table_owner, p_parm_table_row.table_name, l_partition_name)
@@ -254,8 +274,8 @@ AS
                     when g_monthly_partition_flag then
                         open io_cursor for
                         select partition_key, high_value from (
-                            select distinct partition_parm_pkg.get_partition_name(p_partition_type,null,last_day(to_date(a.column_value, g_default_date_format))) as partition_key
-                            ,               partition_parm_pkg.get_partition_name(p_partition_type,null,last_day(to_date(b.column_value, g_default_date_format))) as high_value
+                            select distinct last_day(to_date(a.column_value, g_default_date_format)) as partition_key
+                            ,               last_day(to_date(b.column_value, g_default_date_format)) as high_value
                                   from date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) a
                             inner join date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) b
                             on a.column_value + 1 = b.column_value
@@ -264,9 +284,9 @@ AS
                     
                     when g_quarterly_partition_flag then
                         open io_cursor for
-                        select partition_key, high_value from (
-                            select distinct partition_parm_pkg.get_partition_name(p_partition_type,null,last_day(to_date(a.column_value, g_default_date_format))) as partition_key
-                            ,               partition_parm_pkg.get_partition_name(p_partition_type,null,last_day(to_date(b.column_value, g_default_date_format))) as high_value
+                        select distinct partition_key, high_value from (
+                            select distinct date_utils_pkg.trunc_quarter(last_day(to_date(a.column_value, g_default_date_format))) as partition_key
+                            ,               date_utils_pkg.trunc_quarter(last_day(to_date(b.column_value, g_default_date_format))) as high_value
                                   from date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) a
                             inner join date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) b
                             on a.column_value + 1 = b.column_value
@@ -277,8 +297,8 @@ AS
                     when g_daily_partition_flag then --double check off by one error
                         open io_cursor for
                         select partition_key, high_value from (
-                            select distinct partition_parm_pkg.get_partition_name(p_partition_type,null,to_date(a.column_value, g_default_date_format)) as partition_key
-                            ,               partition_parm_pkg.get_partition_name(p_partition_type,null,to_date(b.column_value, g_default_date_format)) as high_value
+                            select distinct to_date(a.column_value, g_default_date_format) as partition_key
+                            ,               to_date(b.column_value, g_default_date_format) as high_value
                                   from date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) a
                             inner join date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) b
                             on a.column_value + 1 = b.column_value
@@ -289,8 +309,8 @@ AS
                     when g_annual_partition_flag then
                         open io_cursor for
                          select partition_key, high_value from (
-                            select distinct partition_parm_pkg.get_partition_name(p_partition_type,null,last_day(to_date(a.column_value, g_default_date_format))) as partition_key
-                            ,               partition_parm_pkg.get_partition_name(p_partition_type,null,last_day(to_date(b.column_value, g_default_date_format))) as high_value
+                            select distinct last_day(to_date(a.column_value, g_default_date_format)) as partition_key
+                            ,               last_day(to_date(b.column_value, g_default_date_format)) as high_value
                                   from date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) a
                             inner join date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) b
                             on a.column_value + 1 = b.column_value
@@ -310,55 +330,7 @@ AS
             raise;
         
         end manage_create_cursor;
-        
-        
-        procedure create_partitions
-        is
-            cursor partitions_to_create is
-            select *
-            from partition_table_parm
-            where partitioned = g_is_partitioned
-            and upd_flag = global_constants_pkg.g_record_is_not_updated
-            order by table_name asc;
-        
-            l_create_cursor sql_utils_pkg.ref_cursor_t;
-            l_part_create partition_creation_t;
-            
-            l_recontable reconTable_t := reconTable_t();
-            
-            l_create_end_dte DATE;
-        
-        begin
-            l_create_end_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_forwards_direction, g_create_begin_dte, p_years_to_create);
-            
-            for rec_parts in partitions_to_create
-            loop
-                table_access_pkg.update_partition_table_parm_2(rec_parts.table_owner,rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
-                commit;
                 
-                manage_create_cursor(sql_utils_pkg.c_open_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
-                
-                loop
-                    fetch l_create_cursor into l_part_create;
-                    exit when l_create_cursor%NOTFOUND;
-                    create_partition_statement(l_part_create, rec_parts);                
-                end loop;
-                                
-                manage_create_cursor(sql_utils_pkg.c_close_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
-                
-                table_access_pkg.update_partition_table_parm_2(rec_parts.table_owner,rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
-                commit;
-            end loop;
-            
-            check_parm_table_updates;
-            
-        exception
-           when others then
-           cleanup_pkg.close_cursor(l_create_cursor);
-           error_pkg.print_error('create_partitions');
-           raise;
-        end create_partitions;
-        
     begin
         --reset_partition_parm_table  --> run this outside of the driver proc
         retrieve_cutoff_dates(p_run_type, g_create_begin_dte);
@@ -371,7 +343,28 @@ AS
         
         dbms_output.put_line(string_utils_pkg.get_str('Creating Partitions starting from : %1',  g_create_begin_dte));
                
-        create_partitions;
+        l_create_end_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_forwards_direction, g_create_begin_dte, p_years_to_create);
+            
+        for rec_parts in partitions_to_create
+        loop
+            table_access_pkg.update_partition_table_parm_2(rec_parts.table_owner,rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
+            commit;
+            manage_create_cursor(sql_utils_pkg.c_open_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
+            
+            loop
+                fetch l_create_cursor into l_part_create;
+                dbms_output.put_line(l_part_create.partition_key || ' ' || l_part_create.high_value);
+                exit when l_create_cursor%NOTFOUND;
+                create_partition_statement(l_part_create, rec_parts);                
+            end loop;
+            
+            manage_create_cursor(sql_utils_pkg.c_close_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
+            
+            table_access_pkg.update_partition_table_parm_2(rec_parts.table_owner,rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
+            commit;
+        end loop;
+        
+        check_parm_table_updates;
     
     exception
         when others then
