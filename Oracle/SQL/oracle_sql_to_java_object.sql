@@ -27,8 +27,8 @@ order by column_id asc
 )
 
 select 'private ' || java_type || ' ' || java_variable || ';' as java_var
-, 'public ' || java_type || 'get_' || initcap(java_variable) || '(){return ' || java_variable || ';}' as getter
-, 'public ' || java_type || 'set_' || initcap(java_variable) || '(' || java_type || ' ' || java_variable || ')' || '{this.' || java_variable || '= ' || java_variable || ';' || '}' as setter
+, 'public ' || java_type || ' get_' || initcap(java_variable) || '(){return ' || java_variable || ';}' as getter
+, 'public ' || java_type || ' set_' || initcap(java_variable) || '(' || java_type || ' ' || java_variable || ')' || '{this.' || java_variable || '= ' || java_variable || ';' || '}' as setter
 , 'public String get_' || java_variable || 'Column() { return "' || upper(column_name) || '";' || '}' as column_getter --good for ResultSet object
  from ds;
 
