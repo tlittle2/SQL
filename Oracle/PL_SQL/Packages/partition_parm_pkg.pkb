@@ -75,7 +75,7 @@ AS
             where partitioned = g_is_partitioned
             and upd_flag <> global_constants_pkg.g_record_is_updated;
             
-            error_pkg.assert(l_tableUpdateCount = 0, 'Record(s) from the PARM table have not been updated. Please investigate');
+            assert_pkg.is_equal_to_zero(l_tableUpdateCount, 'Record(s) from the PARM table have not been updated. Please investigate');
     exception
         when others then
             error_pkg.print_error('check_parm_table_updates');
@@ -98,7 +98,7 @@ AS
         and idxs.table_name = parm.table_name
         where ind_part.status = 'UNUSABLE' or idxs.status = 'UNUSABLE';
         
-        error_pkg.assert(l_bad_idx_count = 0, 'UNUSABLE OR INVALID INDEXES HAVE BEEN DETECTED. PLEASE INVESTIGATE');
+        assert_pkg.is_equal_to_zero(l_bad_idx_count, 'UNUSABLE OR INVALID INDEXES HAVE BEEN DETECTED. PLEASE INVESTIGATE');
     
     exception
         when others then
@@ -116,7 +116,7 @@ AS
         table_access_pkg.get_global_row_logic(l_rec_global, p_run_type);
         p_begin_cutoff_dte := l_rec_global.run_dte;
         
-        error_pkg.assert(p_begin_cutoff_dte is not null or trim(p_begin_cutoff_dte) <> '', 'DATE RETRIEVED IS NOT VALID PLEASE INVESTIGATE');
+        assert_pkg.is_not_null_nor_blank(p_begin_cutoff_dte, 'DATE RETRIEVED IS NOT VALID PLEASE INVESTIGATE');
         
     exception
         when others then
@@ -144,7 +144,6 @@ AS
         
         l_create_cursor sql_utils_pkg.ref_cursor_t;
         l_part_create partition_creation_t;
-        
         
         l_create_end_dte DATE;
         
@@ -174,17 +173,11 @@ AS
                l_high_value := date_utils_pkg.get_year_quarter(p_high_value);
             end if;
         
-            case p_partition_type
-                when g_monthly_partition_flag
-                then
-                    return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(l_high_value, g_default_date_format), 'yyyy-mm-dd')));
-                    
-                when g_daily_partition_flag
-                then
-                    return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(l_high_value, g_default_date_format), 'yyyy-mm-dd')));
-                    
-                else
-                    return string_utils_pkg.str_to_single_quoted_str(l_high_value);
+            case when p_partition_type in (g_monthly_partition_flag,g_daily_partition_flag)
+            then
+                return string_utils_pkg.get_str('to_date(%1, ''yyyy-mm-dd'')', string_utils_pkg.str_to_single_quoted_str(to_char(to_date(l_high_value, g_default_date_format), 'yyyy-mm-dd')));    
+            else
+                return string_utils_pkg.str_to_single_quoted_str(l_high_value);
             end case;
                 
         end transform_split;
@@ -230,7 +223,7 @@ AS
             string_utils_pkg.get_str('ALTER TABLE %1 SPLIT PARTITION %2 AT (%3) INTO (PARTITION %4 TABLESPACE %5, PARTITION %6 TABLESPACE %7) UPDATE GLOBAL INDEXES'
                                     , sql_utils_pkg.get_full_table_name(p_parm_table_row.table_owner, p_parm_table_row.table_name)
                                     , l_partMax
-                                    , transform_split(p_parm_table_row.partition_type, p_part_create_row.high_value)
+                                    , transform_split(p_parm_table_row.partition_type, p_part_create_row.partition_key)
                                     , l_partition_name
                                     , p_parm_table_row.tablespace_name
                                     , l_partMax
