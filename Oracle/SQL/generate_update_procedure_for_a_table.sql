@@ -80,8 +80,10 @@ GROUP BY tab.TABLE_NAME
 
 
 --===========================if the table is too wide (list_agg()) does have its limitations===========================
-
 --beware of the last comma (delete it)
+
+
+--blanket update
 select lower(stmnt) from (
 select 1 as s_order, table_name as table_name, null as column_name, 0 as column_id, 'procedure update_' || tab.table_name|| '_row(p_row IN ' || tab.table_name || '%rowtype)'|| 'is begin UPDATE '|| tab.table_name || ' set ' as stmnt
 from user_tables tab
