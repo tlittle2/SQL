@@ -82,7 +82,7 @@ from user_tab_columns tab
 
 union all
 
-select 5 as s_order, table_name as table_name, null as column_name, 32767 * 2 as column_id, ' where rowid = p_rowid; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
+select 5 as s_order, table_name as table_name, null as column_name, 32767 * 2 as column_id, ' where rowid = p_rowid; exception when others then raise; end update_' || tab.table_name || '_rowid;' as stmnt
 from user_tables tab
 
 )order by table_name, s_order, column_id;
