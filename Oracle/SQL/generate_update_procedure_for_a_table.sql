@@ -77,3 +77,6 @@ from user_tab_columns tab
 where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
 );
+
+
+--===========================if the table is too wide (list_agg()) does have its limitations===========================
