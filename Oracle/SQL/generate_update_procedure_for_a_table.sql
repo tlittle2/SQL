@@ -184,3 +184,37 @@ group by tbl
 
 
 --======================================================where clause is primary key columns (with primary key columns at the front)======================================================
+
+
+
+
+--======================================================where clause is indexed columns (with indexed columns at the front)======================================================
+with ds as (
+SELECT
+    tab.table_name   tbl
+  , tab.column_name  AS tab_column
+  , cons.column_name AS cons_column
+  , tab.column_id
+from 
+user_tab_columns tab
+left outer join user_ind_columns cons
+on tab.table_name = cons.table_name
+and tab.column_name = cons.column_name
+where tab.table_name = 'UPDATE_MATCH'
+order by case when cons.column_name is not null then 0 else 1 end asc nulls first, column_id
+)
+
+select lower(stmnt) as stmnt from (
+select
+'procedure update_' || tbl
+|| '_2('
+|| LISTAGG('p_' || case when tab_column = cons_column then cons_column || ' IN ' || tbl || '.' || cons_column || '%type' else tab_column || ' IN ' || tbl || '.' || tab_column || '%type DEFAULT NULL' end, ' , ') WITHIN GROUP (ORDER BY rownum) || ')'
+|| 'is begin'
+|| ' UPDATE '
+|| tbl || ' set ' || (select LISTAGG(tab_column || ' = nvl(' ||'p_' || tab_column || ',' || tab_column || ')' , ' , ') WITHIN GROUP (ORDER BY rownum) from ds where cons_column is null)
+|| ' where ' || (select LISTAGG(cons_column || ' = p_' || cons_column , ' and ') WITHIN GROUP (ORDER BY rownum) from ds where cons_column is not null)
+|| '; exception when others then raise; end update_' || tbl || '_2;' as stmnt
+from ds ds
+group by tbl
+);
+--======================================================where clause is indexed columns (with indexed columns at the front)======================================================
