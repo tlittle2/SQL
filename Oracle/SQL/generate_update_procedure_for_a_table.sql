@@ -104,7 +104,7 @@ from user_tables tab
 --======================================================update by rowid======================================================
 
 
---======================================================update rowid to parameter %rowtype ======================================================
+--======================================================update set row based on rowid given a %rowtype ======================================================
 select lower(stmnt) from (
 select 'procedure update_' || tab.table_name
 || '_rowid( p_rowid IN rowid, p_row IN ' || tab.table_name || '%rowtype)'
@@ -115,7 +115,7 @@ select 'procedure update_' || tab.table_name
 from user_tables tab
 );
 
---======================================================update rowid to parameter %rowtype ======================================================
+--======================================================update set row based on rowid given a %rowtype ======================================================
 
 
 
