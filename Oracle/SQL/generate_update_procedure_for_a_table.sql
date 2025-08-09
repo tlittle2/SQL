@@ -23,6 +23,22 @@ where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
 );
 
+
+--update rowid to parameter %rowtype 
+select lower(stmnt) from (
+select 'procedure update_' || tab.table_name
+|| '_rowid( p_rowid IN rowid, p_row IN ' || tab.table_name || '%rowtype)'
+|| 'is begin UPDATE '
+|| tab.table_name || ' set row = p_row'
+|| ' where rowid = p_rowid'
+|| '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
+from user_tab_columns tab
+where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
+GROUP BY tab.TABLE_NAME
+);
+
+
+
 --where clause is primary key columns (with primary key columns at the front)
 with ds as (
 SELECT
