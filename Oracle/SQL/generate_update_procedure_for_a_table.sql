@@ -1,4 +1,5 @@
---generic update for all columns
+
+--======================================================generic update for all columns======================================================
 select lower(stmnt) from (
 select 'procedure update_' || tab.table_name
 || '_1(' || LISTAGG('p_' || tab.COLUMN_NAME || ' IN ' || tab.table_name || '.' || tab.column_name || '%type DEFAULT NULL', ' , ') WITHIN GROUP (ORDER BY tab.COLUMN_ID) || ')'
@@ -9,6 +10,24 @@ from user_tab_columns tab
 where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
 );
+
+select lower(stmnt) from (
+select 1 as s_order, table_name as table_name, null as column_name, 0 as column_id, 'procedure update_' || tab.table_name|| '_row(p_row IN ' || tab.table_name || '%rowtype)'|| 'is begin UPDATE '|| tab.table_name || ' set ' as stmnt
+from user_tables tab
+
+union all
+
+select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, column_name || ' = nvl(' ||'p_row.' || tab.COLUMN_NAME || ',' || tab.column_name || '),' stmnt
+from user_tab_columns tab
+
+union all
+
+select 3 as s_order, table_name as table_name, null as column_name, 32767 as column_id, '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
+from user_tables tab
+)order by table_name, s_order, column_id;
+
+
+--======================================================generic update for all columns======================================================
 
 --update by rowid
 select lower(stmnt) from (
@@ -94,21 +113,4 @@ where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
 );
 
-
---===========================if the table is too wide (list_agg() does have its limitations, beware of the last comma (delete it))===========================
---blanket update
-select lower(stmnt) from (
-select 1 as s_order, table_name as table_name, null as column_name, 0 as column_id, 'procedure update_' || tab.table_name|| '_row(p_row IN ' || tab.table_name || '%rowtype)'|| 'is begin UPDATE '|| tab.table_name || ' set ' as stmnt
-from user_tables tab
-
-union all
-
-select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, column_name || ' = nvl(' ||'p_row.' || tab.COLUMN_NAME || ',' || tab.column_name || '),' stmnt
-from user_tab_columns tab
-
-union all
-
-select 3 as s_order, table_name as table_name, null as column_name, 32767 as column_id, '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
-from user_tables tab
-)order by table_name, s_order, column_id;
 
