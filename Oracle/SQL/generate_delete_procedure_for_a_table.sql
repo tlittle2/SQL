@@ -31,7 +31,11 @@ and constraints.constraint_type = 'P'
 GROUP BY columns.TABLE_NAME
 );
 
-select lower(stmnt) from (
+select case
+when (s_order, nxt) in ((2,3)) then substr(stmnt, 1, length(stmnt) -1) --remove last comma in parameters
+when (s_order, nxt) in ((4,5)) then substr(stmnt, 1, length(stmnt) -4) --remove last and in the where clause
+else stmnt end as stmnt from (
+select s_order, lead(s_order, 1) over (order by table_name,s_order asc) as nxt, lower(stmnt) as stmnt from (
 select 1 as s_order, table_name as table_name, null as column_name, 0 as column_id, 'procedure delete_' || tab.table_name|| '_2('  as stmnt
 from user_tables tab
 
@@ -69,7 +73,8 @@ union all
 
 select 5 as s_order, table_name as table_name, null as column_name, 32767 * 2 as column_id, '; exception when others then raise; end delete_' || tab.table_name|| '_2;' as stmnt
 from user_tables tab
-)order by table_name, s_order, column_id;
+)order by table_name, s_order, column_id
+);
 
 
 --=======================================primary key columns=======================================
