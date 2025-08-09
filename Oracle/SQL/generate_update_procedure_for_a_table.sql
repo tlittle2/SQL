@@ -135,7 +135,7 @@ select 'procedure update_' || tab.table_name
 || '_row(p_row IN ' || tab.table_name  || '%rowtype)'
 || 'is begin UPDATE '
 || tab.table_name || ' set row = p_row' 
-|| '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
+|| '; exception when others then raise; end update_' || tab.table_name || '_row;' as stmnt
 from user_tab_columns tab
 where tab.table_name in ('SALARY_DATA_STG', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
