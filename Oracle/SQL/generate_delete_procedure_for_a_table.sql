@@ -82,7 +82,6 @@ GROUP BY columns.TABLE_NAME
 );
 
 --custom columns given rowtype
-
 select lower(stmnt) from (
 select 'procedure delete_' || columns.table_name || '_row(p_row IN ' || columns.TABLE_NAME || '%rowtype)'
 || 'is begin DELETE FROM ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_row.' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.column_Id)
