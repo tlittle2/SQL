@@ -56,7 +56,7 @@ group by tbl
 --Update based on pl/sql row
 select lower(stmnt) from (
 select 'procedure update_' || tab.table_name
-|| '_3(p_row ' || tab.table_name  || '%rowtype)'
+|| '_row(p_row ' || tab.table_name  || '%rowtype)'
 || 'is begin UPDATE '
 || tab.table_name || ' set row = p_row' 
 || '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
