@@ -31,7 +31,7 @@ GROUP BY columns.TABLE_NAME
 
 --primary key columns given input %rowtype
 select lower(stmnt) from (
-select 'procedure delete_' || columns.table_name || '_row(p_row ' || columns.table_name  || '%rowtype)'
+select 'procedure delete_' || columns.table_name || '_row(p_row IN ' || columns.table_name  || '%rowtype)'
 || 'is begin DELETE FROM ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_row.' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.position)
 || '; exception when others then raise; end delete_' || columns.table_name || ';'
 as stmnt
@@ -59,7 +59,7 @@ GROUP BY columns.TABLE_NAME
 
 --indexed columns given input rowtype
 select lower(stmnt) from (
-select 'procedure delete_' || columns.table_name || '_row(p_row ' || columns.table_name||'%rowtype)'
+select 'procedure delete_' || columns.table_name || '_row(p_row IN ' || columns.table_name||'%rowtype)'
 || 'is begin DELETE FROM ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_row.' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.COLUMN_POSITION)
 || '; exception when others then raise; end delete_' || columns.table_name || ';'
 as stmnt
@@ -84,7 +84,7 @@ GROUP BY columns.TABLE_NAME
 --custom columns given rowtype
 
 select lower(stmnt) from (
-select 'procedure delete_' || columns.table_name || '_row(p_row ' || columns.TABLE_NAME || '%rowtype)'
+select 'procedure delete_' || columns.table_name || '_row(p_row IN ' || columns.TABLE_NAME || '%rowtype)'
 || 'is begin DELETE FROM ' || columns.table_name || ' WHERE ' || LISTAGG(columns.COLUMN_NAME || '=' || 'p_row.' || columns.COLUMN_NAME, ' and ') WITHIN GROUP (ORDER BY columns.column_Id)
 || '; exception when others then raise; end delete_' || columns.table_name || ';'
 as stmnt
