@@ -88,8 +88,8 @@ from user_tables tab
 
 union all
 
- select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, column_name || ' = nvl(' ||'p_row.' || tab.COLUMN_NAME || ',' || tab.column_name || '),' stmnt
- from user_tab_columns tab
+select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, column_name || ' = nvl(' ||'p_row.' || tab.COLUMN_NAME || ',' || tab.column_name || '),' stmnt
+from user_tab_columns tab
 
 union all
 
