@@ -84,16 +84,16 @@ GROUP BY tab.TABLE_NAME
 --beware of the last comma (delete it)
 select lower(stmnt) from (
 select 1 as s_order, table_name as table_name, null as column_name, 0 as column_id, 'procedure update_' || tab.table_name|| '_row(p_row IN ' || tab.table_name || '%rowtype)'|| 'is begin UPDATE '|| tab.table_name || ' set ' as stmnt
-from user_tables tab where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
+from user_tables tab
 
 union all
 
  select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, column_name || ' = nvl(' ||'p_row.' || tab.COLUMN_NAME || ',' || tab.column_name || '),' stmnt
- from user_tab_columns tab where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
+ from user_tab_columns tab
 
 union all
 
 select 3 as s_order, table_name as table_name, null as column_name, 32767 as column_id, '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
-from user_tables tab where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
+from user_tables tab
 )order by table_name, s_order, column_id;
 
