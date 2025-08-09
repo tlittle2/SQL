@@ -40,7 +40,7 @@ from user_tables tab
 
 --======================================================generic update for all columns======================================================
 
---======================================================update based on pl/sql row (update table set row = p_row)======================================================
+--======================================================generic update based on pl/sql row (update table set row = p_row)======================================================
 
 select lower(stmnt) from (
 select 'procedure update_' || tab.table_name
