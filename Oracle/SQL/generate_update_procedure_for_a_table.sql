@@ -53,7 +53,7 @@ where tab.table_name in ('SALARY_DATA_STG', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
 );
 
---======================================================update based on pl/sql row (update table set row = p_row)======================================================
+--======================================================generic update based on pl/sql row (update table set row = p_row)======================================================
 
 
 
