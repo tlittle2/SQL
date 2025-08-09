@@ -112,9 +112,7 @@ select 'procedure update_' || tab.table_name
 || tab.table_name || ' set row = p_row'
 || ' where rowid = p_rowid'
 || '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
-from user_tab_columns tab
-where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
-GROUP BY tab.TABLE_NAME
+from user_tables tab
 );
 
 --======================================================update rowid to parameter %rowtype ======================================================
