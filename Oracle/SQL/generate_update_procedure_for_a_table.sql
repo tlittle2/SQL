@@ -11,6 +11,31 @@ where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
 );
 
+select lower(stmnt) from (
+select 1 as s_order, table_name as table_name, null as column_name, 0 as column_id, 'procedure update_' || tab.table_name|| '_1('  as stmnt
+from user_tables tab
+
+union all
+
+select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, ' p_' || tab.column_Name || ' ' || tab.table_name || '.' || tab.column_Name || '%type DEFAULT NULL,'
+from user_tab_columns tab
+
+union all
+
+select 3 as s_order, table_name as table_name, null as column_name, 32767 as column_id, ') is begin UPDATE ' || table_name || ' set '
+from user_tables
+
+union all
+
+select 4 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, column_name || ' = nvl(' ||'p_' || tab.COLUMN_NAME || ',' || tab.column_name || '),' stmnt
+from user_tab_columns tab
+
+union all
+
+select 5 as s_order, table_name as table_name, null as column_name, 32767 * 2 as column_id, '; exception when others then raise; end update_' || tab.table_name || '_1;' as stmnt
+from user_tables tab
+)order by table_name, s_order, column_id;
+
 
 --======================================================generic update for all columns======================================================
 
