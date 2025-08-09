@@ -22,7 +22,7 @@ from user_tab_columns tab
 
 union all
 
-select 3 as s_order, table_name as table_name, null as column_name, 32767 as column_id, '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
+select 3 as s_order, table_name as table_name, null as column_name, 32767 as column_id, '; exception when others then raise; end update_' || tab.table_name || '_row;' as stmnt
 from user_tables tab
 )order by table_name, s_order, column_id;
 
