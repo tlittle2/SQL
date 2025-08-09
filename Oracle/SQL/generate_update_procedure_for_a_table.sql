@@ -148,7 +148,7 @@ select 'procedure update_' || tab.table_name
 || '_row(p_row IN ' || tab.table_name || '%rowtype)'
 || 'is begin UPDATE '
 || tab.table_name || ' set ' || LISTAGG(tab.COLUMN_NAME || ' = nvl(' ||'p_row.' || tab.COLUMN_NAME || ',' || tab.column_name || ')', ' , ') WITHIN GROUP (ORDER BY tab.COLUMN_ID)
-|| '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
+|| '; exception when others then raise; end update_' || tab.table_name || '_row;' as stmnt
 from user_tab_columns tab
 where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
