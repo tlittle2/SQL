@@ -77,7 +77,7 @@ select 'procedure delete_' || columns.table_name || '(' || LISTAGG('p_' || colum
 as stmnt
 from user_tab_columns columns
 where columns.table_name = 'ARCHIVE_RULES'
-and columns.column_name = 'TABLE_OWNER'
+and columns.column_name in ('TABLE_OWNER', 'YEARS_TO_KEEP')
 GROUP BY columns.TABLE_NAME
 );
 
@@ -89,7 +89,7 @@ select 'procedure delete_' || columns.table_name || '_row(p_row IN ' || columns.
 as stmnt
 from user_tab_columns columns
 where columns.table_name = 'ARCHIVE_RULES'
-and columns.column_name = 'TABLE_OWNER'
+and columns.column_name in ('TABLE_OWNER', 'YEARS_TO_KEEP')
 GROUP BY columns.TABLE_NAME
 );
 
