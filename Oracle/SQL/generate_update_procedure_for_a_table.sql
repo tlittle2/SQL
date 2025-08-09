@@ -52,3 +52,15 @@ select
 from ds ds
 group by tbl
 );
+
+--Update based on pl/sql row
+select lower(stmnt) from (
+select 'procedure update_' || tab.table_name
+|| '_3(p_row ' || tab.table_name  || '%rowtype)'
+|| 'is begin UPDATE '
+|| tab.table_name || ' set row = p_row' 
+|| '; exception when others then raise; end update_' || tab.table_name || ';' as stmnt
+from user_tab_columns tab
+where tab.table_name in ('SALARY_DATA_STG', 'CONTROL_REPS')
+GROUP BY tab.TABLE_NAME
+);
