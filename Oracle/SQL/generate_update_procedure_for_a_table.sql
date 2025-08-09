@@ -38,8 +38,23 @@ from user_tables tab
 )order by table_name, s_order, column_id
 );
 
-
 --======================================================generic update for all columns======================================================
+
+--======================================================update based on pl/sql row (update table set row = p_row)======================================================
+
+select lower(stmnt) from (
+select 'procedure update_' || tab.table_name
+|| '_row(p_row IN ' || tab.table_name  || '%rowtype)'
+|| 'is begin UPDATE '
+|| tab.table_name || ' set row = p_row' 
+|| '; exception when others then raise; end update_' || tab.table_name || '_row;' as stmnt
+from user_tab_columns tab
+where tab.table_name in ('SALARY_DATA_STG', 'CONTROL_REPS')
+GROUP BY tab.TABLE_NAME
+);
+
+--======================================================update based on pl/sql row (update table set row = p_row)======================================================
+
 
 
 
@@ -140,25 +155,6 @@ group by tbl
 
 
 --======================================================where clause is primary key columns (with primary key columns at the front)======================================================
-
-
-
-
---======================================================update based on pl/sql row (update table set row = p_row)======================================================
-
-select lower(stmnt) from (
-select 'procedure update_' || tab.table_name
-|| '_row(p_row IN ' || tab.table_name  || '%rowtype)'
-|| 'is begin UPDATE '
-|| tab.table_name || ' set row = p_row' 
-|| '; exception when others then raise; end update_' || tab.table_name || '_row;' as stmnt
-from user_tab_columns tab
-where tab.table_name in ('SALARY_DATA_STG', 'CONTROL_REPS')
-GROUP BY tab.TABLE_NAME
-);
-
---======================================================update based on pl/sql row (update table set row = p_row)======================================================
-
 
 
 --======================================================update nvl based on %rowtype======================================================
