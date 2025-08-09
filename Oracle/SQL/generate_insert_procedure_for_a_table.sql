@@ -1,6 +1,6 @@
 --for a %rowtype variable
 select lower(stmnt) from (
-select 'procedure insert_' || table_name || '_row(p_row ' || tab.table_name  || '%rowtype)'
+select 'procedure insert_' || table_name || '_row(p_row IN ' || tab.table_name  || '%rowtype)'
 || 'is begin INSERT INTO '
 || table_name
 || ' VALUES '
