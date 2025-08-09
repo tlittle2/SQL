@@ -55,9 +55,10 @@ from user_tab_columns tab
 where tab.table_name in ('SALARY_DATA_STG', 'ASTROLOGY', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
 );
+--======================================================update by rowid======================================================
 
 
---update rowid to parameter %rowtype 
+--======================================================update rowid to parameter %rowtype ======================================================
 select lower(stmnt) from (
 select 'procedure update_' || tab.table_name
 || '_rowid( p_rowid IN rowid, p_row IN ' || tab.table_name || '%rowtype)'
@@ -96,8 +97,9 @@ from user_tables tab
 
 )order by table_name, s_order, column_id;
 
+--======================================================update rowid to parameter %rowtype ======================================================
 
---======================================================update by rowid======================================================
+
 
 
 --======================================================where clause is primary key columns (with primary key columns at the front)======================================================
@@ -150,8 +152,12 @@ where tab.table_name in ('SALARY_DATA_STG', 'CONTROL_REPS')
 GROUP BY tab.TABLE_NAME
 );
 
+--======================================================update based on pl/sql row (update table set row = p_row)======================================================
 
---update nvl based on %rowtype
+
+
+--======================================================update nvl based on %rowtype======================================================
+
 select lower(stmnt) from (
 select 'procedure update_' || tab.table_name
 || '_row(p_row IN ' || tab.table_name || '%rowtype)'
@@ -178,8 +184,4 @@ select 3 as s_order, table_name as table_name, null as column_name, 32767 as col
 from user_tables tab
 )order by table_name, s_order, column_id;
 
-
-
-
---======================================================update based on pl/sql row (update table set row = p_row)======================================================
-
+--======================================================update nvl based on %rowtype======================================================
