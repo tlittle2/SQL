@@ -42,7 +42,7 @@ GROUP BY columns.TABLE_NAME
 
 --by rowid AND primary key
 select lower(stmnt) from (
-select 'procedure get_' || columns.table_name || '_' || constraints.constraint_name || '_rowid' -- '_1' change number here if you want multiple "getter" procedures
+select 'procedure get_' || columns.table_name || '_' || constraints.constraint_name || '_rowid' -- '_rowid2' change number here if you want multiple "getter" procedures
 || '(p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype,'
 || 'p_rowid IN rowid, '
 || LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ',') WITHIN GROUP (ORDER BY columns.position)
@@ -67,7 +67,7 @@ GROUP BY columns.TABLE_NAME,constraints.constraint_name
 
 --for indexed columns
 select lower(stmnt) from (
-select 'procedure get_' || columns.table_name || '_' || columns.index_name --'_2' change number here if you want multiple "getter" procedures
+select 'procedure get_' || columns.table_name || '_' || columns.index_name --'_3' change number here if you want multiple "getter" procedures
 || '('
 || 'p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype,'
 || 'p_rowid IN rowid,'
@@ -84,7 +84,7 @@ GROUP BY columns.TABLE_NAME , columns.index_name
 
 --indexed columns AND rowid
 select lower(stmnt) from (
-select 'procedure get_' || columns.table_name || '_2' -- change number here if you want multiple "getter" procedures
+select 'procedure get_' || columns.table_name || '__rowid3' -- change number here if you want multiple "getter" procedures
 || '('
 || 'p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype,'
 || 'p_rowid IN rowid,'
@@ -102,7 +102,7 @@ GROUP BY columns.TABLE_NAME
 
 --for custom columns
 select lower(stmnt) from (
-select 'procedure get_' || columns.table_name || '_1' -- change number here if you want multiple "getter" procedures
+select 'procedure get_' || columns.table_name || '_4' -- change number here if you want multiple "getter" procedures
 || '('
 || LISTAGG('p_' || columns.COLUMN_NAME || ' IN ' || columns.table_name || '.' || columns.column_name || '%type', ',') WITHIN GROUP (ORDER BY columns.column_id)
 || ',p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype'
@@ -119,7 +119,7 @@ GROUP BY columns.TABLE_NAME
 
 --custom columns AND rowid
 select lower(stmnt) from (
-select 'procedure get_' || columns.table_name || '_1' -- change number here if you want multiple "getter" procedures
+select 'procedure get_' || columns.table_name || '_rowid4' -- change number here if you want multiple "getter" procedures
 || '('
 || 'p_' || columns.table_name || '_row IN OUT ' || columns.table_name || '%rowtype,'
 || ' p_rowid in rowid,'
