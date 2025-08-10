@@ -177,7 +177,7 @@ from ds
 
 union all
 
-select distinct 7 as s_order, table_name as table_name, null column_name, null as column_id, 'end update_' || tab.table_name || '_idx;' as stmnt
+select distinct 7 as s_order, table_name as table_name, null column_name, null as column_id, 'exception when others then raise; end update_' || tab.table_name || '_idx;' as stmnt
 from ds tab
 
 )order by table_name, s_order, column_id
