@@ -190,14 +190,14 @@ SELECT
     tab.table_name   as table_name
   , tab.column_name  AS column_name
   , cons.column_name AS cons_column
-  , tab.column_id
+  , coalesce(cons.column_position, tab.column_id) as column_id
 from 
 user_tab_columns tab
 left outer join user_ind_columns cons
 on tab.table_name = cons.table_name
 and tab.column_name = cons.column_name
-where tab.table_name = 'MY_TABLES'
-order by case when cons.column_name is not null then 0 else 1 end asc nulls first, column_id
+where tab.table_name = 'MY_TABLES' and (cons.index_name = :index_name or cons.column_name is null)
+order by table_name, index_name, coalesce(cons.column_position, tab.column_id)
 )
 
 
@@ -208,7 +208,7 @@ select distinct 1 as s_order, table_name as table_name, null as column_name, 0 a
 from ds tab
 
 union all
-select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, ' p_' || tab.column_Name || ' ' || tab.table_name || '.' || tab.column_Name || '%type DEFAULT NULL,'
+select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, ' p_' || tab.column_Name || ' ' || tab.table_name || '.' || tab.column_Name || '%type' || case when cons_column is not null then '' else 'DEFAULT NULL,' end
 from ds tab
 
 union all
