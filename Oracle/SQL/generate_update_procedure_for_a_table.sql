@@ -94,6 +94,61 @@ from user_tables tab
 
 with ds as (
 SELECT
+    tab.table_name   table_name
+  , tab.column_name  AS column_name
+  , cons.column_name AS cons_column
+  , tab.column_id
+from 
+user_tab_columns tab
+left outer join (select cons.table_name, cons.column_name from user_cons_columns cons inner join user_constraints constraints on cons.table_name = constraints.table_name and cons.constraint_name = constraints.constraint_name where constraints.constraint_type = 'P') cons
+on tab.table_name = cons.table_name
+and tab.column_name = cons.column_name
+where tab.table_name = 'SALARY_DATA_STG'
+order by case when cons.column_name is not null then 0 else 1 end asc nulls first, column_id
+)
+
+
+
+select case when (s_order, nxt) in ((2,3), (4,5)) then substr(stmnt, 1, length(stmnt) -1) else stmnt end as stmnt from (
+select s_order, lead(s_order, 1) over (order by table_name,s_order asc) as nxt, lower(stmnt) as stmnt from (
+select distinct 1 as s_order, table_name as table_name, null as column_name, 0 as column_id, 'procedure update_' || tab.table_name|| '_idx(p_rowid IN ROWID,'  as stmnt
+from ds tab
+
+union all
+select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, ' p_' || tab.column_Name || ' ' || tab.table_name || '.' || tab.column_Name || '%type DEFAULT NULL,'
+from ds tab
+
+union all
+
+select distinct 3 as s_order, table_name as table_name, null as column_name, 32767 as column_id, ') is begin UPDATE ' || table_name || ' set '
+from ds
+
+union all
+
+select 4 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, column_name || ' = nvl(' ||'p_' || tab.COLUMN_NAME || ',' || tab.column_name || '),' stmnt
+from ds tab
+
+union all
+
+select distinct 5 as s_order, table_name as table_name, null as column_name, 32767 * 2 as column_id, ' where ' as stmnt
+from ds
+
+union all
+
+select distinct 6 as s_order, table_name as table_name, cons_column column_name, column_id as column_id, decode(cons_column, null, '', cons_column || ' = p_' || cons_column) as stmnt
+from ds
+
+union all
+
+select distinct 7 as s_order, table_name as table_name, null column_name, null as column_id, 'exception when others then raise; end update_' || tab.table_name || '_idx;' as stmnt
+from ds tab
+
+)order by table_name, s_order, column_id
+);
+
+
+with ds as (
+SELECT
     tab.table_name   tbl
   , tab.column_name  AS tab_column
   , cons.column_name AS cons_column
