@@ -218,7 +218,7 @@ from ds
 
 union all
 
-select 4 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, column_name || ' = nvl(' ||'p_' || tab.COLUMN_NAME || ',' || tab.column_name || '),' stmnt
+select distinct 4 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, case when cons_column is not null then null else column_name || ' = nvl(' ||'p_' || tab.COLUMN_NAME || ',' || tab.column_name || '),' end stmnt
 from ds tab
 
 union all
