@@ -1,7 +1,7 @@
 .pks = Package Spec\
 .pkb = Package Body\
 \
-For future reference, I believe everyone should have their own utility packages when creating a PL/SQL codebase.\
+I believe everyone should have their own utility packages when creating a PL/SQL codebase (or a good codebase in general).\
 Utility Packages that I think all PL/SQL codebases should have (and codebases in general)
 - String Utils
 - Date Utils
@@ -10,3 +10,4 @@ Utility Packages that I think all PL/SQL codebases should have (and codebases in
 - Debug
 - Error
 - String Builder (SQL Builder)
+- Data Access (running generic sql statements against tables)
