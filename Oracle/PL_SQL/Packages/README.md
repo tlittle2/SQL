@@ -10,4 +10,5 @@ Utility Packages that I think all PL/SQL codebases should have (and codebases in
 - Debug
 - Error
 - String Builder (SQL Builder)
-- Data Access (running generic sql statements against tables)
+- CRUD Operations (and derivatives)
+    - In PL/SQL, running generic sql statements against tables for example
