@@ -1,5 +1,6 @@
 create or replace PACKAGE crud_pkg
 AS
+/*meant to be a better replacement to the table_access_pkg -> you also may, depending on the application, may disperse these accessor methods into different distinct packages rather than all of these in 1 package*/
 
     function get_infa_global_row
     return infa_global%rowtype;
