@@ -10,7 +10,6 @@ as
 
     g_quarterly_partition_flag        CONSTANT CHAR(1) := 'Q';
 
-
     g_annual_partition_flag           CONSTANT CHAR(1) := 'A';
     g_annual_partition_date_format    CONSTANT CHAR(4) := 'YYYY';
 
@@ -18,20 +17,14 @@ as
     g_is_partitioned                  CONSTANT CHAR(1) := 'Y';
     g_is_not_partitioned              CONSTANT CHAR(1) := 'N';
 
-    g_is_updated                      CONSTANT CHAR(1) := 'Y';
-
-    c_open_cursor                      CONSTANT CHAR(1) := 'O';
-    c_close_cursor                     CONSTANT CHAR(1) := 'C';
-
     g_max_part_suffix                 CONSTANT VARCHAR2(3) := 'MAX';
     g_max_part_suffix_regex           CONSTANT VARCHAR2(4) := g_max_part_suffix || '$';
-
-    type ref_cursor_t is ref cursor;
     
-    function get_partition_name(p_partition_type in partition_table_parm.partition_type%type, p_date in date)
+    function get_partition_name(p_partition_type IN partition_table_parm.partition_type%type, p_prefix in partition_table_parm.partition_prefix%type, p_date in date)
     return varchar2;
-
-    procedure reset_partition_parm_table;
+    
+    function get_partition_for_table(p_table_owner IN partition_table_parm.table_owner%type, p_table_name IN partition_table_parm.table_name%type, p_run_type global_constants_pkg.flag_st := global_constants_pkg.g_regular_run)
+    return varchar2;
 
     procedure create_new_partitions(p_run_type IN CHAR, p_years_to_create IN INTEGER);
 
