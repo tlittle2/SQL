@@ -1,5 +1,12 @@
 create or replace package body regex_utils_pkg
 as
+    function negate_regex_char_class(p_pattern in varchar2)
+    return varchar2
+    is
+    begin
+        assert_pkg.is_true(instr(p_pattern, '[') > 0 and instr(p_pattern, ']') > 0, 'invalid use of this method.');
+        return replace(p_pattern, '[', '[^');
+    end negate_regex_char_class;
 
     function get_regex_integer
     return varchar2 deterministic
