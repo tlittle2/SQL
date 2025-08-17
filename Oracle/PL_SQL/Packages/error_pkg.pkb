@@ -15,6 +15,7 @@ as
     begin
         dbms_output.put_line('ERROR IN: ' || p_app_info);
         dbms_output.put_line(SQLCODE || ' : ' || SQLERRM);
+        --dbms_output.put_line(DBMS_UTILITY.FORMAT_ERROR_STACK);
     END print_error;
     
     
