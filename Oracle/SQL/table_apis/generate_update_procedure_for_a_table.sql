@@ -196,19 +196,19 @@ user_tab_columns tab
 left outer join user_ind_columns cons
 on tab.table_name = cons.table_name
 and tab.column_name = cons.column_name
-where tab.table_name = 'MY_TABLES' and (cons.index_name = :index_name or cons.column_name is null)
+where tab.table_name = 'SALARY_DATA' and (cons.index_name = 'SALARY_PK' or cons.column_name is null)
 order by table_name, index_name, coalesce(cons.column_position, tab.column_id)
 )
 
 
 
-select case when (s_order, nxt) in ((2,3), (4,5)) then substr(stmnt, 1, length(stmnt) -1) else stmnt end as stmnt from (
+select case when (s_order, nxt) in ((2,3), (4,5)) then substr(stmnt, 1, length(stmnt) -1) when s_order = 6 and nxt = 7 then substr(stmnt, 1, length(stmnt) -4) || ';'  else stmnt end as stmnt from (
 select s_order, lead(s_order, 1) over (order by table_name,s_order asc) as nxt, lower(stmnt) as stmnt from (
 select distinct 1 as s_order, table_name as table_name, null as column_name, 0 as column_id, 'procedure update_' || tab.table_name|| '_idx(p_rowid IN ROWID,'  as stmnt
 from ds tab
 
 union all
-select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, ' p_' || tab.column_Name || ' ' || tab.table_name || '.' || tab.column_Name || '%type' || case when cons_column is not null then '' else 'DEFAULT NULL,' end
+select 2 as s_order, table_name as table_name, column_name as column_name, column_id as column_id, ' p_' || tab.column_Name || ' ' || tab.table_name || '.' || tab.column_Name || '%type' || case when cons_column is not null then ',' else ' DEFAULT NULL,' end
 from ds tab
 
 union all
@@ -228,7 +228,7 @@ from ds
 
 union all
 
-select distinct 6 as s_order, table_name as table_name, cons_column column_name, column_id as column_id, decode(cons_column, null, '', cons_column || ' = p_' || cons_column) as stmnt
+select distinct 6 as s_order, table_name as table_name, cons_column column_name, column_id as column_id, decode(cons_column, null, '', cons_column || ' = p_' || cons_column || ' and ') as stmnt
 from ds
 
 union all
@@ -236,10 +236,8 @@ union all
 select distinct 7 as s_order, table_name as table_name, null column_name, null as column_id, 'exception when others then raise; end update_' || tab.table_name || '_idx;' as stmnt
 from ds tab
 
-)order by table_name, s_order, column_id
+)where stmnt is not null order by table_name, s_order, column_id
 );
-
-
 
 
 
