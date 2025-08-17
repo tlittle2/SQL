@@ -10,7 +10,7 @@ as
         from infa_global;
 
         return l_returnvalue;
-        
+
     exception
         when others then
         raise;
@@ -32,12 +32,13 @@ as
         raise;
     end get_global_fix_row;
 
-    function get_global_row_logic(p_run_type IN CHAR := global_constants_pkg.g_regular_run)
+    function get_global_row_logic(p_run_type in char default global_constants_pkg.g_regular_run)
     return infa_global%rowtype
     is
-    l_returnvalue infa_global%rowtype;
+        l_returnvalue infa_global%rowtype;
     begin
         assert_pkg.is_valid_run_mode(p_run_type, 'INVALID RUN TYPE PROVIDED. PLEASE CORRECT');
+
         if p_run_type = global_constants_pkg.g_special_run
 		then
 		    l_returnvalue:= get_global_fix_row;
@@ -46,12 +47,27 @@ as
 		end if;
 
         return l_returnvalue;
-        
+
     exception
         when others then
         raise;
 
     end get_global_row_logic;
+
+	procedure update_global_row_logic(p_row in infa_global%rowtype, p_run_type in char default global_constants_pkg.g_regular_run)
+    is
+    begin 
+        assert_pkg.is_valid_run_mode(p_run_type, 'INVALID RUN TYPE PROVIDED. PLEASE CORRECT');
+
+        if p_run_type = global_constants_pkg.g_special_run
+        then
+            update infa_global_fix set row = p_row;
+        else
+            update infa_global set row = p_row;
+
+        end if;
+
+    end update_global_row_logic;
 
 
     function get_process_ranges_parm_row(p_process_name in process_ranges_parm.process_name%type, p_run_number in process_ranges_parm.run_number%type)
@@ -65,11 +81,14 @@ as
                 ), 'CONSTANT NOT RECOGNIZED! PLEASE INVESTIGATE!'
         );
 
-        select * into l_returnvalue from process_ranges_parm
+        select *
+        into l_returnvalue
+        from process_ranges_parm
         where process_name = p_process_name
         and run_number = p_run_number;
 
-        assert_pkg.is_true(l_returnvalue.lower_bound is not null and l_returnvalue.upper_bound is not null, 'INVALID RANGE FOUND FOR PARAMETERS PROVIDED! PLEASE INVESTIGATE!');
+        assert_pkg.is_not_null_nor_blank(l_returnvalue.lower_bound, 'INVALID LOWER BOUND RETREIVED. PLEASE INVESTIGATE');
+        assert_pkg.is_not_null_nor_blank(l_returnvalue.upper_bound, 'INVALID UPPER BOUND RETREIVED. PLEASE INVESTIGATE');
 
         return l_returnvalue;
 
@@ -80,7 +99,7 @@ as
     end get_process_ranges_parm_row;
 
 
-    function get_salary_data_stg1(p_case_num salary_data_stg.case_num%type)
+    function get_salary_data_stg1(p_case_num in salary_data_stg.case_num%type)
     return salary_data_stg%rowtype
     is
     l_return_value salary_data_stg%rowtype;
@@ -100,8 +119,8 @@ as
            raise;
 
     end get_salary_data_stg1;
-    
-    procedure remove_salary_data_stg1(p_case_num salary_data_stg.case_num%type)
+
+    procedure remove_salary_data_stg1(p_case_num in salary_data_stg.case_num%type)
     is
     begin
         delete
@@ -110,40 +129,65 @@ as
     exception
         when no_data_found then
         raise;
-        
+
         when others then
         raise;
     end remove_salary_data_stg1;
 
 
-    PROCEDURE update_partition_table_parm_1(p_row partition_table_parm%rowtype)
+    PROCEDURE update_partition_table_parm(p_row in partition_table_parm%rowtype)
     is
     begin
         update partition_table_parm set row = p_row;
     exception
         when others then
         raise;
-    end update_partition_table_parm_1;
+    end update_partition_table_parm;
 
 
-    PROCEDURE update_partition_table_parm_2(p_table_owner partition_table_parm.table_owner%TYPE,
-                                            p_table_name  partition_table_parm.table_name%TYPE,
-                                            p_row partition_table_parm%rowtype)
+    PROCEDURE update_partition_table_parm(p_table_owner in partition_table_parm.table_owner%TYPE,
+                                            p_table_name in partition_table_parm.table_name%TYPE,
+                                            p_row in partition_table_parm%rowtype)
     is
     begin
         assert_pkg.is_not_null(p_table_owner, 'Table Owner is Null. Please investigate');
-        assert_pkg.is_not_null(p_table_name, 'Table Owner is Null. Please investigate');
-        
+        assert_pkg.is_not_null(p_table_name, 'Table Name is Null. Please investigate');
+
         update partition_table_parm set row = p_row
         where table_owner = p_table_owner
         and table_name = p_table_name;
-    
+
     exception
         when others then
         raise;
-    end update_partition_table_parm_2;
-    
-    
+    end update_partition_table_parm;
+
+
+    PROCEDURE update_safe_partition_table_parm(p_table_owner in partition_table_parm.table_owner%TYPE
+                                             , p_table_name in partition_table_parm.table_name%TYPE
+                                             , p_row in partition_table_parm%rowtype)                                      
+    is
+    begin
+        assert_pkg.is_not_null(p_table_owner, 'Table Owner is Null. Please investigate');
+        assert_pkg.is_not_null(p_table_name, 'Table Name is Null. Please investigate');
+
+        update partition_table_parm set
+        PARTITIONED = nvl(p_row.PARTITIONED, PARTITIONED)
+      , TABLESPACE_NAME = nvl(p_row.TABLESPACE_NAME, TABLESPACE_NAME)
+      , PARTITION_TYPE = nvl(p_row.PARTITION_TYPE, PARTITION_TYPE)
+      , PARTITION_PREFIX = nvl(p_row.PARTITION_PREFIX, PARTITION_PREFIX)
+      , UPD_FLAG = nvl(p_row.UPD_FLAG, UPD_FLAG)
+        where TABLE_OWNER = p_table_owner
+        and TABLE_NAME = p_table_name;
+
+    exception
+        when no_data_found then
+        raise;
+        when others then
+        raise;
+    end update_safe_partition_table_parm;
+
+
     procedure reset_partition_parm
     is
     begin
