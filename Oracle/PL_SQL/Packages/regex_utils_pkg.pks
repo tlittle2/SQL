@@ -13,7 +13,9 @@ as
 
     g_regex_email_addresses  constant st_regex_len := '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$';
     g_regex_cc_visa          constant st_regex_len := '^4[0-9]{12}(?:[0-9]{3})?$';
-
+    
+    function negate_regex_char_class(p_pattern in varchar2)
+    return varchar2;
 
     function get_regex_integer
     return varchar2 deterministic;
