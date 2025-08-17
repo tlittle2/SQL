@@ -7,19 +7,19 @@ AS
         rpt_columns string_utils_pkg.st_max_db_varchar2,
         rpt_line2 string_utils_pkg.st_max_db_varchar2
     );
-    
+
     report_header report_header_t;
-    
+
     type column_list_t is table of all_tab_columns.column_name%type;
-    
+
     c_space_separator constant VARCHAR2(1) := ' ';
     c_comma_separator constant VARCHAR2(1) := ',';
     c_pipe_separator constant VARCHAR2(1) := '|';
     c_semicolon_separator constant VARCHAR2(1) := ';';
-    
+
     g_row_length INTEGER;
-    
-    
+
+
 --===========================================================================================================================================================================
     procedure generate_header(p_title in varchar2, p_pad in integer, p_col_list in column_list_t, p_report_header out report_header_t)
     is
@@ -29,7 +29,7 @@ AS
         begin
             return rpad('=', g_row_length, '=');
         end header_separator;
-        
+
         function center_content(p_input_str in varchar2)
         return varchar2 deterministic
         is
@@ -38,22 +38,22 @@ AS
         begin
             return rpad(lpad(p_input_str, length(p_input_str) + (l_left_pad), ' '), g_row_length, ' ');
         end center_content;
-    
+
     begin
         p_report_header.rpt_name := center_content('Report Name: ' || p_title);
         p_report_header.rpt_date := center_content('Report Date: ' || TO_CHAR(SYSDATE, 'MM/DD/YYYY HH:MI:SS AM'));
-        
+
         p_report_header.rpt_line1 := header_separator;
-        
+
         for i in 1..p_col_list.count
         loop
             string_utils_pkg.add_str_token(p_report_header.rpt_columns, rpad(p_col_list(i), p_pad, c_space_separator), '');
         end loop;
-        
+
         p_report_header.rpt_line2 := header_separator;
-        
+
     end generate_header;
-    
+
 --===========================================================================================================================================================================
 
     function generate_rolling_header(p_curr_count in out integer, p_max_count in integer)
@@ -65,7 +65,7 @@ AS
             p_curr_count := 0;
             return true;
         end if;
-        
+
         return false;
     end generate_rolling_header;
 --===========================================================================================================================================================================
@@ -87,40 +87,40 @@ AS
         ||  rpad(rank, c_rpt_pad, c_space_separator)
         ||  rpad(admin, c_rpt_pad, c_space_separator)
         ||  rpad(salary, c_rpt_pad, c_space_separator)
-        ||  rpad(to_char(eff_date, 'mm/dd/yyyy'), c_rpt_pad, c_space_separator)
+        /*||  rpad(to_char(eff_date, 'mm/dd/yyyy'), c_rpt_pad, c_space_separator)
         ||  rpad(to_char(end_date, 'mm/dd/yyyy'), c_rpt_pad, c_space_separator)
-        /*||  rpad(create_id, c_rpt_pad, c_space_separator)
+        ||  rpad(create_id, c_rpt_pad, c_space_separator)
         ||  rpad(last_update_id, c_rpt_pad, c_space_separator)*/ as data
-        from salary_data;
-        
+        from salary_data_stg;
+
         rec_length salary_report%rowtype;
-    
-        col_list COLUMN_LIST_T := COLUMN_LIST_T('CASE_NUM','ID' , 'GENDER' , 'DEGREE' , 'YEAR_DEGREE' , 'FIELD' , 'START_YEAR' , 'YEAR' , 'RANK' , 'ADMIN' , 'SALARY' , 'EFF_DATE' , 'END_DATE' /*, 'CREATE_ID' , 'LAST_UPDATE_ID'*/);
-        
+
+        col_list COLUMN_LIST_T := COLUMN_LIST_T('CASE_NUM' , 'ID' , 'GENDER' , 'DEGREE' , 'YEAR_DEGREE' , 'FIELD' , 'START_YEAR' , 'YEAR' , 'RANK' , 'ADMIN' , 'SALARY' /*, 'EFF_DATE' , 'END_DATE' , 'CREATE_ID' , 'LAST_UPDATE_ID'*/);
+
     begin
         --peek the first row to get length
         open salary_report;
         fetch salary_report into rec_length;
         g_row_length :=length(rec_length.data);
         close salary_report;
-         
+
         generate_header(p_report_title,c_rpt_pad, col_list, report_header);
-        
+
         PIPE ROW(report_header.rpt_name);
         PIPE ROW(report_header.rpt_date);
         PIPE ROW(report_header.rpt_line1);
         PIPE ROW(report_header.rpt_columns);
         PIPE ROW(report_header.rpt_line2);
-                
+
         for rec in salary_report
         loop
             PIPE ROW(rec.data);
          end loop;
-         
+
          PIPE ROW(report_header.rpt_line2);
-        
+
         RETURN;
-    
+
     exception
         when others then
         cleanup_pkg.exception_cleanup(false);
@@ -130,42 +130,42 @@ AS
     end salary_data_report;
 
 --===========================================================================================================================================================================    
-    
+
     function astrology_report(p_report_title in varchar2)
     return report_tab_t pipelined
     is
         c_rpt_pad CONSTANT INTEGER := 20;
-        
+
         cursor cur_astrology is
         select rpad(MONTH, c_rpt_pad, c_space_separator)
         ||  rpad(DAY_CUTOFF, c_rpt_pad, c_space_separator)
         ||  rpad(EARLY_SIGN, c_rpt_pad, c_space_separator)
         ||  rpad(LATE_SIGN, c_rpt_pad, c_space_separator) as data
         from astrology;
-    
+
         rec_length cur_astrology%rowtype;
-        
+
         col_list COLUMN_LIST_T := COLUMN_LIST_T('MONTH' , 'DAY_CUTOFF' , 'EARLY_SIGN' , 'LATE_SIGN');
         v_rolling_header INTEGER := 0;
-        
+
     begin
         --peek the first row to get length
         open cur_astrology;
         fetch cur_astrology into rec_length;
         g_row_length :=length(rec_length.data);
         close cur_astrology;
-         
+
         GENERATE_HEADER(p_report_title,c_rpt_pad, col_list, report_header);
-        
+
         PIPE ROW(report_header.rpt_name);
         PIPE ROW(report_header.rpt_date);
         PIPE ROW(report_header.rpt_line1);
         PIPE ROW(report_header.rpt_columns);
         PIPE ROW(report_header.rpt_line2);
-                
+
         for rec in cur_astrology
         loop
-            
+
             if generate_rolling_header(v_rolling_header, p_max_count => 3)
             then
                 PIPE ROW(report_header.rpt_line1);
@@ -173,14 +173,14 @@ AS
                 PIPE ROW(report_header.rpt_line2);
             end if;
             PIPE ROW(rec.data);
-            
+
             v_rolling_header := v_rolling_header + 1;
          end loop;
-         
+
          PIPE ROW(report_header.rpt_line2);
-        
+
         return;
-        
+
     exception
         when others then
         cleanup_pkg.exception_cleanup(false);
@@ -188,13 +188,13 @@ AS
             close cur_astrology;
         end if;
     end astrology_report;
-        
+
 --===========================================================================================================================================================================
     function table_volume_report
     return report_tab_t pipelined
     is
         c_rpt_pad CONSTANT INTEGER := 20;
-        
+
         cursor volume_report is
         with qry as(
             select nvl(tablespace_name, '(blank)') as tablespace_name
@@ -203,15 +203,15 @@ AS
             group by tablespace_name
             order by volume desc
         )
-        
+
         select 
         rpad(tablespace_name, c_rpt_pad, ' ')
         || rpad(volume, c_rpt_pad, ' ')
         as data
         from qry;
-        
+
         rec_length volume_report%rowtype;
-        
+
         col_list column_list_t := column_list_t('TABLESPACE_NAME', 'VOLUME');
     begin
         --peek the first row to get length
@@ -219,22 +219,22 @@ AS
         fetch volume_report into rec_length;
         g_row_length :=length(rec_length.data);
         close volume_report;
-        
+
         GENERATE_HEADER('VOLUME REPORT',c_rpt_pad, col_list, report_header);    
-        
+
         pipe row(report_header.rpt_name);
         pipe row(report_header.rpt_date);
         pipe row(report_header.rpt_line1);
         pipe row(report_header.rpt_columns);
         pipe row(report_header.rpt_line2);
-        
+
         for rec in volume_report
         loop
             pipe row(rec.data);
         end loop;
-        
+
         PIPE ROW(report_header.rpt_line2);
-        
+
         return;
     exception
         when others then
@@ -252,7 +252,7 @@ AS
         c_rpt_pad CONSTANT INTEGER := 20;
         c_fixed_length CONSTANT INTEGER := 1300;
         rw_count INTEGER :=0;
-        
+
         cursor salary_details is
         select 
         rpad(
@@ -274,25 +274,25 @@ AS
         , c_fixed_length, ' ') as trxn_data
         from salary_data;
     begin
-    
+
         PIPE ROW(rpad('H F' || rpad(' ', 4, ' ') || 'transaction'  ||rpad(' ', 36, ' ') || to_char(SYSDATE, 'YYYYMMDDHHMMSS'), c_fixed_length, ' '));
-        
+
         for rec in salary_details
         loop
             PIPE ROW(rec.trxn_data);
             rw_count := rw_count + 1;
         end loop;
-         
+
         PIPE ROW(rpad('T ' || rw_count, c_fixed_length, c_space_separator)); 
         RETURN;
-         
+
     exception
         when others then
         cleanup_pkg.exception_cleanup(false);
         if salary_details%isopen then
             close salary_details;
         end if;
-        
+
     end create_trxn_file;
 --===========================================================================================================================================================================
 
@@ -315,9 +315,9 @@ is
     g_row_length INTEGER := 0;
     v_line string_utils_pkg.st_max_db_varchar2; --v_rpt_str in package spec
     report_out GENERAL_REPORT_O;
-    
+
 begin
-    
+
     /*cursor_number := dbms_sql.open_cursor;
     dbms_sql.parse(cursor_number, input_cursor, dbms_sql.native);
 
@@ -332,7 +332,7 @@ begin
         --pipe row(report_header.rpt_columns);
         --pipe row(report_header.rpt_line2);
     end if;*/
-    
+
     loop
         fetch input_cursor into v_line;
         exit when input_cursor%notfound;
