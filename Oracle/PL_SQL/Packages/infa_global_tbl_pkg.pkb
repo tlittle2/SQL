@@ -2,32 +2,21 @@ create or replace package body infa_global_tbl_pkg
 as
     procedure global_resync(p_run_dte in date, p_run_type IN CHAR := global_constants_pkg.g_special_run)
     is
-       l_proc_name CONSTANT VARCHAR2(15) := 'GLOBAL_RESYNC';
+       p_row infa_global%rowtype;
     begin
-        error_pkg.assert(p_run_type in (global_constants_pkg.g_special_run, global_constants_pkg.g_regular_run), 'INVALID RUN TYPE PROVIDED. PLEASE CORRECT');
+        assert_pkg.is_valid_run_mode(p_run_type, 'INVALID RUN TYPE PROVIDED. PLEASE CORRECT');
+        assert_pkg.IS_NOT_NULL_NOR_BLANK(p_run_dte, 'INVALID DATE PROVIDED. PLEASE CORRECT');
 
-        if p_run_type = global_constants_pkg.g_special_run
-        then
-            table_access_pkg.update_infa_global_fix_1(
-               p_statement_prd_yr_qrtr => date_utils_pkg.get_year_quarter(trunc(p_run_dte, 'Q'))
-             , p_run_dte => trunc(p_run_dte)
-             , p_soq_dte => trunc(p_run_dte, 'Q')
-             , p_eoq_dte => add_months(trunc(p_run_dte + 1, 'Q'), date_utils_pkg.get_months_in_quarter)-1
-             , p_last_update_dte => sysdate
-             , p_last_updated_by => l_proc_name
-            );
-        else
-            table_access_pkg.update_infa_global_1(
-              p_statement_prd_yr_qrtr => date_utils_pkg.get_year_quarter(trunc(p_run_dte, 'Q'))
-            , p_run_dte => trunc(p_run_dte)
-            , p_soq_dte => trunc(p_run_dte, 'Q')
-            , p_eoq_dte => add_months(trunc(p_run_dte + 1, 'Q'), date_utils_pkg.get_months_in_quarter)-1
-            , p_last_update_dte => sysdate
-            , p_last_updated_by => l_proc_name
-            );
-        end if;
-        
+        p_row.statement_prd_yr_qrtr := date_utils_pkg.get_year_quarter(date_utils_pkg.trunc_quarter(p_run_dte));
+        p_row.run_dte := trunc(p_run_dte);
+        p_row.soq_dte := date_utils_pkg.trunc_quarter(p_run_dte);
+        p_row.eoq_dte := add_months(date_utils_pkg.trunc_quarter(p_run_dte), date_utils_pkg.g_months_in_quarter)-1;
+        p_row.last_update_dte := sysdate;
+        p_row.last_updated_by :=  'GLOBAL_RESYNC';
+
+        crud_pkg.update_global_row_logic(p_row, p_run_type);
         commit;
+
     exception
         when others then
         error_pkg.print_error('global_resync');
@@ -36,25 +25,19 @@ as
 
 	procedure global_rollover
 	is
-    l_rec_global infa_global%rowtype;
+    l_rec_global infa_global%rowtype := crud_pkg.GET_INFA_GLOBAL_ROW;
+    l_out_global infa_global%rowtype;
 	begin
-        table_access_pkg.get_infa_global_row(l_rec_global);
-        
-        table_access_pkg.update_infa_global_1(
-              p_statement_prd_yr_qrtr => date_utils_pkg.get_year_quarter(sysdate)
-            , p_run_dte => add_months(trunc(sysdate, 'Q'), date_utils_pkg.get_months_in_quarter)
-            , p_soq_dte => add_months(trunc(sysdate, 'Q'), date_utils_pkg.get_months_in_quarter)
-            , p_eoq_dte => add_months(trunc(l_rec_global.run_dte + 1, 'Q'), date_utils_pkg.get_months_in_quarter)-1
-            , p_last_update_dte => sysdate
-            , p_last_updated_by => 'GLOBAL_ROLLOVER'
-            );
- 
- 		commit;
-    exception
-        when others then
-        error_pkg.print_error('global_rollover');
-        raise;
+        l_out_global.statement_prd_yr_qrtr := date_utils_pkg.get_year_quarter(sysdate);
+        l_out_global.run_dte := add_months(date_utils_pkg.trunc_quarter(sysdate), date_utils_pkg.g_months_in_quarter);
+        l_out_global.soq_dte := add_months(date_utils_pkg.trunc_quarter(sysdate), date_utils_pkg.g_months_in_quarter);
+        l_out_global.eoq_dte := add_months(date_utils_pkg.trunc_quarter(l_rec_global.run_dte + 1), date_utils_pkg.g_months_in_quarter)-1;
+        l_out_global.last_update_dte := sysdate;
+        l_out_global.last_updated_by := 'GLOBAL_ROLLOVER';
 
-	end global_rollover;
+        crud_pkg.update_global_row_logic(l_out_global, global_constants_pkg.g_regular_run);
+        commit;
+
+    end global_rollover;
 
 end infa_global_tbl_pkg;
