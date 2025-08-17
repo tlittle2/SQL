@@ -16,7 +16,7 @@ AS
         check_partition_type(p_partition_type);
         
         case p_partition_type
-        when g_daily_partition_flag     then l_date_suffix:= to_char(to_date(p_date,g_default_date_format) , g_daily_partition_date_format);
+        when g_daily_partition_flag     then l_date_suffix:= to_char(to_date(p_date,g_default_date_format), g_daily_partition_date_format);
         when g_monthly_partition_flag   then l_date_suffix:= to_char(to_date(p_date,g_default_date_format), g_monthly_partition_date_format);
         when g_quarterly_partition_flag then l_date_suffix:= date_utils_pkg.get_year_quarter(to_char(last_day(to_date(p_date,g_default_date_format))));
         when g_annual_partition_flag    then l_date_suffix:= to_char(to_date(p_date,g_default_date_format), g_annual_partition_date_format);
@@ -185,8 +185,7 @@ AS
         
         function partition_previously_created(p_table_owner     IN partition_table_parm.table_owner%type
                                             , p_table_name      IN partition_table_parm.table_name%type
-                                            , p_partition_name  IN ALL_TAB_PARTITIONS.partition_name%type
-                                             )
+                                            , p_partition_name  IN ALL_TAB_PARTITIONS.partition_name%type)
         return boolean
         is
             part_count NUMBER;
@@ -210,17 +209,16 @@ AS
         procedure create_partition_statement(p_part_create_row in partition_creation_t, p_parm_table_row in partition_table_parm%rowtype)
         is
             l_partition_name all_tab_partitions.partition_name%type:= partition_parm_pkg.get_partition_name(p_parm_table_row.partition_type,p_parm_table_row.partition_prefix,p_part_create_row.partition_key);
-            l_partMax all_tab_partitions.partition_name%type := transform_max(p_parm_table_row.partition_type, p_parm_table_row.partition_prefix, partition_parm_pkg.get_partition_name(p_parm_table_row.partition_type,p_parm_table_row.partition_prefix,p_part_create_row.high_value));
+            l_temp_part_high all_tab_partitions.partition_name%type:= partition_parm_pkg.get_partition_name(p_parm_table_row.partition_type,p_parm_table_row.partition_prefix,p_part_create_row.high_value);
+            l_partMax all_tab_partitions.partition_name%type       := transform_max(p_parm_table_row.partition_type, p_parm_table_row.partition_prefix, l_temp_part_high);
         begin
             
             if partition_previously_created(p_parm_table_row.table_owner, p_parm_table_row.table_name, l_partition_name)
             then
                 debug_print_or_execute('select dummy from dual');
-                
-            end if;
-            
-            debug_print_or_execute(
-            string_utils_pkg.get_str('ALTER TABLE %1 SPLIT PARTITION %2 AT (%3) INTO (PARTITION %4 TABLESPACE %5, PARTITION %6 TABLESPACE %7) UPDATE GLOBAL INDEXES'
+            else
+                debug_print_or_execute(
+                string_utils_pkg.get_str('ALTER TABLE %1 SPLIT PARTITION %2 AT (%3) INTO (PARTITION %4 TABLESPACE %5, PARTITION %6 TABLESPACE %7) UPDATE GLOBAL INDEXES'
                                     , sql_utils_pkg.get_full_table_name(p_parm_table_row.table_owner, p_parm_table_row.table_name)
                                     , l_partMax
                                     , transform_split(p_parm_table_row.partition_type, p_part_create_row.partition_key)
@@ -229,6 +227,7 @@ AS
                                     , l_partMax
                                     , p_parm_table_row.tablespace_name)
                                   );
+            end if;
 
          exception
              when others then
@@ -315,7 +314,6 @@ AS
         if p_run_type = global_constants_pkg.g_regular_run
         then
             g_create_begin_dte := add_months(trunc(g_create_begin_dte, 'YYYY'), date_utils_pkg.g_months_in_year);
-            
         end if;
         
         dbms_output.put_line(string_utils_pkg.get_str('Creating Partitions starting from : %1',  g_create_begin_dte));
