@@ -1,10 +1,5 @@
 create or replace package body sql_builder_pkg
 AS
-    procedure sql_builder_assert(p_sql IN VARCHAR2, p_step IN VARCHAR2)
-    is
-    begin
-        error_pkg.assert(p_sql is not null, 'BUILDER DETECTED NULL SQL AT ' || p_step || ' AND FLAG IS ON. PLEASE INVESTIGATE');
-    end sql_builder_assert;
 
 	procedure set_from(p_query in out t_query,p_name in varchar2)
 	is
