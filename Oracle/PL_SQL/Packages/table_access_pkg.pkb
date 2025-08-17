@@ -143,7 +143,7 @@ as
     end insert_salary_data_stg;
     
     procedure update_salary_data_stg_1(
-    p_case_num       salary_data_stg.case_num%type
+    p_case_num       salary_data_stg.case_num%type default null
   , p_id             salary_data_stg.id%type default null
   , p_gender         salary_data_stg.gender%type default null
   , p_degree         salary_data_stg.degree%type default null
@@ -388,6 +388,9 @@ as
         raise;
     end get_global_fix_row;
     
+    
+
+    
     procedure get_global_row_logic(p_rec_global IN OUT NOCOPY infa_global%rowtype, p_run_type IN CHAR := global_constants_pkg.g_regular_run)
 	is
 	begin
@@ -404,6 +407,10 @@ as
         error_pkg.print_error('get_global_row_logic');
         raise;
 	end get_global_row_logic;
+    
+
+    
+    
 --================================================================infa_global/infa_global_fix============================================================================================================
 
 
