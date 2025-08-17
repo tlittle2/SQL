@@ -1,6 +1,8 @@
-create or replace FUNCTION GENERATE_GUID(p_seqnum IN NUMBER, p_app_id IN VARCHAR2)
-RETURN VARCHAR2
-AS
-BEGIN
-    return to_char(sysdate, 'YYYYMMDD') || p_app_id || lpad(p_seqnum, 12, '0');
-END;
+create or replace function generate_guid(p_seqnum in number, p_app_id in varchar2)
+
+return varchar2
+as
+begin
+    RETURN TO_CHAR(SYSDATE, 'yyyymmdd') || P_APP_ID || LPAD(P_SEQNUM, 12, '0');
+end;
+
