@@ -9,6 +9,9 @@ as
     );
     
     g_select_all CONSTANT CHAR(1) := '*';
+    
+    g_and constant char(5) := ' and ';
+    g_or constant char(5) := ' or ';
 
     procedure set_from (p_query in out t_query,p_name in varchar2);
     
