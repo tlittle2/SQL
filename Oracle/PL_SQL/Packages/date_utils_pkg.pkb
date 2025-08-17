@@ -7,14 +7,14 @@ as
     begin
         return g_forwards_direction;
     end get_forward_flag;
-    
+
     function get_backward_flag
     return char deterministic
     is
     begin
         return g_backwards_direction;
     end get_backward_flag;
-    
+
     function get_months_in_year
     return number
     deterministic
@@ -22,7 +22,7 @@ as
     begin
         return g_months_in_year;
     end get_months_in_year;
-    
+
     function get_months_in_quarter
     return number
     deterministic
@@ -30,7 +30,7 @@ as
     begin
         return g_months_in_quarter;
     end;
-    
+
     function get_date_no_ts(p_date in date)
     return date
     deterministic
@@ -38,7 +38,7 @@ as
     begin
         return trunc(p_date);
     end get_date_no_ts;
-    
+
     function get_curr_date
     return date
     deterministic
@@ -55,7 +55,7 @@ as
         p_quarter number := to_char(p_date, 'Q');
     begin
         return format_year_quarter(p_year, p_quarter);
-    
+
     end get_year_quarter;
 
 
@@ -67,68 +67,290 @@ as
 
     end format_year_quarter;
 
+    function trunc_quarter(p_date in date)
+    return date
+    deterministic
+    is
+    begin
+        return trunc(p_date, 'Q');
+    end trunc_quarter;
+
 
     function get_quarter(p_month in number)
     return number
     is
+    l_returnvalue number;
     begin
-        assert_pkg.is_true(p_month between 1 and 12, 'not a valid month');
-        return case
-            when p_month in (1,2,3)    then 1
-            when p_month in (4,5,6)    then 2
-            when p_month in (7,8,9)    then 3
-            when p_month in (10,11,12) then 4
-            end;
+        assert_pkg.is_valid_month(p_month, 'not a valid month. please investigate');
+        case
+            when p_month in (1,2,3)    then l_returnvalue := 1;
+            when p_month in (4,5,6)    then l_returnvalue := 2;
+            when p_month in (7,8,9)    then l_returnvalue := 3;
+                                       else l_returnvalue := 4;
+        end case;
+
+        return l_returnvalue;
     end get_quarter;
-    
+
+
+    function get_month_of_quarter(p_month in number)
+    return number
+    is
+        l_returnvalue number;
+    begin
+        assert_pkg.is_valid_month(p_month, 'INVALID MONTH PROVIDED. PLEASE INVESTIGATE');
+
+        case when p_month in (1,4,7,10) then l_returnvalue := 1;
+             when p_month in (2,5,8,11) then l_returnvalue := 2;
+                                        else l_returnvalue := 3;
+	    end case;
+
+	    return l_returnvalue;
+	end get_month_of_quarter;
+
+
+    function get_month_of_quarter(p_date in date)
+    return number
+    is
+        l_returnvalue number := get_month_of_quarter(get_month(p_date));
+    begin
+        return l_returnvalue;
+    end get_month_of_quarter;
+
+    function is_month1_of_quarter(p_month in number)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if p_month = 1
+        then
+            l_returnvalue := true;
+        else
+	        l_returnvalue := false;
+	    end if;
+
+	    return l_returnvalue;
+    end is_month1_of_quarter;
+
+    function is_month1_of_quarter(p_date in date)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if is_month1_of_quarter(get_month_of_quarter(p_date))
+	    then
+	        l_returnvalue := true;
+	    else
+	        l_returnvalue := false;
+        end if;
+
+        return l_returnvalue;
+
+    end is_month1_of_quarter;
+
+    function is_month2_of_quarter(p_month in number)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if p_month = 2
+        then
+            l_returnvalue := true;
+        else
+	        l_returnvalue := false;
+	    end if;
+
+	    return l_returnvalue;
+
+    end is_month2_of_quarter;
+
+
+    function is_month2_of_quarter(p_date in date)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if is_month2_of_quarter(get_month_of_quarter(p_date))
+	    then
+            l_returnvalue := true;
+        else
+            l_returnvalue := false;
+	    end if;
+
+	   return l_returnvalue;
+
+    end is_month2_of_quarter;
+
+    function is_month3_of_quarter(p_month in number)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if p_month = 3
+        then
+            l_returnvalue := true;
+        else
+	        l_returnvalue := false;
+	    end if;
+
+	    return l_returnvalue;
+
+    end is_month3_of_quarter;
+
+
+    function is_month3_of_quarter(p_date in date)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if is_month3_of_quarter(get_month_of_quarter(p_date))
+	    then
+	        l_returnvalue := true;
+	    else
+	        l_returnvalue := false;
+	    end if;
+
+	    return l_returnvalue;
+
+    end is_month3_of_quarter;
+
+
     function get_month(p_date in date)
     return number
     is
+    l_returnvalue number := to_number(to_char(p_date, 'MM'));
     begin
-        return to_number(to_char(p_date, 'MM'));
+        return l_returnvalue;
+
     end get_month;
-    
-    
+
+
     function parse_year_qrtr_for_quarter(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
     return number
     is
+    l_returnvalue number;
     begin
         assert_pkg.is_true(string_utils_pkg.char_at(p_year_qrtr, 5) = 'Q', 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
-        return to_number(string_utils_pkg.char_at(p_year_qrtr, 6));
+
+        l_returnvalue := to_number(string_utils_pkg.char_at(p_year_qrtr, 6));
+
+        assert_pkg.is_true(l_returnvalue between 1 and 4, 'INVALID QUARTER RETURNED. PLEASE INVESTIGATE');
+
+        return l_returnvalue;
     end parse_year_qrtr_for_quarter;
-    
-        
+
+    function is_quarter1(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if parse_year_qrtr_for_quarter(p_year_qrtr) = 1
+	    then
+	        l_returnvalue := true;
+	    else
+	        l_returnvalue := false;
+	    end if;
+
+	    return l_returnvalue;
+
+    end is_quarter1;
+
+
+    function is_quarter2(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if parse_year_qrtr_for_quarter(p_year_qrtr) = 2
+	    then
+	        l_returnvalue := true;
+	    else
+	        l_returnvalue := false;
+	    end if;
+
+	    return l_returnvalue;
+
+    end is_quarter2;
+
+
+    function is_quarter3(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if parse_year_qrtr_for_quarter(p_year_qrtr) = 3
+	    then
+	        l_returnvalue := true;
+	    else
+	        l_returnvalue := false;
+	    end if;
+
+	    return l_returnvalue;
+
+    end is_quarter3;
+
+
+    function is_quarter4(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if parse_year_qrtr_for_quarter(p_year_qrtr) = 4
+	    then
+	        l_returnvalue := true;
+	    else
+	        l_returnvalue := false;
+	    end if;
+
+	    return l_returnvalue;
+
+    end is_quarter4;
+
+
+    function parse_year_qrtr_for_year(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
+    return number
+    is
+    l_returnvalue number;
+    begin
+        assert_pkg.is_true(string_utils_pkg.char_at(p_year_qrtr, 5) = 'Q', 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
+        l_returnvalue := to_number(p_year_qrtr, 1,4);
+        return l_returnvalue;
+    end parse_year_qrtr_for_year;
+
+
     function calculate_new_date(p_direction      in char
                               , p_input_date    in date
                               , p_years_to_keep in NUMBER)
     return date
     is
+    l_returnvalue date;
     begin
-        error_pkg.assert(p_direction in (g_backwards_direction,g_forwards_direction), 'Please specify a direction for calculation!');
+        assert_pkg.is_true(p_direction in (g_backwards_direction,g_forwards_direction), 'Please specify a direction for calculation!');
         assert_pkg.is_not_null_nor_blank(p_input_date, 'DATE VALUE PASSED IS NOT VALID. PLEASE INVESTIGATE');
-        --error_pkg.assert(p_input_date is not null or trim(p_input_date) <> '', 'DATE VALUE PASSED IS NOT VALID. PLEASE INVESTIGATE');
-        
+
         if p_direction = date_utils_pkg.g_backwards_direction
         then
-            return add_months(p_input_date, -(date_utils_pkg.g_months_in_year * p_years_to_keep));
+            l_returnvalue := add_months(p_input_date, -(date_utils_pkg.g_months_in_year * p_years_to_keep));
         else
-            return add_months(p_input_date,  (date_utils_pkg.g_months_in_year * p_years_to_keep));
-            
+            l_returnvalue := add_months(p_input_date,  (date_utils_pkg.g_months_in_year * p_years_to_keep));
+
         end if;
-        
+
+        return l_returnvalue;
+
     exception
     when others then
         error_pkg.print_error('calculate_cutoff_date');
         raise; 
     end calculate_new_date;
-    
+
     function get_range_of_dates(p_start_date in date, p_num_of_days in number, p_direction in char)
     return date_table_t pipelined
     is
         date_table date_table_t;
     begin
         assert_pkg.is_true(p_direction in (g_backwards_direction,g_forwards_direction), 'Please specify a direction to generate dates for!');
-        
+
         if p_direction = g_backwards_direction then
             for i in 0..p_num_of_days
             loop
@@ -139,13 +361,13 @@ as
             loop
                 pipe row(p_start_date + i);
             end loop;
-            
+
         end if;
         return;
-        
+
     end get_range_of_dates;
-    
-    
+
+
     function get_dates_between(p_start_date in date, p_end_date in date)
     return date_table_t pipelined
     is
@@ -158,11 +380,11 @@ as
                 pipe row(p_start_date + i);
             end loop;
         end if;
-        
+
         return;
-        
+
     end get_dates_between;
-    
+
     function get_date_table(p_calendar_string in varchar2,p_from_date in date := null,p_to_date in date := null)
     return date_table_t pipelined
     is
@@ -179,25 +401,25 @@ as
                 return_date_after => l_date_after,
                 next_run_date     => l_next_date
             );
-            
+
             exit when l_next_date > l_to_date;
-            
+
             pipe row (l_next_date);
             l_date_after := l_next_date;
         end loop;
         return;
     end get_date_table;
-    
-    
-    
+
+
+
     function format_time(p_from_date in date, p_to_date in date)
     return varchar2
     is
     begin
         return format_time(p_to_date - p_from_date);
     end format_time;
-    
-    
+
+
     function format_time(p_days in number)
     return varchar2
     is
@@ -212,23 +434,23 @@ as
         v_hours := nvl(((p_days - v_days) * 24), 0);
         v_minutes := nvl((v_hours - trunc(v_hours)) * 60,0);
         v_seconds := nvl((v_minutes - trunc(v_minutes)) * 60,0);
-        
+
         if p_days < 0 
         then
             v_sign := 'minus ';
         end if;
-        
+
         v_days := abs(v_days);
         v_hours := trunc(abs(v_hours));
         v_minutes := round(abs(v_minutes));
         v_seconds := round(abs(v_seconds));
-        
+
         if v_minutes = 60
         then
             v_hours := v_hours + 1;
             v_minutes := 0;
         end if;
-        
+
         if v_days > 0
         then
             if v_hours = 0
@@ -237,7 +459,7 @@ as
             else
                 v_returnvalue := string_utils_pkg.get_str('%1 days %2 hours %3 minutes ', v_days, v_hours, v_minutes);
             end if;
-        
+
         elsif v_hours > 0
         then
             if v_minutes = 0
@@ -246,7 +468,7 @@ as
             else
                 v_returnvalue := string_utils_pkg.get_str('%1 hours, %2 minutes', v_hours, v_minutes);
             end if;
-        
+
         elsif v_minutes > 0
         then
             if v_seconds = 0
@@ -254,14 +476,14 @@ as
                 v_returnvalue := string_utils_pkg.get_str('%1 minutes, %2 seconds', v_minutes, v_seconds);
             else
                 v_returnvalue := string_utils_pkg.get_str('%1 seconds', v_seconds);
-                
+
             end if;
         end if;
-                
+
         v_returnvalue := v_sign || v_returnvalue;
-        
+
         return v_returnvalue;
-    
+
     end format_time;
 
 end date_utils_pkg;
