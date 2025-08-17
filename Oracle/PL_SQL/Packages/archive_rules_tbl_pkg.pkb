@@ -463,7 +463,7 @@ as
             
     		v_all_tab_parts t_all_tab_parts;
     	  
-    	    p_global_rec infa_global%rowtype;
+    	    --p_global_rec infa_global%rowtype;
             
             l_archive_cutoff_dte DATE;
             
@@ -507,7 +507,7 @@ as
     				check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_group_key, l_column_datatype);
     				check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_where_key, l_column_datatype);
     				
-                    error_pkg.assert(is_date(l_column_datatype) or (is_string(l_column_datatype) AND rec_dataToArchive.src_where_key in ('STATEMENT_PRD_YR_QRTR')), 'UNSUPPORTED COLUMN DATATYPE FOR WHERE CLAUSE FOR THIS PROCEDURE. PLEASE INVESTIGATE');
+                    assert_pkg.is_true(is_date(l_column_datatype) or (is_string(l_column_datatype) AND rec_dataToArchive.src_where_key in ('STATEMENT_PRD_YR_QRTR')), 'UNSUPPORTED COLUMN DATATYPE FOR WHERE CLAUSE FOR THIS PROCEDURE. PLEASE INVESTIGATE');
     			end loop;
             exception
             when others then
