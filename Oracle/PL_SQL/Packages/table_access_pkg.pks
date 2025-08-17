@@ -70,7 +70,7 @@ AS
   
   
     procedure update_salary_data_stg_1(
-    p_case_num       salary_data_stg.case_num%type
+    p_case_num       salary_data_stg.case_num%type default null
   , p_id             salary_data_stg.id%type default null
   , p_gender         salary_data_stg.gender%type default null
   , p_degree         salary_data_stg.degree%type default null
@@ -122,8 +122,7 @@ AS
       , p_tablespace_name  partition_table_parm.tablespace_name%TYPE DEFAULT NULL
       , p_partition_type   partition_table_parm.partition_type%TYPE DEFAULT NULL
       , p_partition_prefix partition_table_parm.partition_prefix%TYPE DEFAULT NULL
-      , p_upd_flag         partition_table_parm.upd_flag%TYPE DEFAULT NULL
-    );
+      , p_upd_flag         partition_table_parm.upd_flag%TYPE DEFAULT NULL);
 
     PROCEDURE update_partition_table_parm_2 (
         p_table_owner      partition_table_parm.table_owner%TYPE
@@ -132,8 +131,7 @@ AS
       , p_tablespace_name  partition_table_parm.tablespace_name%TYPE DEFAULT NULL
       , p_partition_type   partition_table_parm.partition_type%TYPE DEFAULT NULL
       , p_partition_prefix partition_table_parm.partition_prefix%TYPE DEFAULT NULL
-      , p_upd_flag         partition_table_parm.upd_flag%TYPE DEFAULT NULL
-    );
+      , p_upd_flag         partition_table_parm.upd_flag%TYPE DEFAULT NULL);
     
 --======================================================PARTITION_TABLE_PARM=================================================================================================================
     
@@ -146,19 +144,18 @@ AS
     , p_soq_dte infa_global.soq_dte%type default null
     , p_eoq_dte infa_global.eoq_dte%type default null
     , p_last_update_dte infa_global.last_update_dte%type default null
-    , p_last_updated_by infa_global.last_updated_by%type default null
-    );
+    , p_last_updated_by infa_global.last_updated_by%type default null);
     
     procedure get_infa_global_row(p_rec_global IN OUT NOCOPY infa_global%rowtype);
-
+    
+    
     procedure update_infa_global_fix_1(
       p_statement_prd_yr_qrtr infa_global.statement_prd_yr_qrtr%type default null
     , p_run_dte infa_global.run_dte%type default null
     , p_soq_dte infa_global.soq_dte%type default null
     , p_eoq_dte infa_global.eoq_dte%type default null
     , p_last_update_dte infa_global.last_update_dte%type default null
-    , p_last_updated_by infa_global.last_updated_by%type default null
-    );
+    , p_last_updated_by infa_global.last_updated_by%type default null);
     
     procedure get_global_fix_row(p_rec_global_fix IN OUT NOCOPY infa_global_fix%rowtype);
     
@@ -177,8 +174,7 @@ AS
       
     type process_ranges_parm_bounds_t is record(
         lower_bound process_ranges_parm.lower_bound%type,
-        upper_bound process_ranges_parm.upper_bound%type
-    );
+        upper_bound process_ranges_parm.upper_bound%type);
     
     procedure get_process_ranges_bounds(p_process_name in process_ranges_parm.process_name%type, p_run_number in process_ranges_parm.run_number%type, p_parms out process_ranges_parm_bounds_t);
 
