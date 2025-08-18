@@ -23,6 +23,17 @@ as
         numberContainer number_container_t;
         c_default_number_value CONSTANT NUMBER := -1;
 
+    procedure debug_print_or_execute(p_sql IN VARCHAR2)
+    is
+    begin
+        if debug_pkg.get_debug_state
+        then
+            dbms_output.put_line(p_sql);
+        else
+            execute immediate p_sql;
+        end if;
+
+    end debug_print_or_execute;
 
     function get_base_tab_name_from_archive(p_table_name in varchar2)
     return varchar2
@@ -40,18 +51,30 @@ as
     end get_arch_prefix_from_tab;
 
 
-    function is_correct_arch_prefix(p_table_name in varchar2)
-    return boolean
+    procedure is_valid_for_archival(p_table_name in varchar2)
     is
-        l_pfx_instr NUMBER := instr(p_table_name, archive_rules_tbl_pkg.g_archive_table_prefix);
+        l_count NUMBER;
+        l_pfx g_archive_table_prefix%type;
     begin
-        if l_pfx_instr > 1
+        select count(1)
+        into l_count
+        from all_tables
+        where table_name = p_table_name;
+
+        assert_pkg.is_true(l_count > 0, 'TABLE DOES NOT EXIST OR CANNOT BE ACCESSED. HALTING.');
+
+        select count(1)
+        into l_count
+        from all_tables
+        where table_name = get_base_tab_name_from_archive(p_table_name);
+
+        if l_count = 1 --if table without the archive prefix already exists in the database
         then
-            return false;
-        else
-            return true;
+            l_pfx := get_arch_prefix_from_tab(p_table_name);
+            assert_pkg.is_true(l_pfx = archive_rules_tbl_pkg.g_archive_table_prefix, 'ABORTING! TRYING TO INSERT ARCHIVE TABLE WITHOUT PROPER PREFIX'); 
         end if;
-    end is_correct_arch_prefix;
+
+    end is_valid_for_archival;
 
     function get_arch_table(p_table_name in archive_rules.table_name%type)
     return archive_rules%rowtype
@@ -64,6 +87,10 @@ as
         where table_name = concat(g_archive_table_prefix, p_table_name);
 
         return l_returnvalue;
+
+    exception
+        when no_data_found then
+        raise;
     end get_arch_table;
 
 
@@ -103,14 +130,11 @@ as
         RETURN FALSE;
     END is_date;
 
-    function is_valid_data_type(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE)
-    return boolean is
+    procedure is_valid_data_type(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE)
+    is
     begin
-        if is_string(p_column_datatype) or is_number(p_column_datatype) or is_date(p_column_datatype)
-        then
-            return true;
-        end if;
-        return false;
+        assert_pkg.is_not_null(p_column_datatype, 'SOMETHING IS WRONG WITH THE COLUMN NAME SPECIFIED. PLEASE INVESTIGATE');
+        assert_pkg.is_true(is_string(p_column_datatype) or is_number(p_column_datatype) or is_date(p_column_datatype), 'INVALID DATATYPE PASSED. PLEASE INVESTIGATE');
     end is_valid_data_type;
 
     function check_schemas(p_source_owner in ALL_TAB_COLUMNS.owner%TYPE
@@ -149,30 +173,11 @@ as
                 select column_name,data_type,column_id from schema_check where owner = p_target_owner and table_name = p_target_table
             );
 
-            dbms_output.put_line(v_differences);
-
-            if v_differences > 0 
-            then
-                RETURN FALSE;
-            end if;
+            assert_pkg.is_equal_to_zero(v_differences,string_utils_pkg.get_str('%1 differences in table schemas between %2 and %3', v_differences, p_source_table, p_target_table));
 
             RETURN TRUE;
 
     end check_schemas;
-
-
-    procedure debug_print_or_execute(p_sql IN VARCHAR2)
-    is
-    begin
-        if debug_pkg.get_debug_state
-        then
-            dbms_output.put_line(p_sql);
-        else
-            execute immediate p_sql;
-        end if;
-
-    end debug_print_or_execute;
-
 
     procedure check_parm_table_updates
 	is
@@ -183,7 +188,7 @@ as
 		from archive_rules
 		where UPD_FLAG =  global_constants_pkg.g_record_is_not_updated;
 
-		assert_pkg.is_true(l_count = 0, 'SOME RECORDS WERE NOT UPDATED DURING ARCHIVAL. PLEASE INVESTIGATE');
+		assert_pkg.is_equal_to_zero(l_count, 'SOME RECORDS WERE NOT UPDATED DURING ARCHIVAL. PLEASE INVESTIGATE');
 
 	exception
 	    when others then
@@ -211,7 +216,7 @@ as
         where ind_part.status = 'UNUSABLE' or idxs.status = 'UNUSABLE'
         );
 
-        assert_pkg.is_true(l_bad_idx_count = 0, 'UNUSABLE OR INVALID INDEXES HAVE BEEN DETECTED. PLEASE INVESTIGATE');
+        assert_pkg.is_equal_to_zero(l_bad_idx_count, 'UNUSABLE OR INVALID INDEXES HAVE BEEN DETECTED. PLEASE INVESTIGATE');
 
     exception
         when others then
@@ -219,8 +224,10 @@ as
             raise;
     end check_indexes;
 
-    procedure check_column_datatype(p_owner in all_tab_partitions.table_owner%type, p_table all_tab_partitions.table_name%type, p_column in all_tab_columns.column_name%type, p_column_datatype IN OUT NOCOPY all_tab_columns.data_type%type)
+    function get_column_datatype(p_owner in all_tab_partitions.table_owner%type, p_table all_tab_partitions.table_name%type, p_column in all_tab_columns.column_name%type)
+    return all_tab_columns.data_type%type
     is
+    p_column_datatype all_tab_columns.data_type%type;
     begin
         select data_type
         into p_column_datatype
@@ -229,13 +236,13 @@ as
         and table_name = p_table
         and upper(column_name) = upper(p_column);
 
-        assert_pkg.is_true(p_column_datatype is not null, 'SOMETHING IS WRONG WITH THE COLUMN NAME SPECIFIED. PLEASE INVESTIGATE');
-		assert_pkg.is_true(is_string(p_column_datatype) or is_number(p_column_datatype) or is_date(p_column_datatype), 'UNSUPPORTED COLUMN DATATYPE FOR THIS PROCEDURE. PLEASE INVESTIGATE');
+        is_valid_data_type(p_column_datatype);
 
+        return p_column_datatype; 
 	exception
 		when others then
 		    raise;
-	end check_column_datatype;
+	end get_column_datatype;
 
 
     PROCEDURE partitioned_append_to_archive(p_src_owner          IN partition_table_parm.TABLE_OWNER%TYPE
@@ -261,9 +268,11 @@ as
             debug_print_or_execute(
             string_utils_pkg.get_str('INSERT /*+ APPEND NOSORT NOLOGGING */ INTO %1 %2', sql_utils_pkg.get_full_table_name(p_arch_owner, p_arch_table), sql_builder_pkg.get_sql(l_insert_query))
             );
+
         end execute_insert;
+
     BEGIN
-        check_column_datatype(p_src_owner, p_src_table, p_column_name, v_column_datatype);
+        v_column_datatype := get_column_datatype(p_src_owner, p_src_table, p_column_name);
 
         if is_string(v_column_datatype)
         then
@@ -303,24 +312,21 @@ as
 
             if is_string(v_column_datatype)
             then
-                --execute_insert(' where nvl(' || p_column_name || ', ''' || c_default_string_value || ''') = ''' || strContainer.strValue || '''');
                 execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, string_utils_pkg.str_to_single_quoted_str(c_default_string_value), string_utils_pkg.str_to_single_quoted_str(strContainer.strValue)));
 
             elsif is_number(v_column_datatype)
             then
-                --execute_insert(' where nvl(' || p_column_name || ', ' || c_default_number_value || ') = ''' || numberContainer.numValue || '''');
 				execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, c_default_number_value, numberContainer.numValue));
 
             elsif is_date(v_column_datatype)
             then
-                --execute_insert(' where nvl(' || p_column_name || ', ''' || c_default_date_value || ''') = ''' || dateContainer.dateValue || '''');
 				execute_insert(string_utils_pkg.get_str('WHERE NVL(%1,%2) = %3', p_column_name, string_utils_pkg.str_to_single_quoted_str(c_default_date_value), string_utils_pkg.str_to_single_quoted_str(dateContainer.dateValue)));
 
             end if;
 
             commit;
 
-            END LOOP;
+        END LOOP;
 
         close insert_cursor;
 
@@ -499,8 +505,8 @@ as
                     where table_owner = p_table_owner
                     and table_name = p_table_name;
 
-                    assert_pkg.is_true(l_partitioned_table_in_parm = partition_parm_pkg.g_is_partitioned, 'TABLE IS NOT PARTITIONED IN THE PARM TABLE. PLEASE INVESTIGATE');
-                    assert_pkg.is_true(l_partitioned_table_in_db = 1, 'TABLE DOESNT EXIST AS PARTITIONED TABLE IN THE DATABASE. PLEASE INVESTIGATE');
+                    assert_pkg.is_equal_to(l_partitioned_table_in_parm,partition_parm_pkg.g_is_partitioned, 'TABLE IS NOT PARTITIONED IN THE PARM TABLE. PLEASE INVESTIGATE');
+                    assert_pkg.is_equal_to(l_partitioned_table_in_db, 1, 'TABLE DOESNT EXIST AS PARTITIONED TABLE IN THE DATABASE. PLEASE INVESTIGATE');
 
                 end check_parm_table_and_db;
 
@@ -515,8 +521,8 @@ as
                     check_parm_table_and_db(rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name);
 
                     --check group by column first, then the where clause so we can reuse variable for an extra check of the where clause
-    				check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_group_key, l_column_datatype);
-    				check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_where_key, l_column_datatype);
+    				l_column_datatype:= get_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_group_key);
+    				l_column_datatype:= get_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_where_key);
 
                     assert_pkg.is_true(is_date(l_column_datatype) or (is_string(l_column_datatype) AND rec_dataToArchive.src_where_key in ('STATEMENT_PRD_YR_QRTR')), 'UNSUPPORTED COLUMN DATATYPE FOR WHERE CLAUSE FOR THIS PROCEDURE. PLEASE INVESTIGATE');
     			end loop;
@@ -583,10 +589,10 @@ as
                 assert_pkg.is_true(check_schemas(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name), string_utils_pkg.get_str('Table Schema for %1 and %2 are not consistent. Please investigate.', rec_dataToArchive.src_table_name, rec_dataToArchive.arch_table_name));
 
                 --check group by column first, then the where clause so we can reuse variable for an extra check of the where clause (in the case of STATEMENT_PRD_YR_QRTR)
-                check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_group_key, l_column_datatype);
-                check_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_where_key, l_column_datatype);
+                l_column_datatype := get_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_group_key);
+                l_column_datatype := get_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_where_key);
 
-                error_pkg.assert(is_date(l_column_datatype) or (is_string(l_column_datatype) AND rec_dataToArchive.src_where_key in ('STATEMENT_PRD_YR_QRTR')), 'UNSUPPORTED COLUMN DATATYPE FOR WHERE CLAUSE FOR THIS PROCEDURE. PLEASE INVESTIGATE');
+                assert_pkg.is_true(is_date(l_column_datatype) or (is_string(l_column_datatype) AND rec_dataToArchive.src_where_key in ('STATEMENT_PRD_YR_QRTR')), 'UNSUPPORTED COLUMN DATATYPE FOR WHERE CLAUSE FOR THIS PROCEDURE. PLEASE INVESTIGATE'); 
             end loop;
         exception
             when others then
