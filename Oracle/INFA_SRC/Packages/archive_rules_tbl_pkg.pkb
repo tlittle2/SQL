@@ -98,7 +98,7 @@ as
     RETURN BOOLEAN 
     IS 
     BEGIN
-        IF p_column_datatype IN ('CHAR', 'VARCHAR2', 'VARCHAR')
+        IF p_column_datatype IN ('CHAR', 'VARCHAR2', 'VARCHAR', 'NVARCHAR2')
         THEN
             RETURN TRUE;
         END IF;
