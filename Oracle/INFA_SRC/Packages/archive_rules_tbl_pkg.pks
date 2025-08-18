@@ -1,16 +1,18 @@
 create or replace package archive_rules_tbl_pkg
 as
     g_archive_table_prefix CONSTANT VARCHAR2(5) := 'ARCH_';
-    
+
     function get_base_tab_name_from_archive(p_table_name in varchar2)
     return varchar2;
-    
+
     function get_arch_prefix_from_tab(p_table_name in varchar2)
     return varchar2;
-    
-    function is_correct_arch_prefix(p_table_name in varchar2)
-    return boolean;
-    
+
+    procedure is_valid_for_archival(p_table_name in varchar2);
+
+    function get_arch_table(p_table_name in archive_rules.table_name%type)
+    return archive_rules%rowtype;
+
     PROCEDURE run_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
     PROCEDURE run_non_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
 
