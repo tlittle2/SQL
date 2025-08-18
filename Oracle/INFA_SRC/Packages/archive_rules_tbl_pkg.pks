@@ -13,8 +13,8 @@ as
     function get_arch_table(p_table_name in archive_rules.table_name%type)
     return archive_rules%rowtype;
 
-    PROCEDURE run_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
-    PROCEDURE run_non_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type);
+    PROCEDURE run_partition_archival(p_move_run_mode IN global_constants_pkg.g_regular_run%type, p_job_nbr IN archive_rules.JOB_NBR%type);
+    PROCEDURE run_non_partition_archival(p_move_run_mode IN global_constants_pkg.g_regular_run%type, p_job_nbr IN archive_rules.JOB_NBR%type);
 
 
     PROCEDURE partitioned_append_to_archive(p_src_owner          IN partition_table_parm.TABLE_OWNER%TYPE

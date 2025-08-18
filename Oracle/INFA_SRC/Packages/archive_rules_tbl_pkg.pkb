@@ -451,7 +451,7 @@ as
     end unpartitioned_collect_to_archive;
 
 
-    PROCEDURE run_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type)
+    PROCEDURE run_partition_archival(p_move_run_mode IN global_constants_pkg.g_regular_run%type, p_job_nbr IN archive_rules.JOB_NBR%type)
     is
         cursor cur_dataToArchive is
             select src.table_owner as src_table_owner
@@ -555,7 +555,7 @@ as
     end run_partition_archival;
 
 
-    PROCEDURE run_non_partition_archival(p_move_run_mode IN CHAR, p_job_nbr IN archive_rules.JOB_NBR%type)
+    PROCEDURE run_non_partition_archival(p_move_run_mode IN global_constants_pkg.g_regular_run%type, p_job_nbr IN archive_rules.JOB_NBR%type)
     is
         cursor cur_dataToArchive is
         select src.table_owner as src_table_owner
