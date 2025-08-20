@@ -101,14 +101,59 @@ AS
         then
             p_curr_count := 0;
             return true;
+        else
+            p_curr_count := p_curr_count + 1;
+            return false;
         end if;
-
-        return false;
     end generate_rolling_header;
+
+
+--===========================================================================================================================================================================
+    function is_string(p_data_type in number)
+    return boolean
+    is
+    l_returnvalue boolean;
+    begin
+        if p_data_type in (1,96)
+        then
+            l_returnvalue := true;
+        else
+            l_returnvalue := false;
+        end if;
+        return l_returnvalue;
+    end is_string;
+
+    function is_number(p_data_type in number)
+    return boolean
+    is
+    l_returnvalue boolean;
+    begin
+        if p_data_type = 2
+        then
+            l_returnvalue := true;
+        else
+            l_returnvalue := false;
+        end if;
+        return l_returnvalue;
+    end is_number;
+
+    function is_date(p_data_type in number)
+    return boolean
+    is
+    l_returnvalue boolean;
+    begin
+        if p_data_type = 12
+        then
+            l_returnvalue := true;
+        else
+            l_returnvalue := false;
+        end if;
+        return l_returnvalue;
+    end is_date;
 
 --===========================================================================================================================================================================
 
-    function general_report(p_report_title in varchar2 default null, p_padding in number default 20, p_select in varchar2)
+    function general_report(p_report_title in varchar2 default null, p_padding in number default 20, p_rolling_header in integer default 0, p_select in varchar2)
     return report_tab_t pipelined
     is
         v_cursor_id number;
@@ -124,51 +169,12 @@ AS
         l_output_str string_utils_pkg.st_max_db_varchar2;
         l_column_names column_list_t := column_list_t();
 
-        function is_string(p_data_type in number)
-        return boolean
-        is
-        l_returnvalue boolean;
-        begin
-            if p_data_type in (1,96)
-            then
-                l_returnvalue := true;
-            else
-                l_returnvalue := false;
-            end if;
-            return l_returnvalue;
-        end is_string;
-
-        function is_number(p_data_type in number)
-        return boolean
-        is
-        l_returnvalue boolean;
-        begin
-            if p_data_type = 2
-            then
-                l_returnvalue := true;
-            else
-                l_returnvalue := false;
-            end if;
-            return l_returnvalue;
-        end is_number;
-
-        function is_date(p_data_type in number)
-        return boolean
-        is
-        l_returnvalue boolean;
-        begin
-            if p_data_type = 12
-            then
-                l_returnvalue := true;
-            else
-                l_returnvalue := false;
-            end if;
-            return l_returnvalue;
-        end is_date;
-
-        procedure define_columns
+        procedure setup_and_define_columns
         is
         begin
+           v_cursor_id := DBMS_SQL.OPEN_CURSOR;
+           DBMS_SQL.PARSE(v_cursor_id, p_select, DBMS_SQL.NATIVE);
+           dbms_sql.describe_columns(v_cursor_id, l_col_cnt, l_desc_tab);
             for i in 1..l_desc_tab.count
             loop
                 l_column_names.extend;
@@ -189,7 +195,10 @@ AS
 
                 g_row_length := g_row_length + length(l_desc_tab(i).col_name);
             end loop;
-        end define_columns;
+        exception
+            when others then
+            raise;
+        end setup_and_define_columns;
 
         function format_output(i in number)
         return varchar2
@@ -218,11 +227,7 @@ AS
     begin --general_report
         is_valid_query(p_select);
 
-        v_cursor_id := DBMS_SQL.OPEN_CURSOR;
-        DBMS_SQL.PARSE(v_cursor_id, p_select, DBMS_SQL.NATIVE);
-        dbms_sql.describe_columns(v_cursor_id, l_col_cnt, l_desc_tab);
-
-        define_columns;
+        setup_and_define_columns;
 
         generate_header(p_report_title,p_padding,l_column_names, report_header);
 
@@ -237,12 +242,19 @@ AS
         while dbms_sql.fetch_rows(v_cursor_id) > 0
         loop
             l_output_str := null;
-            for i in 1..l_desc_tab.count loop
+            for i in 1..l_desc_tab.count
+            loop
                 l_output_str := format_output(i);
             end loop;
 
-            pipe row (l_output_str);
+            if p_rolling_header > 0 and generate_rolling_header(g_rolling_header, p_max_count => p_rolling_header)
+            then
+                PIPE ROW(report_header.rpt_line1);
+                PIPE ROW(report_header.rpt_columns);
+                PIPE ROW(report_header.rpt_line2);
+            end if;
 
+            pipe row (l_output_str);
         end loop;
 
         DBMS_SQL.CLOSE_CURSOR(v_cursor_id);
