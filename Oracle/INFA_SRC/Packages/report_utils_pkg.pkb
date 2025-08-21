@@ -17,8 +17,8 @@ AS
     c_pipe_separator constant VARCHAR2(1)      := '|';
     c_semicolon_separator constant VARCHAR2(1) := ';';
 
-    g_rolling_header integer := 0;
-    g_row_length INTEGER := 0;
+    g_rolling_header integer;
+    g_row_length INTEGER := 1;
 
 --===========================================================================================================================================================================
    function f_tablespace_report
@@ -93,16 +93,16 @@ AS
 
 --===========================================================================================================================================================================
 
-    function generate_rolling_header(p_curr_count in out integer, p_max_count in integer)
+    function generate_rolling_header(p_max_count in integer)
     return boolean
     is
     begin
-        if p_curr_count = p_max_count
+        if g_rolling_header = p_max_count
         then
-            p_curr_count := 0;
+            g_rolling_header := 1;
             return true;
         else
-            p_curr_count := p_curr_count + 1;
+            g_rolling_header := g_rolling_header + 1;
             return false;
         end if;
     end generate_rolling_header;
@@ -227,6 +227,8 @@ AS
     begin --general_report
         is_valid_query(p_select);
 
+        g_rolling_header := 1; --don't touch this, required for rolling headers
+
         setup_and_define_columns;
 
         generate_header(p_report_title,p_padding,l_column_names, report_header);
@@ -247,13 +249,12 @@ AS
                 l_output_str := format_output(i);
             end loop;
 
-            if p_rolling_header > 0 and generate_rolling_header(g_rolling_header, p_max_count => p_rolling_header)
+            if p_rolling_header > 0 and generate_rolling_header(p_rolling_header)
             then
                 PIPE ROW(report_header.rpt_line1);
                 PIPE ROW(report_header.rpt_columns);
                 PIPE ROW(report_header.rpt_line2);
             end if;
-
             pipe row (l_output_str);
         end loop;
 
