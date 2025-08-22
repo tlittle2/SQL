@@ -20,41 +20,23 @@ AS
     g_rolling_header integer;
     g_row_length INTEGER := 1;
 
---===========================================================================================================================================================================
-   function f_tablespace_report
-   return varchar2
-   deterministic
-   is
-   begin
-       return 'select nvl(tablespace_name, ''(blank)'') as tablespace_name , sum(nvl(num_rows,0)) as volume from my_tables group by tablespace_name order by volume desc';
-   end f_tablespace_report;
 
-   function f_astrology_report
-   return varchar2
-   deterministic
-   is
-   begin
-       return 'select * from astrology';
-   end f_astrology_report;
+    function get_report_parms(p_report_title in report_creation_parms.report_name%type)
+    return report_creation_parms%rowtype
+    is
+        l_returnvalue report_creation_parms%rowtype;
+    begin
+        select *
+        into l_returnvalue
+        from report_creation_parms
+        where report_name = p_report_title;
 
+        return l_returnvalue;
 
-   function f_salary_data_report
-   return varchar2
-   deterministic
-   is
-   begin
-       return 'select CASE_NUM, ID, GENDER, DEGREE, YEAR_DEGREE, FIELD, START_YEAR, YEAR, to_char(eff_date, ''mm/dd/yyyy'') as eff_date from salary_data';
-   end f_salary_data_report;
-
-
-   procedure is_valid_query(p_query in varchar2)
-   is
-   begin
-       assert_pkg.is_true(p_query in (f_salary_data_report,f_astrology_report,f_tablespace_report), 'INVALID QUERY PROVIDED. PLEASE CORRECT');
-   end is_valid_query;
-
-
---===========================================================================================================================================================================
+    exception
+        when no_data_found then
+            raise;
+   end get_report_parms;
 
 
 --===========================================================================================================================================================================
@@ -153,7 +135,7 @@ AS
 
 --===========================================================================================================================================================================
 
-    function general_report(p_report_title in varchar2 default null, p_padding in number default 20, p_rolling_header in integer default 0, p_select in varchar2)
+    function general_report(p_report_title in report_creation_parms.report_name%type)
     return report_tab_t pipelined
     is
         v_cursor_id number;
@@ -169,12 +151,15 @@ AS
         l_output_str string_utils_pkg.st_max_db_varchar2;
         l_column_names column_list_t := column_list_t();
 
+        l_report_parms report_creation_parms%rowtype;
+
         procedure setup_and_define_columns
         is
         begin
-           v_cursor_id := DBMS_SQL.OPEN_CURSOR;
-           DBMS_SQL.PARSE(v_cursor_id, p_select, DBMS_SQL.NATIVE);
-           dbms_sql.describe_columns(v_cursor_id, l_col_cnt, l_desc_tab);
+            g_rolling_header := 1; --don't touch this, required for rolling headers
+            v_cursor_id := DBMS_SQL.OPEN_CURSOR;
+            DBMS_SQL.PARSE(v_cursor_id, l_report_parms.report_query, DBMS_SQL.NATIVE);
+            dbms_sql.describe_columns(v_cursor_id, l_col_cnt, l_desc_tab);
             for i in 1..l_desc_tab.count
             loop
                 l_column_names.extend;
@@ -208,30 +193,27 @@ AS
             if is_string(l_desc_tab(i).col_type)
             then
                 dbms_sql.column_value(v_cursor_id, i, l_varchar2);
-                l_returnvalue:= concat(l_output_str, rpad(l_varchar2, p_padding, c_space_separator));
+                l_returnvalue:= concat(l_output_str, rpad(l_varchar2, l_report_parms.padding, c_space_separator));
 
             elsif is_number(l_desc_tab(i).col_type)
             then
                 dbms_sql.column_value(v_cursor_id, i, l_col_number);
-                l_returnvalue:= concat(l_output_str, rpad(l_col_number, p_padding, c_space_separator));
+                l_returnvalue:= concat(l_output_str, rpad(l_col_number,l_report_parms.padding, c_space_separator));
 
             elsif is_date(l_desc_tab(i).col_type)
             then
                 dbms_sql.column_value(v_cursor_id, i, l_col_date);
-                l_returnvalue := concat(l_output_str, rpad(l_col_date, p_padding, c_space_separator));
+                l_returnvalue := concat(l_output_str, rpad(l_col_date, l_report_parms.padding, c_space_separator));
             end if;
 
             return l_returnvalue;
         end format_output;
 
     begin --general_report
-        is_valid_query(p_select);
-
-        g_rolling_header := 1; --don't touch this, required for rolling headers
+        l_report_parms := get_report_parms(p_report_title);
 
         setup_and_define_columns;
-
-        generate_header(p_report_title,p_padding,l_column_names, report_header);
+        generate_header(p_report_title,l_report_parms.padding,l_column_names, report_header);
 
         pipe row(report_header.rpt_name);
         pipe row(report_header.rpt_date);
@@ -240,7 +222,6 @@ AS
         pipe row(report_header.rpt_line2);
 
         v_dummy := dbms_sql.execute(v_cursor_id);
-
         while dbms_sql.fetch_rows(v_cursor_id) > 0
         loop
             l_output_str := null;
@@ -249,12 +230,13 @@ AS
                 l_output_str := format_output(i);
             end loop;
 
-            if p_rolling_header > 0 and generate_rolling_header(p_rolling_header)
+            if l_report_parms.rolling_header > 0 and generate_rolling_header(l_report_parms.rolling_header)
             then
                 PIPE ROW(report_header.rpt_line1);
                 PIPE ROW(report_header.rpt_columns);
                 PIPE ROW(report_header.rpt_line2);
             end if;
+
             pipe row (l_output_str);
         end loop;
 
@@ -262,12 +244,50 @@ AS
         return;
 
     exception
+        when no_data_found then
+            assert_pkg.is_true(2=1, 'REPORT NAME NOT RECOGNIZED');
+            if dbms_sql.is_open(v_cursor_id)
+            then
+                DBMS_SQL.CLOSE_CURSOR(v_cursor_id);
+            end if;
         when others then
             if dbms_sql.is_open(v_cursor_id)
             then
                 DBMS_SQL.CLOSE_CURSOR(v_cursor_id);
             end if;
     end general_report;
+
+
+--===========================================================================================================================================================================
+
+   function f_tablespace_report
+   return report_creation_parms.report_name%type
+   deterministic
+   is
+   begin
+       return 'QR1036D2';
+   end f_tablespace_report;
+
+   function f_astrology_report
+   return report_creation_parms.report_name%type
+   deterministic
+   is
+   begin
+       return 'QR1307D1';
+   end f_astrology_report;
+
+
+   function f_salary_data_report
+   return report_creation_parms.report_name%type
+   deterministic
+   is
+   begin
+       return 'QR1031D1';
+   end f_salary_data_report;
+
+
+--===========================================================================================================================================================================
+
 
 --===========================================================================================================================================================================
 
