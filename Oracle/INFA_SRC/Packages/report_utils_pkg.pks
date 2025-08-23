@@ -17,9 +17,4 @@ as
     return report_creation_parms.report_name%type
     deterministic;
 
-    function create_trxn_file
-    return report_tab_t pipelined;
-
-
 end report_utils_pkg;
-
