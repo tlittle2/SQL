@@ -1,9 +1,9 @@
 create or replace package body date_utils_pkg
 as
-    
+
     function get_forward_flag
     return char deterministic
-    is 
+    is
     begin
         return g_forwards_direction;
     end get_forward_flag;
@@ -49,12 +49,25 @@ as
 
 
     function get_year_quarter(p_date in date)
-    return varchar2
+    return infa_global.statement_prd_yr_qrtr%type
     is
         p_year number := extract(year from p_date);
         p_quarter number := to_char(p_date, 'Q');
     begin
         return format_year_quarter(p_year, p_quarter);
+
+    end get_year_quarter;
+
+
+    function get_year_quarter(p_quarter in infa_global.statement_prd_yr_qrtr%type, p_num_of_quarters in number)
+    return infa_global.statement_prd_yr_qrtr%type
+    is
+        l_year number := date_utils_pkg.parse_year_qrtr_for_year(p_quarter);
+        l_temp_date date := add_months(trunc_quarter(to_date(l_year,'YYYY')), p_num_of_quarters * g_months_in_quarter);
+        l_returnvalue infa_global.statement_prd_yr_qrtr%type := date_utils_pkg.get_year_quarter(l_temp_date);
+    begin
+
+        return l_returnvalue;
 
     end get_year_quarter;
 
@@ -230,7 +243,7 @@ as
     is
     l_returnvalue number;
     begin
-        assert_pkg.is_true(string_utils_pkg.char_at(p_year_qrtr, 5) = 'Q', 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
+        assert_pkg.is_true(string_utils_pkg.char_at(p_year_qrtr, 5) = 'Q' and length(p_year_qrtr) = 6, 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
 
         l_returnvalue := to_number(string_utils_pkg.char_at(p_year_qrtr, 6));
 
@@ -312,8 +325,8 @@ as
     is
     l_returnvalue number;
     begin
-        assert_pkg.is_true(string_utils_pkg.char_at(p_year_qrtr, 5) = 'Q', 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
-        l_returnvalue := to_number(p_year_qrtr, 1,4);
+        assert_pkg.is_true(string_utils_pkg.char_at(p_year_qrtr, 5) = 'Q' and length(p_year_qrtr) = 6, 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
+        l_returnvalue := to_number(substr(p_year_qrtr, 1,4));
         return l_returnvalue;
     end parse_year_qrtr_for_year;
 
@@ -341,7 +354,7 @@ as
     exception
     when others then
         error_pkg.print_error('calculate_cutoff_date');
-        raise; 
+        raise;
     end calculate_new_date;
 
     function get_range_of_dates(p_start_date in date, p_num_of_days in number, p_direction in char)
@@ -435,7 +448,7 @@ as
         v_minutes := nvl((v_hours - trunc(v_hours)) * 60,0);
         v_seconds := nvl((v_minutes - trunc(v_minutes)) * 60,0);
 
-        if p_days < 0 
+        if p_days < 0
         then
             v_sign := 'minus ';
         end if;

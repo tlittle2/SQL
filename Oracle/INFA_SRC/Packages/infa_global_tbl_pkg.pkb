@@ -5,7 +5,7 @@ as
        p_row infa_global%rowtype;
     begin
         assert_pkg.is_valid_run_mode(p_run_type, 'INVALID RUN TYPE PROVIDED. PLEASE CORRECT');
-        assert_pkg.IS_NOT_NULL_NOR_BLANK(p_run_dte, 'INVALID DATE PROVIDED. PLEASE CORRECT');
+        assert_pkg.is_not_null_nor_blank(p_run_dte, 'INVALID DATE PROVIDED. PLEASE CORRECT');
 
         p_row.statement_prd_yr_qrtr := date_utils_pkg.get_year_quarter(date_utils_pkg.trunc_quarter(p_run_dte));
         p_row.run_dte := trunc(p_run_dte);
@@ -25,7 +25,7 @@ as
 
 	procedure global_rollover
 	is
-    l_rec_global infa_global%rowtype := crud_pkg.GET_INFA_GLOBAL_ROW;
+    l_rec_global infa_global%rowtype := crud_pkg.get_infa_global_row;
     l_out_global infa_global%rowtype;
 	begin
         l_out_global.statement_prd_yr_qrtr := date_utils_pkg.get_year_quarter(sysdate);
