@@ -1,9 +1,9 @@
 create or replace package body date_utils_pkg
 as
-
+    
     function get_forward_flag
     return char deterministic
-    is
+    is 
     begin
         return g_forwards_direction;
     end get_forward_flag;
@@ -250,40 +250,6 @@ as
     end is_month3_of_quarter;
 
 
-    function is_month4_of_quarter(p_month in number)
-    return boolean
-    is
-        l_returnvalue boolean;
-    begin
-        if get_month_of_quarter(p_month) = 4
-        then
-            l_returnvalue := true;
-        else
-	        l_returnvalue := false;
-	    end if;
-
-	    return l_returnvalue;
-
-    end is_month4_of_quarter;
-
-
-    function is_month4_of_quarter(p_date in date)
-    return boolean
-    is
-        l_returnvalue boolean;
-    begin
-        if is_month4_of_quarter(get_month_of_quarter(p_date))
-	    then
-	        l_returnvalue := true;
-	    else
-	        l_returnvalue := false;
-	    end if;
-
-	    return l_returnvalue;
-
-    end is_month4_of_quarter;
-
-
     function get_month(p_date in date)
     return number
     is
@@ -410,7 +376,7 @@ as
     exception
     when others then
         error_pkg.print_error('calculate_cutoff_date');
-        raise;
+        raise; 
     end calculate_new_date;
 
     function get_range_of_dates(p_start_date in date, p_num_of_days in number, p_direction in char)
@@ -504,7 +470,7 @@ as
         v_minutes := nvl((v_hours - trunc(v_hours)) * 60,0);
         v_seconds := nvl((v_minutes - trunc(v_minutes)) * 60,0);
 
-        if p_days < 0
+        if p_days < 0 
         then
             v_sign := 'minus ';
         end if;

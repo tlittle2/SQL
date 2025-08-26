@@ -81,12 +81,6 @@ as
     function is_month3_of_quarter(p_month in number)
     return boolean;
 
-    function is_month4_of_quarter(p_date in date)
-    return boolean;
-
-    function is_month4_of_quarter(p_month in number)
-    return boolean;
-
     function parse_year_qrtr_for_quarter(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
     return number;
 
