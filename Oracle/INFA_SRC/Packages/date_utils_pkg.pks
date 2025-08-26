@@ -24,6 +24,12 @@ as
     return number
     deterministic;
 
+    function get_min_date_for_year_quarter(p_quarter in infa_global.statement_prd_yr_qrtr%type)
+    return date;
+
+    function get_max_date_for_year_quarter(p_quarter in infa_global.statement_prd_yr_qrtr%type)
+    return date;
+
     function get_date_no_ts(p_date in date)
     return date
     deterministic;
@@ -73,6 +79,12 @@ as
     return boolean;
 
     function is_month3_of_quarter(p_month in number)
+    return boolean;
+
+    function is_month4_of_quarter(p_date in date)
+    return boolean;
+
+    function is_month4_of_quarter(p_month in number)
     return boolean;
 
     function parse_year_qrtr_for_quarter(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)

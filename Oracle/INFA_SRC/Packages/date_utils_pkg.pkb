@@ -62,14 +62,36 @@ as
     function get_year_quarter(p_quarter in infa_global.statement_prd_yr_qrtr%type, p_num_of_quarters in number)
     return infa_global.statement_prd_yr_qrtr%type
     is
-        l_year number := date_utils_pkg.parse_year_qrtr_for_year(p_quarter);
-        l_temp_date date := add_months(trunc_quarter(to_date(l_year,'YYYY')), p_num_of_quarters * g_months_in_quarter);
-        l_returnvalue infa_global.statement_prd_yr_qrtr%type := date_utils_pkg.get_year_quarter(l_temp_date);
+        l_temp_date date := add_months(get_min_date_for_year_quarter(p_quarter), p_num_of_quarters * g_months_in_quarter);
+        l_returnvalue infa_global.statement_prd_yr_qrtr%type := get_year_quarter(l_temp_date);
     begin
 
         return l_returnvalue;
 
     end get_year_quarter;
+
+
+    function get_min_date_for_year_quarter(p_quarter in infa_global.statement_prd_yr_qrtr%type)
+    return date
+    is
+        l_year number := parse_year_qrtr_for_year(p_quarter);
+        l_quarter number := parse_year_qrtr_for_quarter(p_quarter);
+        l_returnvalue date := to_date(l_year || '-' || ((l_quarter - 1) * g_months_in_quarter + 1) || '-01', 'YYYY-MM-DD');
+    begin
+
+        return l_returnvalue;
+
+    end get_min_date_for_year_quarter;
+
+    function get_max_date_for_year_quarter(p_quarter in infa_global.statement_prd_yr_qrtr%type)
+    return date
+    is
+        l_returnvalue date := add_months(get_min_date_for_year_quarter(p_quarter), g_months_in_quarter)-1;
+    begin
+
+        return l_returnvalue;
+
+    end get_max_date_for_year_quarter;
 
 
     function format_year_quarter(p_year in number, p_quarter in number)
@@ -135,7 +157,7 @@ as
     is
         l_returnvalue boolean;
     begin
-        if p_month = 1
+        if get_month_of_quarter(p_month)= 1
         then
             l_returnvalue := true;
         else
@@ -166,7 +188,7 @@ as
     is
         l_returnvalue boolean;
     begin
-        if p_month = 2
+        if get_month_of_quarter(p_month) = 2
         then
             l_returnvalue := true;
         else
@@ -199,7 +221,7 @@ as
     is
         l_returnvalue boolean;
     begin
-        if p_month = 3
+        if get_month_of_quarter(p_month) = 3
         then
             l_returnvalue := true;
         else
@@ -226,6 +248,40 @@ as
 	    return l_returnvalue;
 
     end is_month3_of_quarter;
+
+
+    function is_month4_of_quarter(p_month in number)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if get_month_of_quarter(p_month) = 4
+        then
+            l_returnvalue := true;
+        else
+	        l_returnvalue := false;
+	    end if;
+
+	    return l_returnvalue;
+
+    end is_month4_of_quarter;
+
+
+    function is_month4_of_quarter(p_date in date)
+    return boolean
+    is
+        l_returnvalue boolean;
+    begin
+        if is_month4_of_quarter(get_month_of_quarter(p_date))
+	    then
+	        l_returnvalue := true;
+	    else
+	        l_returnvalue := false;
+	    end if;
+
+	    return l_returnvalue;
+
+    end is_month4_of_quarter;
 
 
     function get_month(p_date in date)
