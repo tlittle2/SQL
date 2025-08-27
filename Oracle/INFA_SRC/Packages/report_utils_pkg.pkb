@@ -17,7 +17,7 @@ AS
     c_semicolon_separator constant sep_st := ';';
 
     g_rolling_header integer := 1;
-    g_row_length INTEGER := 1;
+    g_row_length integer := 1;
 
 --===========================================================================================================================================================================
     function get_report_parms(p_report_title in report_creation_parms.report_name%type)
@@ -52,8 +52,8 @@ AS
         function center_content(p_input_str in varchar2)
         return varchar2 deterministic
         is
-            l_total_pad  INTEGER := G_ROW_LENGTH - LENGTH(p_input_str);
-            l_left_pad   INTEGER := FLOOR(l_total_pad / 2);
+            l_total_pad  integer := g_row_length - length(p_input_str);
+            l_left_pad   integer := floor(l_total_pad / 2);
         begin
             return rpad(lpad(p_input_str, length(p_input_str) + (l_left_pad), ' '), g_row_length, ' ');
         end center_content;
@@ -99,15 +99,18 @@ AS
     function reached_rolling_header(p_max_count in integer)
     return boolean
     is
+        l_returnvalue boolean;
     begin
         if g_rolling_header = p_max_count
         then
             g_rolling_header := 1;
-            return true;
+            l_returnvalue := true;
         else
             g_rolling_header := g_rolling_header + 1;
-            return false;
+            l_returnvalue := false;
         end if;
+
+        return l_returnvalue;
     exception
        when others then
            raise;
@@ -118,46 +121,43 @@ AS
     function is_string(p_data_type in number)
     return boolean
     is
-        l_returnvalue boolean;
+        l_returnvalue boolean := false;
     begin
         if p_data_type in (1,96)
         then
             l_returnvalue := true;
-        else
-            l_returnvalue := false;
         end if;
 
         return l_returnvalue;
+
     end is_string;
 
     function is_number(p_data_type in number)
     return boolean
     is
-        l_returnvalue boolean;
+        l_returnvalue boolean := false;
     begin
         if p_data_type = 2
         then
             l_returnvalue := true;
-        else
-            l_returnvalue := false;
         end if;
 
         return l_returnvalue;
+
     end is_number;
 
     function is_date(p_data_type in number)
     return boolean
     is
-        l_returnvalue boolean;
+        l_returnvalue boolean := false;
     begin
         if p_data_type = 12
         then
             l_returnvalue := true;
-        else
-            l_returnvalue := false;
         end if;
 
         return l_returnvalue;
+
     end is_date;
 
 --===========================================================================================================================================================================
@@ -186,7 +186,7 @@ AS
         is
         begin
             l_cursor_id := DBMS_SQL.OPEN_CURSOR;
-            DBMS_SQL.PARSE(l_cursor_id, l_report_parms.report_query, DBMS_SQL.NATIVE);
+            dbms_sql.parse(l_cursor_id, l_report_parms.report_query, dbms_sql.native);
             dbms_sql.describe_columns(l_cursor_id, l_col_cnt, l_desc_tab);
 
             for i in 1..l_desc_tab.count
@@ -274,19 +274,19 @@ AS
             pipe row (l_output_str);
         end loop;
 
-        DBMS_SQL.CLOSE_CURSOR(l_cursor_id);
+        dbms_sql.close_cursor(l_cursor_id);
         return;
     exception
         when no_data_found then
             assert_pkg.is_true(2=1, 'REPORT NAME NOT RECOGNIZED');
             if dbms_sql.is_open(l_cursor_id)
             then
-                DBMS_SQL.CLOSE_CURSOR(l_cursor_id);
+                dbms_sql.close_cursor(l_cursor_id);
             end if;
         when others then
             if dbms_sql.is_open(l_cursor_id)
             then
-                DBMS_SQL.CLOSE_CURSOR(l_cursor_id);
+                dbms_sql.close_cursor(l_cursor_id);
             end if;
     end general_report;
 --===========================================================================================================================================================================
