@@ -10,15 +10,15 @@ as
     end get_constant_process_salary;
 
 
-    procedure archive_rules_preanalysis(p_number_of_runs in NUMBER, p_partitioned_flag IN partition_table_parm.partitioned%type)
+    procedure archive_rules_preanalysis(p_number_of_runs in number, p_partitioned_flag in partition_table_parm.partitioned%type)
     is
         type parm_table_update_t is table of archive_rules%rowtype index by pls_integer;
         src_tables_update parm_table_update_t;
         arch_tables_update parm_table_update_t;
 
         cursor cur_dataToArchive is --find a way to consider both the partition parm table AND the archive rules table (to ensure both tables agree)
-              SELECT ROWNUM                         as rwnum
-            , MOD(ROWNUM -1, p_number_of_runs) + 1  as job_nbr
+              select rownum                         as rwnum
+            , mod(rownum -1, p_number_of_runs) + 1  as job_nbr
             , v.num_rows                            as tbl_volume
             , parm_src.table_owner                  as src_table_owner
             , parm_src.table_name                   as src_table_name
@@ -38,7 +38,7 @@ as
             where parm_src.partitioned = p_partitioned_flag
             order by job_nbr, tbl_volume asc;
 
-        procedure updateJobNbrs(p_collection IN parm_table_update_t)
+        procedure updateJobNbrs(p_collection in parm_table_update_t)
         is
         begin
 
@@ -52,7 +52,7 @@ as
         end updateJobNbrs;
 
     begin
-        assert_pkg.is_true(p_partitioned_flag in (PARTITION_PARM_PKG.g_is_partitioned, PARTITION_PARM_PKG.g_is_not_partitioned), 'INVALID FLAG PASSED. PLEASE CORRECT');
+        assert_pkg.is_true(p_partitioned_flag in (partition_parm_pkg.g_is_partitioned, partition_parm_pkg.g_is_not_partitioned), 'INVALID FLAG PASSED. PLEASE CORRECT');
 
         update archive_rules
         set job_nbr = null
@@ -68,7 +68,6 @@ as
             arch_tables_update(rec_archive.rwnum).table_owner := rec_archive.arch_table_owner;
             arch_tables_update(rec_archive.rwnum).table_name  := rec_archive.arch_table_name;
             arch_tables_update(rec_archive.rwnum).job_nbr     := rec_archive.job_nbr;
-
         end loop;
 
         updateJobNbrs(src_tables_update);
@@ -76,6 +75,5 @@ as
         commit;
 
     END archive_rules_preanalysis;
-
 
 end process_preanalysis_pkg;
