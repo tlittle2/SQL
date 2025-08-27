@@ -1,12 +1,13 @@
 create or replace package sql_utils_pkg
 as
-    g_schema_name CONSTANT all_tables.owner%type := 'INFA_SRC';
+    g_schema_name constant all_tables.owner%type := 'INFA_SRC';
 
     type ref_cursor_t is ref cursor;
-    c_open_cursor                      CONSTANT CHAR(1) := 'O'; --open ref/sys_refcursor
-    c_close_cursor                     CONSTANT CHAR(1) := 'C'; --close ref/sys_refcursor
 
-    function get_full_table_name(p_owner IN all_tables.owner%type,p_table_name IN all_tables.table_name%type)
+    c_open_cursor    constant char(1) := 'O'; --open ref/sys_refcursor
+    c_close_cursor   constant char(1) := 'C'; --close ref/sys_refcursor
+
+    function get_full_table_name(p_owner in all_tables.owner%type,p_table_name in all_tables.table_name%type)
     return varchar2
     deterministic;
 
@@ -16,13 +17,13 @@ as
 
     procedure truncate_table(p_table_names in varchar2);
 
-    procedure remove_data_from_partition(p_table_name IN USER_TABLES.TABLE_NAME%TYPE, p_partition_name IN USER_TAB_PARTITIONS.PARTITION_NAME%TYPE, p_drop IN BOOLEAN DEFAULT FALSE);
+    procedure remove_data_from_partition(p_table_name in user_tables.table_name%type, p_partition_name in user_tab_partitions.partition_name%type, p_drop in boolean default false);
 
-    procedure reorg_table(p_table_name in USER_TABLES.TABLE_NAME%TYPE);
+    procedure reorg_table(p_table_name in user_tables.table_name%type);
 
     procedure dba_analyze_schema;
 
-    procedure dba_analyze_table(p_table_name USER_TABLES.TABLE_NAME%TYPE);
+    procedure dba_analyze_table(p_table_name user_tables.table_name%type);
 
     procedure recompile;
 

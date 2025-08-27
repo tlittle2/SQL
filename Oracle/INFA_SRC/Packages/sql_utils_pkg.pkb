@@ -7,13 +7,13 @@ as
         return regexp_like(lower(trim(p_sql)), '^(create|alter|drop|grant|revoke)');
     end is_sql_allowed;
 
-    procedure reset_sql_statement(p_sql IN OUT NOCOPY VARCHAR2)
+    procedure reset_sql_statement(p_sql in out nocopy varchar2)
     is
     begin
         p_sql := null;
     end reset_sql_statement;
 
-    procedure print_or_execute(p_sql IN VARCHAR2, p_print_and_execute IN BOOLEAN DEFAULT FALSE)
+    procedure print_or_execute(p_sql in varchar2, p_print_and_execute in boolean default false)
     is
     begin
         if debug_pkg.get_debug_state
@@ -30,7 +30,7 @@ as
     end print_or_execute;
 
 
-    function get_full_table_name(p_owner IN all_tables.owner%type,p_table_name IN all_tables.table_name%type)
+    function get_full_table_name(p_owner in all_tables.owner%type,p_table_name in all_tables.table_name%type)
     return varchar2
     deterministic
     is
@@ -49,7 +49,7 @@ as
     end get_partition_extension;
 
     --given one or more tables, truncate the tables in the list
-    procedure truncate_table(p_table_names in varchar2) 
+    procedure truncate_table(p_table_names in varchar2)
     is
         cursor tbls is
         select trim(regexp_substr( p_table_names, '[^,]+', 1, level )) value
@@ -81,7 +81,7 @@ as
     end truncate_table;
 
 
-    procedure remove_data_from_partition(p_table_name IN USER_TABLES.TABLE_NAME%TYPE, p_partition_name IN USER_TAB_PARTITIONS.PARTITION_NAME%TYPE, p_drop IN BOOLEAN DEFAULT FALSE)
+    procedure remove_data_from_partition(p_table_name in user_tables.table_name%type, p_partition_name in user_tab_partitions.partition_name%type, p_drop in boolean default false)
     is
     begin
 
@@ -93,15 +93,15 @@ as
     end remove_data_from_partition;
 
 
-    procedure reorg_table(p_table_name in USER_TABLES.TABLE_NAME%TYPE)
+    procedure reorg_table(p_table_name in user_tables.table_name%type)
     is
-        l_tablecount NUMBER;
+        l_tablecount number;
         l_row_movement_flag boolean := false;
 
-        l_partitioned USER_TABLES.PARTITIONED%TYPE;
-        l_row_movement USER_TABLES.ROW_MOVEMENT%TYPE;
+        l_partitioned user_tables.partitioned%type;
+        l_row_movement user_tables.row_movement%type;
 
-        l_sql_statement VARCHAR2(1000);
+        l_sql_statement varchar2(1000);
 
         cursor idxs is
         select distinct index_name
@@ -152,7 +152,7 @@ as
         then
             reset_sql_statement(l_sql_statement);
             l_sql_statement := string_utils_pkg.get_str('ALTER TABLE %1 disable row movement', p_table_name);
-            print_or_execute(l_sql_statement); 
+            print_or_execute(l_sql_statement);
 
         end if;
 
@@ -179,7 +179,7 @@ as
     end;
 
 
-    procedure dba_analyze_table(p_table_name USER_TABLES.TABLE_NAME%TYPE)
+    procedure dba_analyze_table(p_table_name user_tables.table_name%type)
     is
     begin
         dbms_stats.gather_table_stats(
