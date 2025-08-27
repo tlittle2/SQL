@@ -1,8 +1,8 @@
 create or replace package string_utils_pkg
 authid definer
 as
-    subtype st_max_pl_varchar2 is VARCHAR2(32767);
-    subtype st_max_db_varchar2 is VARCHAR2(4000);
+    subtype st_max_pl_varchar2 is varchar2(32767);
+    subtype st_max_db_varchar2 is varchar2(4000);
 
     g_yes                          constant varchar2(1) := 'Y';
     g_no                           constant varchar2(1) := 'N';
@@ -15,10 +15,10 @@ as
     g_carriage_return              constant varchar2(1) := chr(13);
     g_crlf                         constant varchar2(2) := g_carriage_return || g_line_feed;
     g_tab                          constant varchar2(1) := chr(9);
-    g_ampersand                    constant varchar2(1) := chr(38); 
+    g_ampersand                    constant varchar2(1) := chr(38);
 
     g_html_entity_carriage_return  constant varchar2(5) := chr(38) || '#13;';
-    g_html_nbsp                    constant varchar2(6) := chr(38) || 'nbsp;'; 
+    g_html_nbsp                    constant varchar2(6) := chr(38) || 'nbsp;';
 
     function bool_to_str(p_value in boolean)
     return varchar2;
@@ -26,22 +26,22 @@ as
     function str_to_bool(p_str in varchar2)
     return boolean;
 
-    FUNCTION str_to_bool_str(p_str IN VARCHAR2)
+    FUNCTION str_to_bool_str(p_str in varchar2)
     return varchar2;
 
-    function str_to_single_quoted_str(p_str IN VARCHAR2)
+    function str_to_single_quoted_str(p_str in varchar2)
     return varchar2
     deterministic;
 
-    function char_at(p_str IN VARCHAR2, p_idx IN INTEGER, p_fail_on_null in boolean default false)
+    function char_at(p_str in varchar2, p_idx in integer, p_fail_on_null in boolean default false)
     return char
     deterministic;
 
-    procedure add_str_token(p_text IN OUT VARCHAR2, p_token IN VARCHAR2, p_separator IN VARCHAR2 := g_default_separator);
+    procedure add_str_token(p_text in out varchar2, p_token in varchar2, p_separator in varchar2 := g_default_separator);
 
-    procedure prepend_str_token(p_text IN OUT VARCHAR2, p_token IN VARCHAR2, p_separator IN VARCHAR2 := g_default_separator);
+    procedure prepend_str_token(p_text in out varchar2, p_token in varchar2, p_separator in varchar2 := g_default_separator);
 
-    function try_parse_date(p_str IN VARCHAR2, p_date_format IN VARCHAR2)
+    function try_parse_date(p_str in varchar2, p_date_format in varchar2)
     return date;
 
     function get_nth_token(p_text in varchar2, p_num in number, p_separator in varchar2)
@@ -56,16 +56,16 @@ as
 
 
 
-    function is_str_integer(p_str IN VARCHAR2)
+    function is_str_integer(p_str in varchar2)
     return boolean;
 
-    function is_str_number(p_str IN VARCHAR2, p_decimal_separator IN VARCHAR2 := null, p_thousand_separator IN VARCHAR2 := NULL)
+    function is_str_number(p_str in varchar2, p_decimal_separator in varchar2 := null, p_thousand_separator in varchar2 := null)
     return boolean;
 
-    function is_str_alpha(p_str IN VARCHAR2)
+    function is_str_alpha(p_str in varchar2)
     return boolean;
 
-    function is_str_alphanumeric(p_str IN VARCHAR2)
+    function is_str_alphanumeric(p_str in varchar2)
     return boolean;
 
 

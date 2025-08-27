@@ -43,7 +43,7 @@ as
         return g_no;
     end str_to_bool_str;
 
-    function str_to_single_quoted_str(p_str IN VARCHAR2)
+    function str_to_single_quoted_str(p_str in varchar2)
     return varchar2
     deterministic
     is
@@ -51,7 +51,7 @@ as
         return '''' || p_str || '''';
     end str_to_single_quoted_str;
 
-    function char_at(p_str IN VARCHAR2, p_idx IN INTEGER, p_fail_on_null in boolean default false)
+    function char_at(p_str in varchar2, p_idx in integer, p_fail_on_null in boolean default false)
     return char
     deterministic
     is
@@ -61,7 +61,7 @@ as
 
         if p_fail_on_null
         then
-            ASSERT_PKG.is_not_null(l_returnvalue, 'NO SUCH INDEX. PLEASE INVESTIGATE');
+            assert_pkg.is_not_null(l_returnvalue, 'NO SUCH INDEX. PLEASE INVESTIGATE');
         end if;
 
         return l_returnvalue;
@@ -70,11 +70,11 @@ as
 
 
 
-    procedure add_str_token(p_text IN OUT VARCHAR2, p_token IN VARCHAR2, p_separator IN VARCHAR2 := g_default_separator)
+    procedure add_str_token(p_text in out varchar2, p_token in varchar2, p_separator in varchar2 := g_default_separator)
     is
     begin
         if p_text is null
-        then   
+        then
             p_text := p_token;
         else
             p_text := p_text || p_separator || p_token;
@@ -82,11 +82,11 @@ as
     end add_str_token;
 
 
-    procedure prepend_str_token(p_text IN OUT VARCHAR2, p_token IN VARCHAR2, p_separator IN VARCHAR2 := g_default_separator)
+    procedure prepend_str_token(p_text in out varchar2, p_token in varchar2, p_separator in varchar2 := g_default_separator)
     is
     begin
         if p_text is null
-        then   
+        then
             p_text := p_token;
         else
             p_text := p_token || p_separator || p_text;
@@ -94,7 +94,7 @@ as
     end prepend_str_token;
 
 
-    function try_parse_date(p_str IN VARCHAR2, p_date_format IN VARCHAR2)
+    function try_parse_date(p_str in varchar2, p_date_format in varchar2)
     return date
     is
         l_returnvalue DATE;
@@ -170,20 +170,21 @@ as
         end if;
 
         return l_returnvalue;
+
     exception
         when others then
         return null;
     end get_nth_token;
 
 
-    function is_str_integer(p_str IN VARCHAR2)
+    function is_str_integer(p_str in varchar2)
     return boolean
     is
     begin
         return regexp_instr(p_str, regex_utils_pkg.g_regex_integer_not) = 0;
     end;
 
-    function is_str_alpha(p_str IN VARCHAR2)
+    function is_str_alpha(p_str in varchar2)
     return boolean
     is
     begin
@@ -191,7 +192,7 @@ as
     end is_str_alpha;
 
 
-    function is_str_alphanumeric(p_str IN VARCHAR2)
+    function is_str_alphanumeric(p_str in varchar2)
     return boolean
     is
     begin
@@ -214,15 +215,15 @@ as
                     l_returnvalue:='.';
             end;
 
-        m_nls_decimal_separator := l_returnvalue;    
-       end if; 
+        m_nls_decimal_separator := l_returnvalue;
+       end if;
 
        l_returnvalue := m_nls_decimal_separator;
        return l_returnvalue;
 
     end get_nls_decimal_separator;
 
-    function is_str_number(p_str IN VARCHAR2, p_decimal_separator IN VARCHAR2 := null, p_thousand_separator IN VARCHAR2 := NULL)
+    function is_str_number(p_str in varchar2, p_decimal_separator in varchar2 := null, p_thousand_separator in varchar2 := null)
     return boolean
     is
         l_number number;
@@ -291,16 +292,17 @@ as
                       p_value15 in varchar2 := null
                       )
     return varchar2
-    IS
+    is
         l_returnvalue string_utils_pkg.st_max_pl_varchar2;
 
-        FUNCTION replace_str(p_value IN VARCHAR2, p_position IN VARCHAR2)
-        RETURN VARCHAR2 IS
-        BEGIN
-            RETURN replace(l_returnvalue,p_position, nvl(p_value, '(blank)'));
-        END;
+        function replace_str(p_value in varchar2, p_position in varchar2)
+        return varchar2
+        is
+        begin
+            return replace(l_returnvalue,p_position, nvl(p_value, '(blank)'));
+        end;
 
-    BEGIN
+    begin
         l_returnvalue := p_msg;
 
         l_returnvalue := replace_str(p_value1, '%1');
@@ -320,6 +322,6 @@ as
         l_returnvalue := replace_str(p_value15, '%15');
 
         return l_returnvalue;
-    END get_str;
+    end get_str;
 
 end string_utils_pkg;
