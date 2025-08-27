@@ -5,9 +5,9 @@ as
     g_backwards_direction constant char(1) := 'B';
     g_forwards_direction constant char(1) := 'F';
 
-    g_months_in_year NUMBER(2,0) := 12;
-    g_months_in_quarter NUMBER(1,0) := 3;
-    g_quarters_in_year NUMBER(1,0) := 4;
+    g_months_in_year number(2,0) := 12;
+    g_months_in_quarter number(1,0) := 3;
+    g_quarters_in_year number(1,0) := 4;
 
     function get_forward_flag
     return char deterministic;
@@ -45,7 +45,7 @@ as
     return infa_global.statement_prd_yr_qrtr%type;
 
     function format_year_quarter(p_year in number, p_quarter in number)
-    return varchar2;
+    return infa_global.statement_prd_yr_qrtr%type;
 
     function trunc_quarter(p_date in date)
     return date
@@ -100,8 +100,7 @@ as
     return number;
 
      --calculate_cutoff_date
-    function calculate_new_date(p_direction     in char
-                              , p_input_date    in date
+    function calculate_new_date(p_input_date    in date
                               , p_years_to_keep in NUMBER)
     return date;
 
