@@ -3,31 +3,34 @@ authid definer
 as
     subtype st_max_pl_varchar2 is varchar2(32767);
     subtype st_max_db_varchar2 is varchar2(4000);
+    subtype st_bool_str_len is varchar2(5);
+    subtype st_flag_len is varchar2(1);
 
-    g_yes                          constant varchar2(1) := 'Y';
-    g_no                           constant varchar2(1) := 'N';
+    g_yes                          constant st_flag_len := 'Y';
+    g_no                           constant st_flag_len := 'N';
 
-    g_default_separator            constant varchar2(1) := ';';
-    g_param_and_value_separator    constant varchar2(1) := '=';
+    g_default_separator            constant st_flag_len := ';';
+    g_param_and_value_separator    constant st_flag_len := '=';
 
-    g_line_feed                    constant varchar2(1) := chr(10);
-    g_new_line                     constant varchar2(1) := chr(13);
-    g_carriage_return              constant varchar2(1) := chr(13);
+    g_line_feed                    constant st_flag_len := chr(10);
+    g_new_line                     constant st_flag_len := chr(13);
+    g_carriage_return              constant st_flag_len := chr(13);
+    g_tab                          constant st_flag_len := chr(9);
+    g_ampersand                    constant st_flag_len := chr(38);
+
     g_crlf                         constant varchar2(2) := g_carriage_return || g_line_feed;
-    g_tab                          constant varchar2(1) := chr(9);
-    g_ampersand                    constant varchar2(1) := chr(38);
 
     g_html_entity_carriage_return  constant varchar2(5) := chr(38) || '#13;';
     g_html_nbsp                    constant varchar2(6) := chr(38) || 'nbsp;';
 
     function bool_to_str(p_value in boolean)
-    return varchar2;
+    return st_bool_str_len;
 
     function str_to_bool(p_str in varchar2)
     return boolean;
 
-    FUNCTION str_to_bool_str(p_str in varchar2)
-    return varchar2;
+    function str_to_bool_str(p_str in varchar2)
+    return st_flag_len;
 
     function str_to_single_quoted_str(p_str in varchar2)
     return varchar2

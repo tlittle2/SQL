@@ -4,7 +4,7 @@ as
     m_nls_decimal_separator        varchar2(1);
 
     function bool_to_str(p_value in boolean)
-    return varchar2
+    return st_bool_str_len
     is
     begin
         return case (p_value)
@@ -21,26 +21,29 @@ as
     function str_to_bool(p_str in varchar2)
     return boolean
     is
+        l_returnvalue boolean := false;
     begin
         if lower(p_str) in ('y', 'yes', 'true', '1')
         then
-            return true;
+            l_returnvalue := true;
         end if;
 
-        return false;
+        return l_returnvalue;
+
     end str_to_bool;
 
 
     function str_to_bool_str(p_str in varchar2)
-    return varchar2
+    return st_flag_len
     is
+        l_returnvalue st_flag_len := g_no;
     begin
         if str_to_bool(p_str)
         then
-            return g_yes;
+            l_returnvalue := g_yes;
         end if;
 
-        return g_no;
+        return l_returnvalue;
     end str_to_bool_str;
 
     function str_to_single_quoted_str(p_str in varchar2)
@@ -117,13 +120,15 @@ as
     function has_value_changed(p_old in varchar2, p_new in varchar2)
     return boolean
     is
+        l_returnvalue boolean := false;
     begin
         if (p_old <> p_new) or (p_old is null and p_new is not null) or (p_old is not null and p_new is null)
         then
-            return true;
-        else
-            return false;
+            l_returnvalue := true;
         end if;
+
+        return l_returnvalue;
+
     end has_value_changed;
 
     function get_nth_token(p_text in varchar2, p_num in number, p_separator in varchar2)
@@ -180,23 +185,26 @@ as
     function is_str_integer(p_str in varchar2)
     return boolean
     is
+        l_returnvalue boolean :=regexp_instr(p_str, regex_utils_pkg.g_regex_integer_not) = 0;
     begin
-        return regexp_instr(p_str, regex_utils_pkg.g_regex_integer_not) = 0;
+        return l_returnvalue;
     end;
 
     function is_str_alpha(p_str in varchar2)
     return boolean
     is
+        l_returnvalue boolean :=regexp_instr(p_str, regex_utils_pkg.g_regex_alpha_not) = 0;
     begin
-        return regexp_instr(p_str, regex_utils_pkg.g_regex_alpha_not) = 0;
+        return l_returnvalue;
     end is_str_alpha;
 
 
     function is_str_alphanumeric(p_str in varchar2)
     return boolean
     is
+        l_returnvalue boolean :=regexp_instr(p_str, regex_utils_pkg.g_regex_alphanumeric_not) = 0;
     begin
-        return regexp_instr(p_str, regex_utils_pkg.g_regex_alphanumeric_not) = 0;
+        return l_returnvalue;
     end is_str_alphanumeric;
 
 
@@ -219,6 +227,7 @@ as
        end if;
 
        l_returnvalue := m_nls_decimal_separator;
+
        return l_returnvalue;
 
     end get_nls_decimal_separator;
