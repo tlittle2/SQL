@@ -1,4 +1,4 @@
-create or replace package body archive_rules_tbl_pkg 
+create or replace package body archive_rules_tbl_pkg
 as
     p_global_rec infa_global%rowtype;
 
@@ -9,7 +9,7 @@ as
         dateContainer date_container_t;
         c_default_date_value CONSTANT DATE := '01-JAN-1799';
 
-    type string_container_t is RECORD(  
+    type string_container_t is RECORD(
           strValue string_utils_pkg.st_max_pl_varchar2
         , strCount NUMBER
     );
@@ -71,7 +71,7 @@ as
         if l_count = 1 --if table without the archive prefix already exists in the database
         then
             l_pfx := get_arch_prefix_from_tab(p_table_name);
-            assert_pkg.is_true(l_pfx = archive_rules_tbl_pkg.g_archive_table_prefix, 'ABORTING! TRYING TO INSERT ARCHIVE TABLE WITHOUT PROPER PREFIX'); 
+            assert_pkg.is_true(l_pfx = archive_rules_tbl_pkg.g_archive_table_prefix, 'ABORTING! TRYING TO INSERT ARCHIVE TABLE WITHOUT PROPER PREFIX');
         end if;
 
     end is_valid_for_archival;
@@ -82,7 +82,7 @@ as
     l_returnvalue archive_rules%rowtype;
     begin
         select *
-        into l_returnvalue 
+        into l_returnvalue
         from archive_rules
         where table_name = concat(g_archive_table_prefix, p_table_name);
 
@@ -94,9 +94,9 @@ as
     end get_arch_table;
 
 
-    FUNCTION is_string(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE) 
-    RETURN BOOLEAN 
-    IS 
+    FUNCTION is_string(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE)
+    RETURN BOOLEAN
+    IS
     BEGIN
         IF p_column_datatype IN ('CHAR', 'VARCHAR2', 'VARCHAR', 'NVARCHAR2')
         THEN
@@ -104,11 +104,11 @@ as
         END IF;
 
         RETURN FALSE;
-    END is_string; 
+    END is_string;
 
-    FUNCTION is_number(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE) 
-    RETURN BOOLEAN 
-    IS 
+    FUNCTION is_number(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE)
+    RETURN BOOLEAN
+    IS
     BEGIN
         IF p_column_datatype IN ('FLOAT', 'INTEGER', 'NUMBER')
         THEN
@@ -116,12 +116,12 @@ as
         END IF;
 
         RETURN FALSE;
-    END is_number; 
+    END is_number;
 
-    FUNCTION is_date(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE) 
-    RETURN BOOLEAN 
-    IS 
-    BEGIN 
+    FUNCTION is_date(p_column_datatype IN ALL_TAB_COLUMNS.DATA_TYPE%TYPE)
+    RETURN BOOLEAN
+    IS
+    BEGIN
         IF p_column_datatype IN ('DATE', 'TIMESTAMP')
         THEN
             RETURN TRUE;
@@ -238,7 +238,7 @@ as
 
         is_valid_data_type(p_column_datatype);
 
-        return p_column_datatype; 
+        return p_column_datatype;
 	exception
 		when others then
 		    raise;
@@ -247,10 +247,10 @@ as
 
     PROCEDURE partitioned_append_to_archive(p_src_owner          IN partition_table_parm.TABLE_OWNER%TYPE
                                           , p_src_table          IN partition_table_parm.TABLE_NAME%TYPE
-                                          , p_src_partition_name IN ALL_TAB_PARTITIONS.PARTITION_NAME%TYPE 
+                                          , p_src_partition_name IN ALL_TAB_PARTITIONS.PARTITION_NAME%TYPE
                                           , p_arch_owner         IN partition_table_parm.TABLE_OWNER%TYPE
                                           , p_arch_table         IN partition_table_parm.TABLE_NAME%TYPE
-                                          , p_column_name        IN ARCHIVE_RULES.ARCHIVE_COLUMN_KEY%TYPE)  
+                                          , p_column_name        IN ARCHIVE_RULES.ARCHIVE_COLUMN_KEY%TYPE)
     IS
         v_column_datatype ALL_TAB_COLUMNS.DATA_TYPE%TYPE;
         l_insert_select_query sql_builder_pkg.t_query;
@@ -373,7 +373,7 @@ as
 
     procedure partitioned_collect_to_archive(p_src_owner         in archive_rules.table_owner%type
                                           , p_src_table          in archive_rules.table_name%type
-                                          , p_src_partition_name in all_tab_partitions.partition_name%type 
+                                          , p_src_partition_name in all_tab_partitions.partition_name%type
                                           , p_arch_owner         in archive_rules.table_owner%type
                                           , p_arch_table         in archive_rules.table_name%type
                                           , p_bulk_limit         in integer default 250000)
@@ -496,7 +496,7 @@ as
                     select partitioned
                     into l_partitioned_table_in_parm
                     from partition_table_parm
-                    where table_owner = p_table_owner 
+                    where table_owner = p_table_owner
                     and table_name =  p_table_name;
 
                     select count(table_name)
@@ -540,11 +540,11 @@ as
         loop
             error_pkg.assert(1=2, 'PROCEDURE IS NOT BUILT YET');
 
-            table_access_pkg.update_archive_rules_2(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);            
+            table_access_pkg.update_archive_rules_2(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
             table_access_pkg.update_archive_rules_2(rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
             commit;
 
-            l_archive_cutoff_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_backwards_direction,p_global_rec.run_dte, rec_dataToArchive.src_yrs_to_keep);
+            l_archive_cutoff_dte := date_utils_pkg.calculate_new_date(p_global_rec.run_dte, rec_dataToArchive.src_yrs_to_keep);
 
         end loop;
 
@@ -592,7 +592,7 @@ as
                 l_column_datatype := get_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_group_key);
                 l_column_datatype := get_column_datatype(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, rec_dataToArchive.src_where_key);
 
-                assert_pkg.is_true(is_date(l_column_datatype) or (is_string(l_column_datatype) AND rec_dataToArchive.src_where_key in ('STATEMENT_PRD_YR_QRTR')), 'UNSUPPORTED COLUMN DATATYPE FOR WHERE CLAUSE FOR THIS PROCEDURE. PLEASE INVESTIGATE'); 
+                assert_pkg.is_true(is_date(l_column_datatype) or (is_string(l_column_datatype) AND rec_dataToArchive.src_where_key in ('STATEMENT_PRD_YR_QRTR')), 'UNSUPPORTED COLUMN DATATYPE FOR WHERE CLAUSE FOR THIS PROCEDURE. PLEASE INVESTIGATE');
             end loop;
         exception
             when others then
@@ -612,7 +612,7 @@ as
             table_access_pkg.update_archive_rules_2(rec_dataToArchive.arch_table_owner, rec_dataToArchive.arch_table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
             commit;
 
-            l_archive_cutoff_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_backwards_direction,p_global_rec.run_dte, rec_dataToArchive.src_yrs_to_keep);
+            l_archive_cutoff_dte := date_utils_pkg.calculate_new_date(p_global_rec.run_dte, rec_dataToArchive.src_yrs_to_keep);
 
 
             table_access_pkg.update_archive_rules_2(rec_dataToArchive.src_table_owner, rec_dataToArchive.src_table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);

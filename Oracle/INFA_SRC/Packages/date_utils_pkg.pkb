@@ -1,9 +1,9 @@
 create or replace package body date_utils_pkg
 as
-    
+
     function get_forward_flag
     return char deterministic
-    is 
+    is
     begin
         return g_forwards_direction;
     end get_forward_flag;
@@ -353,30 +353,22 @@ as
     end parse_year_qrtr_for_year;
 
 
-    function calculate_new_date(p_direction      in char
-                              , p_input_date    in date
+    function calculate_new_date(p_input_date    in date
                               , p_years_to_keep in NUMBER)
     return date
     is
     l_returnvalue date;
     begin
-        assert_pkg.is_true(p_direction in (g_backwards_direction,g_forwards_direction), 'Please specify a direction for calculation!');
         assert_pkg.is_not_null_nor_blank(p_input_date, 'DATE VALUE PASSED IS NOT VALID. PLEASE INVESTIGATE');
 
-        if p_direction = date_utils_pkg.g_backwards_direction
-        then
-            l_returnvalue := add_months(p_input_date, -(date_utils_pkg.g_months_in_year * p_years_to_keep));
-        else
-            l_returnvalue := add_months(p_input_date,  (date_utils_pkg.g_months_in_year * p_years_to_keep));
-
-        end if;
+        l_returnvalue := add_months(p_input_date, date_utils_pkg.g_months_in_year * (sign(p_years_to_keep) * p_years_to_keep));
 
         return l_returnvalue;
 
     exception
     when others then
         error_pkg.print_error('calculate_cutoff_date');
-        raise; 
+        raise;
     end calculate_new_date;
 
     function get_range_of_dates(p_start_date in date, p_num_of_days in number, p_direction in char)
@@ -470,7 +462,7 @@ as
         v_minutes := nvl((v_hours - trunc(v_hours)) * 60,0);
         v_seconds := nvl((v_minutes - trunc(v_minutes)) * 60,0);
 
-        if p_days < 0 
+        if p_days < 0
         then
             v_sign := 'minus ';
         end if;

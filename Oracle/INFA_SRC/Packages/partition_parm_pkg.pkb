@@ -320,7 +320,7 @@ AS
         end if;
 
         dbms_output.put_line(string_utils_pkg.get_str('Creating Partitions starting from : %1',  g_create_begin_dte));
-        l_create_end_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_forwards_direction, g_create_begin_dte, p_years_to_create);
+        l_create_end_dte := date_utils_pkg.calculate_new_date(g_create_begin_dte, p_years_to_create);
 
         for rec_parts in partitions_to_create
         loop
@@ -445,7 +445,7 @@ AS
                 table_access_pkg.update_partition_table_parm_2(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
                 commit;
 
-                l_drop_archive_begin_dte := date_utils_pkg.calculate_new_date(date_utils_pkg.g_backwards_direction, g_drop_begin_dte, rec_destroy.years_to_keep);
+                l_drop_archive_begin_dte := date_utils_pkg.calculate_new_date(g_drop_begin_dte, rec_destroy.years_to_keep);
 
                 manage_remove_cursor(sql_utils_pkg.c_open_cursor, rec_destroy.partition_type, rec_destroy.table_owner, rec_destroy.table_name, rec_destroy.partition_prefix, l_drop_archive_begin_dte
                                    , l_archive_cursor);
