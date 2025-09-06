@@ -23,12 +23,11 @@ BEGIN
     word := :x;
     for i in reverse 1..length(word)
     loop
+       append(extension,char_at(word, i));
        if char_at(word, i) = '.'
        then
-           append(extension,char_at(word, i));
            exit;
         end if;
-        append(extension,char_at(word, i));
     end loop;
     
     for i in reverse 1..length(extension)
