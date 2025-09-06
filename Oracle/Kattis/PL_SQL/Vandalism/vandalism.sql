@@ -2,7 +2,7 @@ DECLARE
     type lkp_t is table of char(1);
     mstr lkp_t := lkp_t('U', 'A', 'P', 'C');
 
-    ip varchar2(4) := 'UAC';
+    ip varchar2(4) := 'UAPC';
 
     ipList lkp_t := lkp_t();
     diffs lkp_t := lkp_t();
@@ -20,6 +20,8 @@ BEGIN
     loop
         dbms_output.put_line(diffs(i));
     end loop;
-
+EXCEPTION
+    when value_error then
+    dbms_output.put_line('No differences');
 END;
 /
