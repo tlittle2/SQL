@@ -6,7 +6,7 @@ Kattis doesn't have Oracle PL/SQL as a supported language. However, for practice
 
 | Concept  | Problems |
 | ------------- | ------------- |
-| Associative Arrays | Alphabetical_Aristocrats, Astrological Sign, Poker Hand, Triple_Texting, backspace, champernowneverificationj, printingcosts, thendaysofchristmas
+| Associative Arrays | sItHalloween.com, Alphabetical_Aristocrats, Astrological Sign, Poker Hand, Triple_Texting, backspace, champernowneverificationj, printingcosts, thendaysofchristmas
 | Nested Tables | AlphabetSpam, Desiigner_strengir, Ive_Been_Everywhere_,_Man, Karte, happyhappyprimeprime, numberfun, License_To_Launch, Pokechat,  apaxiaaans, composedrhythms, cprnummer, doublepassword, stopwatch
 | Member Of | AlphabetSpam, Desiigner_strengir, isyavowel, mæting, quickbrownfox, quickbrownfox2, stafur
 | Multiset | Karte,Heimilisverk
