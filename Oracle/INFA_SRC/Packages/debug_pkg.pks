@@ -4,9 +4,11 @@ as
     procedure debug_off;
     procedure debug_on;
 
-    function get_debug_state return boolean;
+    function get_debug_state
+    return boolean;
 
-    function get_debug_state_str return varchar2;
+    function get_debug_state_str
+    return varchar2;
 
     procedure start_timer(p_context in varchar2 := null);
 
