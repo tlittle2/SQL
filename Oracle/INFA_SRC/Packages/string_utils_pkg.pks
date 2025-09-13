@@ -9,7 +9,7 @@ as
 
     g_yes                          constant st_flag_len := 'Y';
     g_no                           constant st_flag_len := 'N';
-    
+
     g_false                        constant st_bool_num := 0;
     g_true                         constant st_bool_num := 1;
 
@@ -20,21 +20,24 @@ as
     g_new_line                     constant st_flag_len := chr(13);
     g_carriage_return              constant st_flag_len := chr(13);
     g_tab                          constant st_flag_len := chr(9);
-    g_ampersand                    constant st_flag_len := chr(38); 
+    g_ampersand                    constant st_flag_len := chr(38);
 
     g_crlf                         constant varchar2(2) := g_carriage_return || g_line_feed;
 
     g_html_entity_carriage_return  constant varchar2(5) := chr(38) || '#13;';
-    g_html_nbsp                    constant varchar2(6) := chr(38) || 'nbsp;'; 
+    g_html_nbsp                    constant varchar2(6) := chr(38) || 'nbsp;';
 
     function bool_to_str(p_value in boolean)
     return st_bool_str_len;
-    
+
     function str_to_bool(p_str in varchar2)
     return boolean;
-    
-    function bool_to_int(p_value in boolean)
+
+    function bool_to_int(p_condition in boolean)
     return st_bool_num;
+
+    function int_to_bool(p_value in integer)
+    return boolean;
 
 
     function str_to_bool_str(p_str in varchar2)

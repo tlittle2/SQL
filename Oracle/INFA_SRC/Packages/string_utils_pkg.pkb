@@ -17,21 +17,39 @@ as
         when others then
         cleanup_pkg.exception_cleanup(false);
     end bool_to_str;
-    
-    
-    function bool_to_int(p_value in boolean)
+
+
+    function bool_to_int(p_condition in boolean)
     return st_bool_num
     is
+        l_returnvalue st_bool_num := g_true;
     begin
+        if not nvl(p_condition, false)
+        then
+            l_returnvalue := g_false;
+        end if;
+
+        return l_returnvalue;
+    exception
+        when others then
+        cleanup_pkg.exception_cleanup(false);
+    end bool_to_int;
+
+
+    function int_to_bool(p_value in integer)
+    return boolean
+    is
+    begin
+        assert_pkg.is_true(p_value in (g_true, g_false), 'invalid value provided. please investigate');
         return case (p_value)
-        when true  then g_true 
-        when false then g_false
+        when g_true then true
+        when g_false then false
         end;
 
     exception
         when others then
         cleanup_pkg.exception_cleanup(false);
-    end bool_to_int;
+    end int_to_bool;
 
     function str_to_bool(p_str in varchar2)
     return boolean
@@ -92,7 +110,7 @@ as
     is
     begin
         if p_text is null
-        then   
+        then
             p_text := p_token;
         else
             p_text := p_text || p_separator || p_token;
@@ -104,7 +122,7 @@ as
     is
     begin
         if p_text is null
-        then   
+        then
             p_text := p_token;
         else
             p_text := p_token || p_separator || p_text;
@@ -208,7 +226,7 @@ as
     function is_str_alpha(p_str in varchar2)
     return boolean
     is
-        l_returnvalue boolean :=regexp_instr(p_str, regex_utils_pkg.g_regex_alpha_not) = 0; 
+        l_returnvalue boolean :=regexp_instr(p_str, regex_utils_pkg.g_regex_alpha_not) = 0;
     begin
         return l_returnvalue;
     end is_str_alpha;
@@ -217,7 +235,7 @@ as
     function is_str_alphanumeric(p_str in varchar2)
     return boolean
     is
-        l_returnvalue boolean :=regexp_instr(p_str, regex_utils_pkg.g_regex_alphanumeric_not) = 0; 
+        l_returnvalue boolean :=regexp_instr(p_str, regex_utils_pkg.g_regex_alphanumeric_not) = 0;
     begin
         return l_returnvalue;
     end is_str_alphanumeric;
@@ -238,8 +256,8 @@ as
                     l_returnvalue:='.';
             end;
 
-        m_nls_decimal_separator := l_returnvalue;    
-       end if; 
+        m_nls_decimal_separator := l_returnvalue;
+       end if;
 
        l_returnvalue := m_nls_decimal_separator;
 
