@@ -1,19 +1,6 @@
 create or replace package body date_utils_pkg
 as
 
-    function get_forward_flag
-    return char deterministic
-    is
-    begin
-        return g_forwards_direction;
-    end get_forward_flag;
-
-    function get_backward_flag
-    return char deterministic
-    is
-    begin
-        return g_backwards_direction;
-    end get_backward_flag;
 
     function get_months_in_year
     return number

@@ -2,18 +2,9 @@ create or replace package date_utils_pkg
 as
     type yr_qrtr_table_t is table of infa_global.statement_prd_yr_qrtr%type;
 
-    g_backwards_direction constant char(1) := 'B';
-    g_forwards_direction constant char(1) := 'F';
-
     g_months_in_year number(2,0) := 12;
     g_months_in_quarter number(1,0) := 3;
     g_quarters_in_year number(1,0) := 4;
-
-    function get_forward_flag
-    return char deterministic;
-
-    function get_backward_flag
-    return char deterministic;
 
     function get_months_in_year
     return number
