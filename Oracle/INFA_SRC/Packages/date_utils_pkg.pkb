@@ -135,6 +135,15 @@ as
         return l_returnvalue;
     end get_quarter;
 
+    function get_quarter(p_date in date)
+	return number
+    is
+       l_month number := get_month(p_date);
+       l_returnvalue number := get_quarter(l_month);
+    begin
+       return l_returnvalue;
+    end get_quarter;
+
 
     function get_month_of_quarter(p_month in number)
     return number
@@ -287,6 +296,21 @@ as
 
     end is_quarter1;
 
+    function is_quarter1(p_date in date)
+    return string_utils_pkg.st_bool_num
+    is
+       l_year_qrtr infa_global.statement_prd_yr_qrtr%type := get_year_quarter(p_date);
+       l_returnvalue string_utils_pkg.st_bool_num := string_utils_pkg.g_false;
+    begin
+       if string_utils_pkg.int_to_bool(is_quarter1(l_year_qrtr))
+       then
+           l_returnvalue := string_utils_pkg.g_true;
+       end if;
+
+       return l_returnvalue;
+
+    end is_quarter1;
+
 
     function is_quarter2(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
     return string_utils_pkg.st_bool_num
@@ -299,6 +323,21 @@ as
 	    end if;
 
 	    return l_returnvalue;
+
+    end is_quarter2;
+
+    function is_quarter2(p_date in date)
+    return string_utils_pkg.st_bool_num
+    is
+       l_year_qrtr infa_global.statement_prd_yr_qrtr%type := get_year_quarter(p_date);
+       l_returnvalue string_utils_pkg.st_bool_num := string_utils_pkg.g_false;
+    begin
+       if string_utils_pkg.int_to_bool(is_quarter2(l_year_qrtr))
+       then
+           l_returnvalue := string_utils_pkg.g_true;
+       end if;
+
+       return l_returnvalue;
 
     end is_quarter2;
 
@@ -318,6 +357,22 @@ as
     end is_quarter3;
 
 
+    function is_quarter3(p_date in date)
+    return string_utils_pkg.st_bool_num
+    is
+       l_year_qrtr infa_global.statement_prd_yr_qrtr%type := get_year_quarter(p_date);
+       l_returnvalue string_utils_pkg.st_bool_num := string_utils_pkg.g_false;
+    begin
+       if string_utils_pkg.int_to_bool(is_quarter3(l_year_qrtr))
+       then
+           l_returnvalue := string_utils_pkg.g_true;
+       end if;
+
+       return l_returnvalue;
+
+    end is_quarter3;
+
+
     function is_quarter4(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
     return string_utils_pkg.st_bool_num
     is
@@ -329,6 +384,22 @@ as
 	    end if;
 
 	    return l_returnvalue;
+
+    end is_quarter4;
+
+
+    function is_quarter4(p_date in date)
+    return string_utils_pkg.st_bool_num
+    is
+       l_year_qrtr infa_global.statement_prd_yr_qrtr%type := get_year_quarter(p_date);
+       l_returnvalue string_utils_pkg.st_bool_num := string_utils_pkg.g_false;
+    begin
+       if string_utils_pkg.int_to_bool(is_quarter4(l_year_qrtr))
+       then
+           l_returnvalue := string_utils_pkg.g_true;
+       end if;
+
+       return l_returnvalue;
 
     end is_quarter4;
 

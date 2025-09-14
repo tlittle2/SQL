@@ -54,15 +54,18 @@ as
     function get_quarter(p_month in number)
 	return number;
 
+    function get_quarter(p_date in date)
+	return number;
+
     function get_month(p_date in date)
     return number;
 
 
 --================================================================================================================
-    function get_month_of_quarter(p_month in number)
+    function get_month_of_quarter(p_date in date)
     return number;
 
-    function get_month_of_quarter(p_date in date)
+    function get_month_of_quarter(p_month in number)
     return number;
 
     function is_month1_of_quarter(p_date in date)
@@ -85,23 +88,35 @@ as
 
 --================================================================================================================
 
-    function parse_year_qrtr_for_quarter(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
+    function parse_year_qrtr_for_quarter(p_year_qrtr in infa_global.statement_prd_yr_qrtr%type)
     return number;
 
-    function is_quarter1(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
-    return string_utils_pkg.st_bool_num;
-
-    function is_quarter2(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
-    return string_utils_pkg.st_bool_num;
-
-    function is_quarter3(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
-    return string_utils_pkg.st_bool_num;
-
-    function is_quarter4(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
-    return string_utils_pkg.st_bool_num;
-
-    function parse_year_qrtr_for_year(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
+    function parse_year_qrtr_for_year(p_year_qrtr in infa_global.statement_prd_yr_qrtr%type)
     return number;
+
+    function is_quarter1(p_year_qrtr in infa_global.statement_prd_yr_qrtr%type)
+    return string_utils_pkg.st_bool_num;
+
+    function is_quarter1(p_date in date)
+    return string_utils_pkg.st_bool_num;
+
+    function is_quarter2(p_year_qrtr in infa_global.statement_prd_yr_qrtr%type)
+    return string_utils_pkg.st_bool_num;
+
+    function is_quarter2(p_date in date)
+    return string_utils_pkg.st_bool_num;
+
+    function is_quarter3(p_year_qrtr in infa_global.statement_prd_yr_qrtr%type)
+    return string_utils_pkg.st_bool_num;
+
+    function is_quarter3(p_date in date)
+    return string_utils_pkg.st_bool_num;
+
+    function is_quarter4(p_year_qrtr in infa_global.statement_prd_yr_qrtr%type)
+    return string_utils_pkg.st_bool_num;
+
+    function is_quarter4(p_date in date)
+    return string_utils_pkg.st_bool_num;
 
 --================================================================================================================
 
