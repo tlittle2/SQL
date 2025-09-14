@@ -469,6 +469,19 @@ as
 
     end get_dates_between;
 
+    function get_year_quarters(p_quarter in infa_global.statement_prd_yr_qrtr%type, p_num_of_quarters in number)
+    return yr_qrtr_table_t
+    pipelined
+    is
+    begin
+       for i in 0..abs(p_num_of_quarters)
+       loop
+           pipe row(get_year_quarter(p_quarter, sign(p_num_of_quarters) * i));
+       end loop;
+
+    end get_year_quarters;
+
+
     function get_date_table(p_calendar_string in varchar2,p_from_date in date := null,p_to_date in date := null)
     return date_table_t pipelined
     is
