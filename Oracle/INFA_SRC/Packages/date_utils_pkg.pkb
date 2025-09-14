@@ -474,7 +474,7 @@ as
     pipelined
     is
     begin
-       for i in 0..abs(p_num_of_quarters)
+       for i in 0..abs(p_num_of_quarters)-1
        loop
            pipe row(get_year_quarter(p_quarter, sign(p_num_of_quarters) * i));
        end loop;
