@@ -15,7 +15,6 @@ as
     function get_backward_flag
     return char deterministic;
 
-
     function get_months_in_year
     return number
     deterministic;
@@ -51,10 +50,10 @@ as
     return date
     deterministic;
 
-    function get_quarter(p_month in number)
+    function get_quarter(p_date in date)
 	return number;
 
-    function get_quarter(p_date in date)
+    function get_quarter(p_month in number)
 	return number;
 
     function get_month(p_date in date)

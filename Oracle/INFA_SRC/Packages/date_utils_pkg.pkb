@@ -54,7 +54,7 @@ as
     return infa_global.statement_prd_yr_qrtr%type
     is
         l_year number := extract(year from p_date);
-        l_quarter number := to_char(p_date, 'Q');
+        l_quarter number := get_quarter(p_date);
         l_returnvalue infa_global.statement_prd_yr_qrtr%type :=format_year_quarter(l_year, l_quarter);
     begin
         return l_returnvalue;
@@ -118,30 +118,29 @@ as
 
     end trunc_quarter;
 
+    function get_quarter(p_date in date)
+	return number
+    is
+       l_returnvalue number := to_char(p_date, 'Q');
+    begin
+       assert_pkg.is_true(l_returnvalue between 1 and 4, 'INVALID QUARTER NUMBER RETURNED. PLEASE INVESTIGATE');
+       return l_returnvalue;
+    end get_quarter;
+
 
     function get_quarter(p_month in number)
     return number
     is
+        l_temp_date date;
         l_returnvalue number;
     begin
         assert_pkg.is_valid_month(p_month, 'not a valid month. please investigate');
-        case
-            when p_month in (1,2,3)    then l_returnvalue := 1;
-            when p_month in (4,5,6)    then l_returnvalue := 2;
-            when p_month in (7,8,9)    then l_returnvalue := 3;
-                                       else l_returnvalue := 4;
-        end case;
+
+        l_temp_date := to_date(extract(year from sysdate) || '-' || p_month || '-01', 'YYYY-MM-DD'); --only concerned with month, so current year will suffice as dummy year
+
+        l_returnvalue := get_quarter(l_temp_date);
 
         return l_returnvalue;
-    end get_quarter;
-
-    function get_quarter(p_date in date)
-	return number
-    is
-       l_month number := get_month(p_date);
-       l_returnvalue number := get_quarter(l_month);
-    begin
-       return l_returnvalue;
     end get_quarter;
 
 
@@ -166,7 +165,9 @@ as
     is
         l_returnvalue number := get_month_of_quarter(get_month(p_date));
     begin
+
         return l_returnvalue;
+
     end get_month_of_quarter;
 
     function is_month1_of_quarter(p_month in number)
