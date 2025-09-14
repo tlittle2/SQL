@@ -441,7 +441,7 @@ as
     end calculate_new_date;
 
     function get_range_of_dates(p_start_date in date, p_num_of_days in number)
-    return date_table_t pipelined
+    return t_date_array pipelined
     is
     begin
 
@@ -456,7 +456,7 @@ as
 
 
     function get_dates_between(p_start_date in date, p_end_date in date)
-    return date_table_t pipelined
+    return t_date_array pipelined
     is
         l_days number := trunc(to_date(p_end_date) - to_date(p_start_date));
     begin
@@ -483,7 +483,7 @@ as
 
 
     function get_date_table(p_calendar_string in varchar2,p_from_date in date := null,p_to_date in date := null)
-    return date_table_t pipelined
+    return t_date_array pipelined
     is
         l_from_date    date := coalesce(p_from_date, sysdate);
         l_to_date      date := coalesce(p_to_date, add_months(l_from_date,12));

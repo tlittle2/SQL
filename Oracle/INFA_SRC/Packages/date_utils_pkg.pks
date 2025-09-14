@@ -1,6 +1,5 @@
 create or replace package date_utils_pkg
 as
-    type date_table_t is table of date;
     type yr_qrtr_table_t is table of infa_global.statement_prd_yr_qrtr%type;
 
     g_backwards_direction constant char(1) := 'B';
@@ -127,17 +126,17 @@ as
     return date;
 
     function get_range_of_dates(p_start_date in date, p_num_of_days in number)
-    return date_table_t pipelined;
+    return t_date_array pipelined;
 
     function get_dates_between(p_start_date in date, p_end_date in date)
-    return date_table_t pipelined;
+    return t_date_array pipelined;
 
     function get_year_quarters(p_quarter in infa_global.statement_prd_yr_qrtr%type, p_num_of_quarters in number)
     return yr_qrtr_table_t
     pipelined;
 
     function get_date_table(p_calendar_string in varchar2,p_from_date in date := null,p_to_date in date := null)
-    return date_table_t pipelined;
+    return t_date_array pipelined;
 
     function format_time(p_days in number)
     return varchar2;
