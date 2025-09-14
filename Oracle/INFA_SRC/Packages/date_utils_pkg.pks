@@ -125,7 +125,7 @@ as
                               , p_years_to_keep in NUMBER)
     return date;
 
-    function get_range_of_dates(p_start_date in date, p_num_of_days in number, p_direction in char)
+    function get_range_of_dates(p_start_date in date, p_num_of_days in number)
     return date_table_t pipelined;
 
     function get_dates_between(p_start_date in date, p_end_date in date)

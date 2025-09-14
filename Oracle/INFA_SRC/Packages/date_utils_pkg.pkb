@@ -170,19 +170,6 @@ as
 
     end get_month_of_quarter;
 
-    function is_month1_of_quarter(p_month in number)
-    return string_utils_pkg.st_bool_num
-    is
-        l_returnvalue string_utils_pkg.st_bool_num := string_utils_pkg.g_false;
-    begin
-        if get_month_of_quarter(p_month)= 1
-        then
-            l_returnvalue := string_utils_pkg.g_true;
-	    end if;
-
-	    return l_returnvalue;
-
-    end is_month1_of_quarter;
 
     function is_month1_of_quarter(p_date in date)
     return string_utils_pkg.st_bool_num
@@ -198,19 +185,19 @@ as
 
     end is_month1_of_quarter;
 
-    function is_month2_of_quarter(p_month in number)
+    function is_month1_of_quarter(p_month in number)
     return string_utils_pkg.st_bool_num
     is
         l_returnvalue string_utils_pkg.st_bool_num := string_utils_pkg.g_false;
     begin
-        if get_month_of_quarter(p_month) = 2
+        if get_month_of_quarter(p_month)= 1
         then
             l_returnvalue := string_utils_pkg.g_true;
 	    end if;
 
 	    return l_returnvalue;
 
-    end is_month2_of_quarter;
+    end is_month1_of_quarter;
 
 
     function is_month2_of_quarter(p_date in date)
@@ -227,19 +214,20 @@ as
 
     end is_month2_of_quarter;
 
-    function is_month3_of_quarter(p_month in number)
+
+    function is_month2_of_quarter(p_month in number)
     return string_utils_pkg.st_bool_num
     is
         l_returnvalue string_utils_pkg.st_bool_num := string_utils_pkg.g_false;
     begin
-        if get_month_of_quarter(p_month) = 3
+        if get_month_of_quarter(p_month) = 2
         then
             l_returnvalue := string_utils_pkg.g_true;
 	    end if;
 
 	    return l_returnvalue;
 
-    end is_month3_of_quarter;
+    end is_month2_of_quarter;
 
 
     function is_month3_of_quarter(p_date in date)
@@ -250,6 +238,20 @@ as
         if string_utils_pkg.int_to_bool(is_month3_of_quarter(get_month_of_quarter(p_date)))
 	    then
 	        l_returnvalue := string_utils_pkg.g_true;
+	    end if;
+
+	    return l_returnvalue;
+
+    end is_month3_of_quarter;
+
+    function is_month3_of_quarter(p_month in number)
+    return string_utils_pkg.st_bool_num
+    is
+        l_returnvalue string_utils_pkg.st_bool_num := string_utils_pkg.g_false;
+    begin
+        if get_month_of_quarter(p_month) = 3
+        then
+            l_returnvalue := string_utils_pkg.g_true;
 	    end if;
 
 	    return l_returnvalue;
@@ -438,25 +440,16 @@ as
         raise;
     end calculate_new_date;
 
-    function get_range_of_dates(p_start_date in date, p_num_of_days in number, p_direction in char)
+    function get_range_of_dates(p_start_date in date, p_num_of_days in number)
     return date_table_t pipelined
     is
-        date_table date_table_t;
     begin
-        assert_pkg.is_true(p_direction in (g_backwards_direction,g_forwards_direction), 'Please specify a direction to generate dates for!');
 
-        if p_direction = g_backwards_direction then
-            for i in 0..p_num_of_days
-            loop
-                pipe row(p_start_date - i);
-            end loop;
-        else
-            for i in 0..p_num_of_days
-            loop
-                pipe row(p_start_date + i);
-            end loop;
+        for i in 0..abs(p_num_of_days)
+        loop
+            pipe row(p_start_date + (sign(p_num_of_days) * i));
+        end loop;
 
-        end if;
         return;
 
     end get_range_of_dates;
@@ -465,15 +458,12 @@ as
     function get_dates_between(p_start_date in date, p_end_date in date)
     return date_table_t pipelined
     is
-        date_table date_table_t;
         l_days number := trunc(to_date(p_end_date) - to_date(p_start_date));
     begin
-        if l_days >= 0 then
-            for i in 0 .. l_days
-            loop
-                pipe row(p_start_date + i);
-            end loop;
-        end if;
+        for i in 0 .. l_days
+        loop
+            pipe row(p_start_date + i);
+        end loop;
 
         return;
 
