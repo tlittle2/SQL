@@ -2,6 +2,22 @@ create or replace package body partition_parm_pkg
 AS
     g_default_date_format CONSTANT VARCHAR2(9) := 'DD-MON-RR';
 
+    procedure debug_print_or_execute(p_sql IN VARCHAR2)
+    is
+    begin
+        if debug_pkg.get_debug_state
+        then
+            dbms_output.put_line(p_sql);
+        else
+            execute immediate p_sql;
+        end if;
+    exception
+        when others then
+            error_pkg.print_error('debug_print_or_execute');
+            raise;
+    end debug_print_or_execute;
+
+
     procedure check_partition_type(p_partition_type IN partition_table_parm.partition_type%type)
     is
     begin
@@ -18,7 +34,7 @@ AS
         case p_partition_type
         when g_daily_partition_flag     then l_date_suffix:= to_char(to_date(p_date,g_default_date_format), g_daily_partition_date_format);
         when g_monthly_partition_flag   then l_date_suffix:= to_char(to_date(p_date,g_default_date_format), g_monthly_partition_date_format);
-        when g_quarterly_partition_flag then l_date_suffix:= date_utils_pkg.get_year_quarter(to_char(last_day(to_date(p_date,g_default_date_format))));
+        when g_quarterly_partition_flag then l_date_suffix:= date_utils_pkg.get_year_quarter(to_date(p_date,g_default_date_format)); --date_utils_pkg.get_year_quarter(to_char(last_day(to_date(p_date,g_default_date_format))));
         when g_annual_partition_flag    then l_date_suffix:= to_char(to_date(p_date,g_default_date_format), g_annual_partition_date_format);
         end case;
 
@@ -50,22 +66,6 @@ AS
         return get_partition_name(l_part_type, l_prefix, l_rec_global.run_dte);
 
     end get_partition_for_table;
-
-
-    procedure debug_print_or_execute(p_sql IN VARCHAR2)
-    is
-    begin
-        if debug_pkg.get_debug_state
-        then
-            dbms_output.put_line(p_sql);
-        else
-            execute immediate p_sql;
-        end if;
-    exception
-        when others then
-            error_pkg.print_error('debug_print_or_execute');
-            raise;
-    end debug_print_or_execute;
 
 
     procedure check_parm_table_updates
@@ -340,6 +340,7 @@ AS
             commit;
         end loop;
 
+        sql_utils_pkg.toggle_trigger('part_parm_pf_check_trg', p_turn_on => true);
         check_parm_table_updates;
 
     exception
@@ -348,7 +349,7 @@ AS
             raise;
     end create_new_partitions;
 
-
+[O
     procedure remove_archive_partitions(p_run_type IN CHAR)
     is
         g_drop_begin_dte DATE;
@@ -440,6 +441,7 @@ AS
 
             l_drop_archive_begin_dte date;
         begin
+
             for rec_destroy in cur_dataToDestroy
             loop
                 table_access_pkg.update_partition_table_parm_2(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
@@ -462,6 +464,7 @@ AS
 
             end loop;
 
+            sql_utils_pkg.toggle_trigger('part_parm_pf_check_trg', p_turn_on => true);
             check_parm_table_updates;
 
         exception

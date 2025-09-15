@@ -25,6 +25,8 @@ as
 
     procedure dba_analyze_table(p_table_name user_tables.table_name%type);
 
+    procedure toggle_trigger(p_trigger_name in varchar2, p_turn_on in boolean default false);
+
     procedure recompile;
 
 

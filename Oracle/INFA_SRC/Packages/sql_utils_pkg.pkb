@@ -190,6 +190,17 @@ as
         );
     end;
 
+    procedure toggle_trigger(p_trigger_name in varchar2, p_turn_on in boolean default false)
+    is
+    begin
+        if p_turn_on
+        then
+            print_or_execute(string_utils_pkg.get_str('alter trigger %1 enable', p_trigger_name));
+        else
+            print_or_execute(string_utils_pkg.get_str('alter trigger %1 disable', p_trigger_name));
+        end if;
+    end toggle_trigger;
+
 
     procedure recompile
     is
