@@ -17,26 +17,19 @@ as
     end safe_divide;
 
     function within_threshold_pct(p_value1 in number, p_value2 in number, p_pct in number) --for example, 90 (and 110) is within 10 percent of 100
-    return boolean
+    return string_utils_pkg.st_bool_num
     is
         l_pct_value number := nvl(p_value2, 0) * nvl(p_pct / 100, 0);
-        l_returnvalue boolean := false;
+        l_returnvalue string_utils_pkg.st_bool_num := string_utils_pkg.g_false;
     begin
         if p_value1 between (p_value2 - l_pct_value) and (p_value2 + l_pct_value)
         then
-            l_returnvalue := true;
+            l_returnvalue := string_utils_pkg.g_true;
         end if;
 
         return l_returnvalue;
 
     end within_threshold_pct;
-
-    function within_threshold_pct_str(p_value1 in number, p_value2 in number, p_pct in number)
-    return varchar2
-    is
-    begin
-        return string_utils_pkg.bool_to_str(within_threshold_pct(p_value1, p_value2 , p_pct));
-    end within_threshold_pct_str;
 
 
 end math_pkg;
