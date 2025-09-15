@@ -1,7 +1,6 @@
 create or replace package body date_utils_pkg
 as
 
-
     function get_months_in_year
     return number
     deterministic
@@ -432,7 +431,7 @@ as
     is
     begin
 
-        for i in 0..abs(p_num_of_days)
+        for i in 0..abs(p_num_of_days)-1
         loop
             pipe row(p_start_date + (sign(p_num_of_days) * i));
         end loop;
