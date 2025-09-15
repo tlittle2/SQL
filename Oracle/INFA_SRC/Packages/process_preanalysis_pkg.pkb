@@ -54,6 +54,8 @@ as
     begin
         assert_pkg.is_true(p_partitioned_flag in (partition_parm_pkg.g_is_partitioned, partition_parm_pkg.g_is_not_partitioned), 'INVALID FLAG PASSED. PLEASE CORRECT');
 
+        sql_utils_pkg.toggle_trigger('arch_rules_pf_check_trg', p_turn_on => false);
+
         update archive_rules
         set job_nbr = null
         where partitioned = p_partitioned_flag;
