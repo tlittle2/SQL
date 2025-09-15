@@ -409,7 +409,7 @@ as
 
 
     function calculate_new_date(p_input_date    in date
-                              , p_years_to_keep in NUMBER)
+                              , p_years_to_keep in number)
     return date
     is
         l_returnvalue date;
@@ -456,8 +456,7 @@ as
     end get_dates_between;
 
     function get_year_quarters(p_quarter in infa_global.statement_prd_yr_qrtr%type, p_num_of_quarters in number)
-    return yr_qrtr_table_t
-    pipelined
+    return yr_qrtr_table_t pipelined
     is
     begin
        for i in 0..abs(p_num_of_quarters)-1
@@ -468,7 +467,7 @@ as
     end get_year_quarters;
 
 
-    function get_date_table(p_calendar_string in varchar2,p_from_date in date := null,p_to_date in date := null)
+    function get_date_table(p_calendar_string in varchar2,p_from_date in date default null,p_to_date in date default null)
     return t_date_array pipelined
     is
         l_from_date    date := coalesce(p_from_date, sysdate);
