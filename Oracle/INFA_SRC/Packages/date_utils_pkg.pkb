@@ -137,10 +137,9 @@ as
     begin
         assert_pkg.is_valid_month(p_month, 'INVALID MONTH PROVIDED. PLEASE INVESTIGATE');
 
-        case when p_month in (1,4,7,10) then l_returnvalue := 1;
-             when p_month in (2,5,8,11) then l_returnvalue := 2;
-                                        else l_returnvalue := 3;
-	    end case;
+        l_returnvalue := mod(p_month -1, date_utils_pkg.g_months_in_quarter) + 1;
+
+        assert_pkg.is_true(l_returnvalue between 1 and 3, 'INVALID MONTH OF THE QUARTER HAS BEEN CALCULATED. PLEASE INVESTIGATE');
 
 	    return l_returnvalue;
 
