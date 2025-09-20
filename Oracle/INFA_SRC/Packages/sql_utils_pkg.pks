@@ -15,6 +15,8 @@ as
     return varchar2
     deterministic;
 
+    procedure commit;
+
     procedure truncate_table(p_table_names in varchar2);
 
     procedure remove_data_from_partition(p_table_name in user_tables.table_name%type, p_partition_name in user_tab_partitions.partition_name%type, p_drop in boolean default false);

@@ -47,9 +47,22 @@ as
         return string_utils_pkg.get_str('PARTITION (%1) ', p_partition_name);
         --return 'PARTITION (' || p_partition_name || ')';
     end get_partition_extension;
+    
+    
+    procedure commit
+    is
+    begin
+        if not debug_pkg.get_debug_state
+        then
+            commit;
+        end if;
+    exception
+        when others then
+            raise;
+    end commit;
 
     --given one or more tables, truncate the tables in the list
-    procedure truncate_table(p_table_names in varchar2)
+    procedure truncate_table(p_table_names in varchar2) 
     is
         cursor tbls is
         select trim(regexp_substr( p_table_names, '[^,]+', 1, level )) value
@@ -152,7 +165,7 @@ as
         then
             reset_sql_statement(l_sql_statement);
             l_sql_statement := string_utils_pkg.get_str('ALTER TABLE %1 disable row movement', p_table_name);
-            print_or_execute(l_sql_statement);
+            print_or_execute(l_sql_statement); 
 
         end if;
 
@@ -189,7 +202,7 @@ as
             method_opt => 'FOR ALL INDEXED COLUMNS SIZE AUTO'
         );
     end;
-
+    
     procedure toggle_trigger(p_trigger_name in varchar2, p_turn_on in boolean default false)
     is
     begin
