@@ -2,9 +2,9 @@ create or replace package date_utils_pkg
 as
     type yr_qrtr_table_t is table of infa_global.statement_prd_yr_qrtr%type;
 
-    g_months_in_year number(2,0) := 12;
-    g_months_in_quarter number(1,0) := 3;
-    g_quarters_in_year number(1,0) := 4;
+    g_months_in_year constant number(2,0) := 12;
+    g_months_in_quarter constant number(1,0) := 3;
+    g_quarters_in_year constant number(1,0) := 4;
 
     function get_months_in_year
     return number
@@ -52,28 +52,28 @@ as
 
 
 --================================================================================================================
-    function get_month_of_quarter(p_date in date)
-    return number;
-
     function get_month_of_quarter(p_month in number)
     return number;
 
-    function is_month1_of_quarter(p_date in date)
-    return string_utils_pkg.st_bool_num;
+    function get_month_of_quarter(p_date in date)
+    return number;
 
     function is_month1_of_quarter(p_month in number)
     return string_utils_pkg.st_bool_num;
 
-    function is_month2_of_quarter(p_date in date)
+    function is_month1_of_quarter(p_date in date)
     return string_utils_pkg.st_bool_num;
 
     function is_month2_of_quarter(p_month in number)
     return string_utils_pkg.st_bool_num;
 
-    function is_month3_of_quarter(p_date in date)
+    function is_month2_of_quarter(p_date in date)
     return string_utils_pkg.st_bool_num;
 
     function is_month3_of_quarter(p_month in number)
+    return string_utils_pkg.st_bool_num;
+
+    function is_month3_of_quarter(p_date in date)
     return string_utils_pkg.st_bool_num;
 
 --================================================================================================================
