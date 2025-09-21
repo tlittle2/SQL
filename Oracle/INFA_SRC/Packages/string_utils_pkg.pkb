@@ -6,12 +6,16 @@ as
     function bool_to_str(p_value in boolean)
     return st_bool_str_len
     is
+        l_returnvalue st_bool_str_len;
     begin
-        return case (p_value)
+        l_returnvalue :=
+        case (p_value)
         when true then  'TRUE'
         when false then 'FALSE'
         else 'NULL'
         end;
+
+        return l_returnvalue;
 
     exception
         when others then
@@ -30,6 +34,7 @@ as
         end if;
 
         return l_returnvalue;
+
     exception
         when others then
         cleanup_pkg.exception_cleanup(false);
@@ -39,12 +44,17 @@ as
     function int_to_bool(p_value in integer)
     return boolean
     is
+        l_returnvalue boolean;
     begin
         assert_pkg.is_true(p_value in (g_true, g_false), 'invalid value provided. please investigate');
-        return case (p_value)
+
+        l_returnvalue :=
+        case p_value
         when g_true then true
-        when g_false then false
+        else false
         end;
+
+        return l_returnvalue;
 
     exception
         when others then
@@ -77,6 +87,7 @@ as
         end if;
 
         return l_returnvalue;
+
     end str_to_bool_str;
 
     function str_to_single_quoted_str(p_str in varchar2)
@@ -91,10 +102,8 @@ as
     return char
     deterministic
     is
-    l_returnvalue char(1);
+    l_returnvalue char(1):= substr(p_str, p_idx, 1);
     begin
-        l_returnvalue := substr(p_str, p_idx, 1);
-
         if p_fail_on_null
         then
             assert_pkg.is_not_null(l_returnvalue, 'NO SUCH INDEX. PLEASE INVESTIGATE');
@@ -102,9 +111,6 @@ as
 
         return l_returnvalue;
     end char_at;
-
-
-
 
     procedure add_str_token(p_text in out varchar2, p_token in varchar2, p_separator in varchar2 := g_default_separator)
     is
@@ -115,6 +121,7 @@ as
         else
             p_text := p_text || p_separator || p_token;
         end if;
+
     end add_str_token;
 
 
@@ -221,7 +228,7 @@ as
         l_returnvalue boolean :=regexp_instr(p_str, regex_utils_pkg.g_regex_integer_not) = 0;
     begin
         return l_returnvalue;
-    end;
+    end is_str_integer;
 
     function is_str_alpha(p_str in varchar2)
     return boolean
