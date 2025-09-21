@@ -20,7 +20,7 @@ as
 	begin
 	    assert(p_val is not null or trim(p_val) <> '', p_error_message);
 	end is_not_null_nor_blank;
-    
+
 
 	procedure is_null(p_val in varchar2, p_error_message in varchar2)
 	is
@@ -48,13 +48,24 @@ as
 	begin
 	    assert(not p_condition, p_error_message);
 	end is_false;
-    
+
     procedure is_valid_month(p_month in number, p_error_message in varchar2)
     is
     begin
         assert_pkg.is_true(p_month between 1 and date_utils_pkg.g_months_in_year, p_error_message);
     end is_valid_month;
 
+    procedure is_valid_quarter(p_quarter in number, p_error_message in varchar2)
+    is
+    begin
+        assert_pkg.is_true(p_quarter between 1 and date_utils_pkg.g_quarters_in_year, p_error_message);
+    end is_valid_quarter;
+
+    procedure is_valid_month_of_quarter(p_month in number, p_error_message in varchar2)
+	is
+	begin
+        assert_pkg.is_true(p_month between 1 and date_utils_pkg.g_months_in_quarter, p_error_message);
+	end is_valid_month_of_quarter;
 
 	procedure is_date_in_range(p_date_in IN DATE, p_low_date in date, p_high_date in date, p_error_message in varchar2)
 	is
@@ -68,8 +79,8 @@ as
 	begin
 	    assert(p_val_1 = p_val_2, p_error_message);
 	end is_equal_to;
-    
-    
+
+
     procedure is_equal_to_zero(p_val_1 in number,p_error_message in varchar2)
 	is
 	begin
