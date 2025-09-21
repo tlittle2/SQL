@@ -73,7 +73,7 @@ AS
 
         return l_returnvalue;
 
-    exception
+    exception 
        when others then
            raise;
     end generate_header;
@@ -91,7 +91,7 @@ AS
         end if;
 
         return l_returnvalue;
-    exception
+    exception 
        when others then
            raise;
     end want_rolling_header;
@@ -111,7 +111,7 @@ AS
         end if;
 
         return l_returnvalue;
-    exception
+    exception 
        when others then
            raise;
     end reached_rolling_header;
@@ -123,7 +123,7 @@ AS
     is
         l_returnvalue boolean := false;
     begin
-        if p_data_type in (1,96)
+        if p_data_type in (dbms_types.TYPECODE_VARCHAR,dbms_types.TYPECODE_CHAR)
         then
             l_returnvalue := true;
         end if;
@@ -137,7 +137,7 @@ AS
     is
         l_returnvalue boolean := false;
     begin
-        if p_data_type = 2
+        if p_data_type = dbms_types.TYPECODE_NUMBER
         then
             l_returnvalue := true;
         end if;
@@ -151,7 +151,7 @@ AS
     is
         l_returnvalue boolean := false;
     begin
-        if p_data_type = 12
+        if p_data_type = dbms_types.TYPECODE_DATE
         then
             l_returnvalue := true;
         end if;
@@ -196,7 +196,7 @@ AS
 
                 if is_string(l_desc_tab(i).col_type)
                 then
-                    dbms_sql.define_column(l_cursor_id, i, l_varchar2, l_desc_tab(i).col_max_len);
+                    dbms_sql.define_column(l_cursor_id, i, l_varchar2, l_desc_tab(i).col_max_len); 
 
                 elsif is_number(l_desc_tab(i).col_type)
                 then
@@ -238,7 +238,7 @@ AS
             end if;
 
             return l_returnvalue;
-        exception
+        exception 
             when others then
                 raise;
         end format_output;
