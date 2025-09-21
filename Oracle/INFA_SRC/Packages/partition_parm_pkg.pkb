@@ -325,7 +325,7 @@ AS
         for rec_parts in partitions_to_create
         loop
             table_access_pkg.update_partition_table_parm_2(rec_parts.table_owner,rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
-            commit;
+            sql_utils_pkg.commit;
             manage_create_cursor(sql_utils_pkg.c_open_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
 
             loop
@@ -337,7 +337,7 @@ AS
             manage_create_cursor(sql_utils_pkg.c_close_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
 
             table_access_pkg.update_partition_table_parm_2(rec_parts.table_owner,rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
-            commit;
+            sql_utils_pkg.commit;
         end loop;
 
         sql_utils_pkg.toggle_trigger('part_parm_pf_check_trg', p_turn_on => true);
@@ -349,7 +349,7 @@ AS
             raise;
     end create_new_partitions;
 
-[O
+
     procedure remove_archive_partitions(p_run_type IN CHAR)
     is
         g_drop_begin_dte DATE;
@@ -445,7 +445,7 @@ AS
             for rec_destroy in cur_dataToDestroy
             loop
                 table_access_pkg.update_partition_table_parm_2(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
-                commit;
+                sql_utils_pkg.commit;
 
                 l_drop_archive_begin_dte := date_utils_pkg.calculate_new_date(g_drop_begin_dte, rec_destroy.years_to_keep);
 
@@ -460,7 +460,7 @@ AS
                 manage_remove_cursor(sql_utils_pkg.c_close_cursor, rec_destroy.partition_type, rec_destroy.table_owner, rec_destroy.table_name, rec_destroy.partition_prefix, l_drop_archive_begin_dte
                                    , l_archive_cursor);
                 table_access_pkg.update_partition_table_parm_2(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
-                commit;
+                sql_utils_pkg.commit;
 
             end loop;
 
