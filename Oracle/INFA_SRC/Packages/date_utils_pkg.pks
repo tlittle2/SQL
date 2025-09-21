@@ -4,6 +4,7 @@ as
 
     subtype st_month   is number(2,0);
     subtype st_quarter is number(1,0);
+    subtype st_year    is number(4,0);
 
     g_months_in_year    constant st_month   := 12;
     g_months_in_quarter constant st_quarter := 3;
@@ -86,7 +87,7 @@ as
     return st_quarter;
 
     function parse_year_qrtr_for_year(p_year_qrtr in infa_global.statement_prd_yr_qrtr%type)
-    return number;
+    return st_year;
 
     function is_quarter1(p_year_qrtr in infa_global.statement_prd_yr_qrtr%type)
     return string_utils_pkg.st_bool_num;
