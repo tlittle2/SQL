@@ -2,7 +2,7 @@ create or replace procedure batch_cdc(p_table_owner in all_tables.owner%type
                                     , p_stage_table in all_tables.table_name%type
                                     , p_cdc_table in all_tables.table_name%type
                                     , p_target_table in all_tables.table_name%type)
-                                    
+
 as
     type columns_list_t is table of all_tab_columns.column_name%type index by pls_integer;
 
@@ -12,14 +12,9 @@ as
     procedure print_or_execute(p_sql in varchar2)
     is
     begin
-        if debug_pkg.get_debug_state
-        then
-            dbms_output.put_line(p_sql);
-        else
-            dbms_output.put_line(p_sql);
-            execute immediate p_sql;
-            commit;
-        end if;
+        dbms_output.put_line(p_sql);
+        execute immediate p_sql;
+        sql_utils_pkg.commit;
     end print_or_execute;
 
     procedure print_extra_line
@@ -84,7 +79,7 @@ as
 
             dbms_output.put_line(l_differences);
 
-            if l_differences > 0 
+            if l_differences > 0
             then
                 l_returnvalue:= false;
             end if;
@@ -105,7 +100,7 @@ as
         print_or_execute(string_utils_pkg.get_str('INSERT INTO %1 %2 %3'
                          , sql_utils_pkg.get_full_table_name(p_table_owner,p_cdc_table)
                          , sql_builder_pkg.get_select(sql_query_c1)
-                         , sql_builder_pkg.get_from(sql_query_c1)) 
+                         , sql_builder_pkg.get_from(sql_query_c1))
                         );
     end stg_to_cdc;
 
@@ -122,7 +117,7 @@ as
 
         for rec_cdc in cdc_columns
         loop
-            p_collection(rec_cdc.sort_order_number) := rec_cdc.column_name; 
+            p_collection(rec_cdc.sort_order_number) := rec_cdc.column_name;
         end loop;
 
     end gather_cdc_columns;
@@ -135,13 +130,13 @@ as
         and column_name not in ('EFF_DATE' , 'END_DATE' , 'CREATE_ID' , 'LAST_UPDATE_ID')
         and column_name not in (
                   select column_name from update_match where upper(table_owner) = upper(p_table_owner) and upper(table_name) = upper(p_target_table)
-        ) 
+        )
         order by column_id asc;
 
     begin
         for rec_non_cdc in non_cdc_columns
         loop
-            p_collection(rec_non_cdc.column_id) := rec_non_cdc.column_name; 
+            p_collection(rec_non_cdc.column_id) := rec_non_cdc.column_name;
         end loop;
 
     end gather_non_cdc_columns;
@@ -165,8 +160,8 @@ as
 
         for i in p_cdc_columns.FIRST..p_cdc_columns.LAST
         loop
-            sql_builder_pkg.add_select(sql_query_cdc1,p_cdc_columns(i)); 
-            sql_builder_pkg.add_where(sql_query_tgt,p_cdc_columns(i), ','); 
+            sql_builder_pkg.add_select(sql_query_cdc1,p_cdc_columns(i));
+            sql_builder_pkg.add_where(sql_query_tgt,p_cdc_columns(i), ',');
             sql_builder_pkg.add_select(sql_query_where_in, p_cdc_columns(i));
 
             if i <> p_cdc_columns.LAST
@@ -265,16 +260,16 @@ as
             begin
                 for i in p_collection.FIRST..p_collection.LAST
                 loop
-                sql_query_v2_where.f_where := sql_query_v2_where.f_where 
+                sql_query_v2_where.f_where := sql_query_v2_where.f_where
                                                 || '(x1.' || p_collection(i) || ' <> ' || 'x2.' || p_collection(i) || ')'
-                                                || ' or ' 
+                                                || ' or '
                                                 || '(x1.' || p_collection(i) || ' is null' || ' and ' || 'x2.' || p_collection(i) || ' is not null)'
                                                 || ' or '
                                                 || '(x1.' || p_collection(i) || ' is not null' || ' and' || ' x2.' || p_collection(i) || ' is null)';
 
                     if i <> p_collection.LAST
                     then
-                        string_utils_pkg.add_str_token(sql_query_v2_where.f_where, ' OR ', '');  
+                        string_utils_pkg.add_str_token(sql_query_v2_where.f_where, ' OR ', '');
                     end if;
                 end loop;
 
@@ -400,7 +395,7 @@ BEGIN
     print_extra_line;
 
     step_separate('STG_TO_CDC --> Lets assume that data is loaded into CDC first (before stg)');
-    --stg_to_cdc;
+    --stg_to_cdc; sql_utils_pkg.commit;
     print_extra_line;
 
     step_separate('INSERT_FROM_MSTR');
@@ -417,7 +412,7 @@ BEGIN
     print_extra_line;
 
     step_separate('REMOVE from TARGET');
-    remove_from_target(cdc_list);    
+    remove_from_target(cdc_list);
     print_extra_line;
 
     step_separate('INSERT FROM STAGE TO TARGET');
