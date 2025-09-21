@@ -1,8 +1,8 @@
 create or replace package body date_utils_pkg
 as
-
+    
     function get_months_in_year
-    return number
+    return st_month
     deterministic
     is
     begin
@@ -10,7 +10,7 @@ as
     end get_months_in_year;
 
     function get_months_in_quarter
-    return number
+    return st_quarter
     deterministic
     is
     begin
@@ -30,7 +30,7 @@ as
     return date
     deterministic
     is
-        l_returvalue date :=get_date_no_ts(sysdate);
+        l_returvalue date :=get_date_no_ts(sysdate); 
     begin
         return l_returvalue;
     end get_curr_date;
@@ -41,7 +41,7 @@ as
     is
         l_year number := extract(year from p_date);
         l_quarter number := get_quarter(p_date);
-        l_returnvalue infa_global.statement_prd_yr_qrtr%type :=format_year_quarter(l_year, l_quarter);
+        l_returnvalue infa_global.statement_prd_yr_qrtr%type :=format_year_quarter(l_year, l_quarter); 
     begin
         return l_returnvalue;
 
@@ -97,7 +97,7 @@ as
     return date
     deterministic
     is
-        l_returnvalue date := trunc(p_date, 'Q');
+        l_returnvalue date := trunc(p_date, 'Q'); 
     begin
 
         return l_returnvalue;
@@ -105,7 +105,7 @@ as
     end trunc_quarter;
 
     function get_quarter(p_date in date)
-	return number
+	return st_quarter
     is
        l_returnvalue number := to_char(p_date, 'Q');
     begin
@@ -115,7 +115,7 @@ as
 
 
     function get_quarter(p_month in number)
-    return number
+    return st_quarter
     is
         l_temp_date date;
         l_returnvalue number;
@@ -132,10 +132,10 @@ as
 
 --======================================================================================================================================================================================
 
-    function get_month_of_quarter(p_month in number)
-    return number
+    function get_month_of_quarter(p_month in st_month)
+    return st_month
     is
-        l_returnvalue number;
+        l_returnvalue st_month;
     begin
         assert_pkg.is_valid_month(p_month, 'INVALID MONTH PROVIDED. PLEASE INVESTIGATE');
 
@@ -148,16 +148,16 @@ as
 	end get_month_of_quarter;
 
     function get_month_of_quarter(p_date in date)
-    return number
+    return st_month
     is
-        l_returnvalue number := get_month_of_quarter(get_month(p_date));
+        l_returnvalue st_quarter := get_month_of_quarter(get_month(p_date));
     begin
 
         return l_returnvalue;
 
     end get_month_of_quarter;
 
-    function is_month_of_quarter(p_month in number, p_is_month in number)
+    function is_month_of_quarter(p_month in st_month, p_is_month in st_month)
     return string_utils_pkg.st_bool_num
     is
         l_returnvalue string_utils_pkg.st_bool_num;
@@ -175,7 +175,7 @@ as
 
     end is_month_of_quarter;
 
-    function is_month1_of_quarter(p_month in number)
+    function is_month1_of_quarter(p_month in st_month)
     return string_utils_pkg.st_bool_num
     is
         l_returnvalue string_utils_pkg.st_bool_num := is_month_of_quarter(p_month, 1);
@@ -188,7 +188,7 @@ as
     function is_month1_of_quarter(p_date in date)
     return string_utils_pkg.st_bool_num
     is
-        l_month number := get_month_of_quarter(p_date);
+        l_month number := get_month_of_quarter(p_date); 
         l_returnvalue string_utils_pkg.st_bool_num := is_month1_of_quarter(l_month);
     begin
 
@@ -197,7 +197,7 @@ as
     end is_month1_of_quarter;
 
 
-    function is_month2_of_quarter(p_month in number)
+    function is_month2_of_quarter(p_month in st_month)
     return string_utils_pkg.st_bool_num
     is
         l_returnvalue string_utils_pkg.st_bool_num := is_month_of_quarter(p_month, 2);
@@ -210,7 +210,7 @@ as
     function is_month2_of_quarter(p_date in date)
     return string_utils_pkg.st_bool_num
     is
-        l_month number := get_month_of_quarter(p_date);
+        l_month number := get_month_of_quarter(p_date); 
         l_returnvalue string_utils_pkg.st_bool_num := is_month2_of_quarter(l_month);
     begin
 
@@ -219,7 +219,7 @@ as
     end is_month2_of_quarter;
 
 
-    function is_month3_of_quarter(p_month in number)
+    function is_month3_of_quarter(p_month in st_month)
     return string_utils_pkg.st_bool_num
     is
         l_returnvalue string_utils_pkg.st_bool_num := is_month_of_quarter(p_month, 3);
@@ -233,7 +233,7 @@ as
     function is_month3_of_quarter(p_date in date)
     return string_utils_pkg.st_bool_num
     is
-        l_month number := get_month_of_quarter(p_date);
+        l_month number := get_month_of_quarter(p_date); 
         l_returnvalue string_utils_pkg.st_bool_num := is_month3_of_quarter(l_month);
     begin
 
@@ -242,7 +242,7 @@ as
     end is_month3_of_quarter;
 
     function get_month(p_date in date)
-    return number
+    return st_month
     is
         l_returnvalue number := to_number(to_char(p_date, 'MM'));
     begin
@@ -253,7 +253,7 @@ as
 --======================================================================================================================================================================================
 
     function parse_year_qrtr_for_quarter(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
-    return number
+    return st_quarter
     is
         l_returnvalue number;
     begin
@@ -277,7 +277,7 @@ as
         l_returnvalue :=
         case parse_year_qrtr_for_quarter(p_year_qrtr)
         when p_qrtr_number then string_utils_pkg.g_true
-        else string_utils_pkg.g_false
+        else string_utils_pkg.g_false 
         end;
 
         return l_returnvalue;
@@ -408,7 +408,7 @@ as
     exception
     when others then
         error_pkg.print_error('calculate_cutoff_date');
-        raise;
+        raise; 
     end calculate_new_date;
 
     function get_range_of_dates(p_start_date in date, p_num_of_days in number)
@@ -482,7 +482,7 @@ as
     function format_time(p_from_date in date, p_to_date in date)
     return varchar2
     is
-        l_returnvalue string_utils_pkg.st_max_pl_varchar2 := format_time(p_to_date - p_from_date);
+        l_returnvalue string_utils_pkg.st_max_pl_varchar2 := format_time(p_to_date - p_from_date); 
     begin
 
         return l_returnvalue;
@@ -505,7 +505,7 @@ as
         l_minutes := nvl((l_hours - trunc(l_hours)) * 60,0);
         l_seconds := nvl((l_minutes - trunc(l_minutes)) * 60,0);
 
-        if p_days < 0
+        if p_days < 0 
         then
             l_sign := 'minus ';
         end if;
