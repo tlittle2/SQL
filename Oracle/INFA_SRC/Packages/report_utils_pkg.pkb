@@ -280,6 +280,7 @@ AS
 
         dbms_sql.close_cursor(l_cursor_id);
 
+        pipe row (null);
         pipe row (l_report_header.rpt_footer);
 
         return;
