@@ -5,7 +5,8 @@ AS
         rpt_date string_utils_pkg.st_max_db_varchar2,
         rpt_line1 string_utils_pkg.st_max_db_varchar2,
         rpt_columns string_utils_pkg.st_max_db_varchar2,
-        rpt_line2 string_utils_pkg.st_max_db_varchar2
+        rpt_line2 string_utils_pkg.st_max_db_varchar2,
+        rpt_footer string_utils_pkg.st_max_db_varchar2
     );
 
     type column_list_t is table of all_tab_columns.column_name%type;
@@ -55,14 +56,16 @@ AS
             l_total_pad  integer := g_row_length - length(p_input_str);
             l_left_pad   integer := floor(l_total_pad / 2);
         begin
-            return rpad(lpad(p_input_str, length(p_input_str) + (l_left_pad), ' '), g_row_length, ' ');
+            return rpad(lpad(p_input_str, length(p_input_str) + (l_left_pad),c_space_separator), g_row_length,c_space_separator);
         end center_content;
 
     begin
         for i in 1..p_col_list.count
         loop
-            string_utils_pkg.add_str_token(l_returnvalue.rpt_columns, rpad(p_col_list(i), p_pad, c_space_separator), '');
+            string_utils_pkg.add_str_token(l_returnvalue.rpt_columns, lpad(p_col_list(i), p_pad, c_space_separator), '');
         end loop;
+
+        string_utils_pkg.add_str_token(l_returnvalue.rpt_columns, lpad(c_space_separator, p_pad, c_space_separator), '');
 
         g_row_length := length(l_returnvalue.rpt_columns);
 
@@ -70,10 +73,11 @@ AS
         l_returnvalue.rpt_date := center_content(concat('Report Date: ', TO_CHAR(SYSDATE, 'MM/DD/YYYY HH:MI:SS AM')));
         l_returnvalue.rpt_line1 := header_separator;
         l_returnvalue.rpt_line2 := header_separator;
+        l_returnvalue.rpt_footer := center_content('<<< End of Report >>>');
 
         return l_returnvalue;
 
-    exception 
+    exception
        when others then
            raise;
     end generate_header;
@@ -91,7 +95,7 @@ AS
         end if;
 
         return l_returnvalue;
-    exception 
+    exception
        when others then
            raise;
     end want_rolling_header;
@@ -111,7 +115,7 @@ AS
         end if;
 
         return l_returnvalue;
-    exception 
+    exception
        when others then
            raise;
     end reached_rolling_header;
@@ -196,7 +200,7 @@ AS
 
                 if is_string(l_desc_tab(i).col_type)
                 then
-                    dbms_sql.define_column(l_cursor_id, i, l_varchar2, l_desc_tab(i).col_max_len); 
+                    dbms_sql.define_column(l_cursor_id, i, l_varchar2, l_desc_tab(i).col_max_len);
 
                 elsif is_number(l_desc_tab(i).col_type)
                 then
@@ -224,12 +228,12 @@ AS
             if is_string(l_desc_tab(i).col_type)
             then
                 dbms_sql.column_value(l_cursor_id, i, l_varchar2);
-                l_returnvalue:= concat(l_output_str, rpad(l_varchar2, l_report_parms.padding, c_space_separator));
+                l_returnvalue:= concat(l_output_str, lpad(l_varchar2, l_report_parms.padding, c_space_separator));
 
             elsif is_number(l_desc_tab(i).col_type)
             then
                 dbms_sql.column_value(l_cursor_id, i, l_col_number);
-                l_returnvalue:= concat(l_output_str, rpad(l_col_number,l_report_parms.padding, c_space_separator));
+                l_returnvalue:= concat(l_output_str, lpad(l_col_number,l_report_parms.padding, c_space_separator));
 
             elsif is_date(l_desc_tab(i).col_type)
             then
@@ -238,7 +242,7 @@ AS
             end if;
 
             return l_returnvalue;
-        exception 
+        exception
             when others then
                 raise;
         end format_output;
@@ -275,6 +279,9 @@ AS
         end loop;
 
         dbms_sql.close_cursor(l_cursor_id);
+
+        pipe row (l_report_header.rpt_footer);
+
         return;
     exception
         when no_data_found then
