@@ -1,5 +1,5 @@
 DECLARE
-    ipString varchar2(32767) := 'Welcome_NWERC_participants!';
+    ipString varchar2(32767) := '\/\/in_US$100000_in_our_Ca$h_Lo||ery!!!';
 
     type t_chars is table of char(1);
     type t_ans is table of pls_integer index by pls_integer;
@@ -10,33 +10,42 @@ DECLARE
 
     upperLetters t_chars;
     lowerLetters t_chars;
-
+    
+    
+    function inc(p_val in pls_integer)
+    return pls_integer
+    is
+    begin
+        return p_val + 1;
+    end inc;
+    
+    function calc_upper(p_ascii_number number)
+    return number
+    deterministic
+    is
+    begin
+        return p_ascii_number + 25;
+    end calc_upper;
+    
     function populateStaticCollections(p_isUpper IN BOOLEAN DEFAULT TRUE)
     return t_chars
     is
         l_returnvalue t_chars := t_chars();
         l_upperA number := ascii('A');
         l_lowerA number := ascii('a');
-        
-        function calc_upper(p_ascii_number number)
-        return number
-        deterministic
-        is begin
-            return p_ascii_number + 25;
-        end calc_upper;
     begin
         if p_isUpper
         then
             for i in l_upperA..calc_upper(l_upperA)
             loop
                 l_returnvalue.EXTEND;
-                l_returnvalue(i - l_upperA + 1):= chr(i);
+                l_returnvalue(inc(i - l_upperA)):= chr(i);
             end loop;
         else
             for i in l_lowerA..calc_upper(l_lowerA)
             loop
                 l_returnvalue.EXTEND;
-                l_returnvalue(i - l_lowerA + 1):= chr(i);
+                l_returnvalue(inc(i - l_lowerA)):= chr(i);
             end loop;
         end if;
         
@@ -71,6 +80,7 @@ DECLARE
         return l_returnvalue;
 
     end isMember;
+    
 
     function populateValues(p_letters in t_chars)
     return t_ans
@@ -80,14 +90,15 @@ DECLARE
         upperNumber PLS_INTEGER:= 0;
         whiteNumber PLS_INTEGER:= 0;
         symbols PLS_INTEGER:= 0;
+
     begin
         for i in ipLetters.FIRST..ipLetters.LAST
         loop
             case
-            when isMember(p_letters(i), upperLetters) then upperNumber:= upperNumber + 1;
-            when isMember(p_letters(i), lowerLetters) then lowerNumber:= lowerNumber + 1;
-            when isMember(p_letters(i), t_chars('_')) then whiteNumber:= whiteNumber + 1;
-            else symbols:= symbols + 1;    
+            when isMember(p_letters(i), upperLetters) then upperNumber:= inc(upperNumber);
+            when isMember(p_letters(i), lowerLetters) then lowerNumber:= inc(lowerNumber);
+            when isMember(p_letters(i), t_chars('_')) then whiteNumber:= inc(whiteNumber);
+            else symbols:= inc(symbols);
             end case;
         end loop;
         
@@ -112,14 +123,7 @@ BEGIN
     for i in answers.first..answers.last
     loop
         dbms_output.put_line(round(answers(i) / length(ipString),15));
-
     end loop;
 
 END;
 /
-
-
-select ascii('A'), ascii('Z') from dual;
-
-
-select ascii('A'),ascii('A') + 25 from dual;
