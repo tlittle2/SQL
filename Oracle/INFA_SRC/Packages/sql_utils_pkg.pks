@@ -29,6 +29,8 @@ as
 
     procedure toggle_trigger(p_trigger_name in varchar2, p_turn_on in boolean default false);
 
+    procedure create_synonym(p_object_name all_objects.object_name%type);
+
     procedure recompile;
 
 

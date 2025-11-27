@@ -47,8 +47,8 @@ as
         return string_utils_pkg.get_str('PARTITION (%1) ', p_partition_name);
         --return 'PARTITION (' || p_partition_name || ')';
     end get_partition_extension;
-    
-    
+
+
     procedure commit
     is
     begin
@@ -62,7 +62,7 @@ as
     end commit;
 
     --given one or more tables, truncate the tables in the list
-    procedure truncate_table(p_table_names in varchar2) 
+    procedure truncate_table(p_table_names in varchar2)
     is
         cursor tbls is
         select trim(regexp_substr( p_table_names, '[^,]+', 1, level )) value
@@ -165,7 +165,7 @@ as
         then
             reset_sql_statement(l_sql_statement);
             l_sql_statement := string_utils_pkg.get_str('ALTER TABLE %1 disable row movement', p_table_name);
-            print_or_execute(l_sql_statement); 
+            print_or_execute(l_sql_statement);
 
         end if;
 
@@ -202,7 +202,7 @@ as
             method_opt => 'FOR ALL INDEXED COLUMNS SIZE AUTO'
         );
     end;
-    
+
     procedure toggle_trigger(p_trigger_name in varchar2, p_turn_on in boolean default false)
     is
     begin
@@ -213,6 +213,32 @@ as
             print_or_execute(string_utils_pkg.get_str('alter trigger %1 disable', p_trigger_name));
         end if;
     end toggle_trigger;
+
+
+    procedure create_synonym(p_object_name all_objects.object_name%type)
+    is
+        l_object_name all_objects.object_name%type;
+        l_sql_statement varchar2(200);
+    begin
+        select object_name
+        into l_object_name
+        from all_objects
+        where owner = g_schema_name
+        and lower(object_name) = lower(p_object_name)
+        and object_type in('TABLE','INDEX','SEQUENCE','PACKAGE');
+
+        l_sql_statement := string_utils_pkg.get_str('create public synonym %1 for %2.%3', l_object_name, g_schema_name, l_object_name);
+
+        print_or_execute(l_sql_statement, p_print_and_execute => true);
+
+    exception
+        when no_data_found then
+        dbms_output.put_line(string_utils_pkg.get_str('no object found with the name %1! Aborting!',  p_object_name));
+        raise;
+
+        when others then
+        raise;
+    end create_synonym;
 
 
     procedure recompile
