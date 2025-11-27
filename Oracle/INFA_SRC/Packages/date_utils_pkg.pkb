@@ -86,7 +86,7 @@ as
     function format_year_quarter(p_year in number, p_quarter in number)
     return infa_global.statement_prd_yr_qrtr%type
     is
-        l_returnvalue infa_global.statement_prd_yr_qrtr%type := p_year || 'Q' ||  p_quarter;
+        l_returnvalue infa_global.statement_prd_yr_qrtr%type := p_year || g_year_quarter_sep ||  p_quarter;
     begin
 
         return l_returnvalue;

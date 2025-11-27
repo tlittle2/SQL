@@ -65,7 +65,7 @@ as
     procedure is_valid_year_quarter(p_year_quarter infa_global.statement_prd_yr_qrtr%type, p_error_message in varchar2)
     is
     begin
-        assert_pkg.is_true(string_utils_pkg.char_at(p_year_quarter, 5) = 'Q' and length(p_year_quarter) = 6, p_error_message);
+        assert_pkg.is_true(string_utils_pkg.char_at(p_year_quarter, 5) = date_utils_pkg.g_year_quarter_sep and length(p_year_quarter) = 6, p_error_message);
     end is_valid_year_quarter;
 
     procedure is_valid_month_of_quarter(p_month in integer, p_error_message in varchar2)

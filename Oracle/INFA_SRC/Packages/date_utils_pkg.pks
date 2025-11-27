@@ -7,6 +7,8 @@ as
     g_quarters_in_year constant number(1,0) := 4;
     g_min_calendar_value constant number(1,0) := 1;
 
+    g_year_quarter_sep constant char(1) := 'Q';
+
     function get_months_in_year
     return number
     deterministic;
