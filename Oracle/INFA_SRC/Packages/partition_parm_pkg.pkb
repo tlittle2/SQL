@@ -41,6 +41,27 @@ AS
         return p_prefix || l_date_suffix;
     end get_partition_name;
 
+
+    function decompose_partition_name(p_partition_type in partition_table_parm.partition_type%type, p_partition_name in varchar2, p_prefix in partition_table_parm.partition_prefix%type)
+    return varchar2
+    is
+        l_returnvalue varchar2(length(g_daily_partition_date_format)); --varchar length of the longest constant date format available to us
+    begin
+        partition_parm_pkg.check_partition_type(p_partition_type);
+
+        case p_partition_type
+        when partition_parm_pkg.g_daily_partition_flag     then l_returnvalue:= substr(p_partition_name, length(p_prefix) + 1, length(p_partition_name));
+        when partition_parm_pkg.g_monthly_partition_flag   then l_returnvalue:= substr(p_partition_name, length(p_prefix) + 1, length(p_partition_name));
+        when partition_parm_pkg.g_quarterly_partition_flag then l_returnvalue:= substr(p_partition_name, length(p_prefix) + 1, 4) || substr(p_partition_name, length(p_partition_name));
+        when partition_parm_pkg.g_annual_partition_flag    then l_returnvalue:= substr(p_partition_name, length(p_prefix) + 1, 4);
+        end case;
+
+        return l_returnvalue;
+    exception
+        when others then
+        raise;
+    end decompose_partition_name;
+
     function get_partition_for_table(p_table_owner IN partition_table_parm.table_owner%type
                                    , p_table_name IN partition_table_parm.table_name%type
                                    , p_run_type global_constants_pkg.flag_st := global_constants_pkg.g_regular_run)
@@ -363,6 +384,7 @@ AS
                                      , io_cursor        in out sql_utils_pkg.ref_cursor_t
                                       )
         is
+            l_partition_date_container varchar2(8);
         begin
             check_partition_type(p_partition_type);
 
@@ -377,7 +399,7 @@ AS
                         where table_owner = p_table_owner
                         and table_name = p_table_name
                         and not regexp_like(partition_name, g_max_part_suffix_regex)
-                        and to_date(substr(partition_name, length(p_prefix) + 1, length(partition_name)), g_monthly_partition_date_format) < p_cutoff_dte;
+                        and to_date(decompose_partition_name(g_monthly_partition_flag, partition_name, p_prefix), g_monthly_partition_date_format) < p_cutoff_dte;
 
                     when g_daily_partition_flag
                     then
@@ -387,7 +409,7 @@ AS
                         where table_owner = p_table_owner
                         and table_name = p_table_name
                         and not regexp_like(partition_name, g_max_part_suffix_regex)
-                        and to_char(substr(partition_name, length(p_prefix) + 1, length(partition_name)), g_daily_partition_date_format) < p_cutoff_dte;
+                        and to_char(decompose_partition_name(g_daily_partition_flag, partition_name, p_prefix), g_daily_partition_date_format) < p_cutoff_dte;
 
                     when g_quarterly_partition_flag
                     then
@@ -397,7 +419,7 @@ AS
                         where table_owner = p_table_owner
                         and table_name = p_table_name
                         and not regexp_like(partition_name, g_max_part_suffix_regex)
-                        and substr(partition_name, length(p_prefix) + 1, 4) || substr(partition_name, length(partition_name)) < to_char(to_date(p_cutoff_dte, g_default_date_format), 'YYYYQ');
+                        and decompose_partition_name(g_quarterly_partition_flag, partition_name, p_prefix) < to_char(to_date(p_cutoff_dte, g_default_date_format), 'YYYYQ');
 
                     when g_annual_partition_flag
                     then
@@ -407,7 +429,7 @@ AS
                         where table_owner = p_table_owner
                         and table_name = p_table_name
                         and not regexp_like(partition_name, g_max_part_suffix_regex)
-                        and substr(partition_name, length(p_prefix) + 1, 4) < p_cutoff_dte;
+                        and decompose_partition_name(g_quarterly_partition_flag, partition_name, p_prefix) < p_cutoff_dte;
 
                 end case;
             else
