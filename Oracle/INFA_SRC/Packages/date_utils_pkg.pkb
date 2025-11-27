@@ -2,24 +2,20 @@ create or replace package body date_utils_pkg
 as
 
     function get_months_in_year
-    return st_month
+    return number
     deterministic
     is
     begin
-
         return g_months_in_year;
-
     end get_months_in_year;
 
     function get_months_in_quarter
-    return st_quarter
+    return number
     deterministic
     is
     begin
-
         return g_months_in_quarter;
-
-    end get_months_in_quarter;
+    end;
 
     function get_date_no_ts(p_date in date)
     return date
@@ -27,9 +23,7 @@ as
     is
         l_returvalue date := trunc(p_date);
     begin
-
         return l_returvalue;
-
     end get_date_no_ts;
 
     function get_curr_date
@@ -38,9 +32,7 @@ as
     is
         l_returvalue date :=get_date_no_ts(sysdate);
     begin
-
         return l_returvalue;
-
     end get_curr_date;
 
 
@@ -113,20 +105,17 @@ as
     end trunc_quarter;
 
     function get_quarter(p_date in date)
-	return st_quarter
+	return number
     is
        l_returnvalue number := to_char(p_date, 'Q');
     begin
-
-       assert_pkg.is_valid_quarter(l_returnvalue, 'INVALID QUARTER NUMBER RETURNED. PLEASE INVESTIGATE');
-
+       assert_pkg.is_true(l_returnvalue between g_min_calendar_value and g_quarters_in_year, 'INVALID QUARTER NUMBER RETURNED. PLEASE INVESTIGATE');
        return l_returnvalue;
-
     end get_quarter;
 
 
     function get_quarter(p_month in number)
-    return st_quarter
+    return number
     is
         l_temp_date date;
         l_returnvalue number;
@@ -143,50 +132,50 @@ as
 
 --======================================================================================================================================================================================
 
-    function get_month_of_quarter(p_month in st_month)
-    return st_month
+    function get_month_of_quarter(p_month in number)
+    return number
     is
-        l_returnvalue st_month;
+        l_returnvalue number;
     begin
         assert_pkg.is_valid_month(p_month, 'INVALID MONTH PROVIDED. PLEASE INVESTIGATE');
 
         l_returnvalue := mod(p_month -1, date_utils_pkg.g_months_in_quarter) + 1;
 
-        assert_pkg.is_valid_month_of_quarter(l_returnvalue, 'INVALID MONTH OF THE QUARTER HAS BEEN CALCULATED. PLEASE INVESTIGATE');
+        assert_pkg.is_true(l_returnvalue between g_min_calendar_value and g_months_in_quarter, 'INVALID MONTH OF THE QUARTER HAS BEEN CALCULATED. PLEASE INVESTIGATE');
 
 	    return l_returnvalue;
 
 	end get_month_of_quarter;
 
     function get_month_of_quarter(p_date in date)
-    return st_month
+    return number
     is
-        l_returnvalue st_quarter := get_month_of_quarter(get_month(p_date));
+        l_returnvalue number := get_month_of_quarter(get_month(p_date));
     begin
 
         return l_returnvalue;
 
     end get_month_of_quarter;
 
-    function is_month_of_quarter(p_month in st_month, p_is_month in st_month)
+    function is_month_of_quarter(p_month in number, p_is_month in number)
     return string_utils_pkg.st_bool_num
     is
         l_returnvalue string_utils_pkg.st_bool_num;
-        l_month st_month := trunc(p_month);
+
     begin
-        assert_pkg.is_valid_month_of_quarter(p_is_month, 'Invalid month provided for month of quarter lookup');
+        assert_pkg.is_true(p_is_month between g_min_calendar_value and g_months_in_quarter, 'Invalid month provided for month of quarter lookup');
 
         l_returnvalue :=
-        case get_month_of_quarter(l_month)
+        case get_month_of_quarter(p_month)
         when p_is_month then string_utils_pkg.g_true
-[O        else string_utils_pkg.g_false
+        else string_utils_pkg.g_false
         end;
 
         return l_returnvalue;
 
     end is_month_of_quarter;
 
-    function is_month1_of_quarter(p_month in st_month)
+    function is_month1_of_quarter(p_month in number)
     return string_utils_pkg.st_bool_num
     is
         l_returnvalue string_utils_pkg.st_bool_num := is_month_of_quarter(p_month, 1);
@@ -208,7 +197,7 @@ as
     end is_month1_of_quarter;
 
 
-    function is_month2_of_quarter(p_month in st_month)
+    function is_month2_of_quarter(p_month in number)
     return string_utils_pkg.st_bool_num
     is
         l_returnvalue string_utils_pkg.st_bool_num := is_month_of_quarter(p_month, 2);
@@ -230,7 +219,7 @@ as
     end is_month2_of_quarter;
 
 
-    function is_month3_of_quarter(p_month in st_month)
+    function is_month3_of_quarter(p_month in number)
     return string_utils_pkg.st_bool_num
     is
         l_returnvalue string_utils_pkg.st_bool_num := is_month_of_quarter(p_month, 3);
@@ -253,11 +242,10 @@ as
     end is_month3_of_quarter;
 
     function get_month(p_date in date)
-    return st_month
+    return number
     is
         l_returnvalue number := to_number(to_char(p_date, 'MM'));
     begin
-
         return l_returnvalue;
 
     end get_month;
@@ -265,18 +253,17 @@ as
 --======================================================================================================================================================================================
 
     function parse_year_qrtr_for_quarter(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
-    return st_quarter
+    return number
     is
         l_returnvalue number;
     begin
-        assert_pkg.is_true(string_utils_pkg.char_at(p_year_qrtr, 5) = 'Q' and length(p_year_qrtr) = 6, 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
+        assert_pkg.is_valid_year_quarter(p_year_qrtr, 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
 
         l_returnvalue := to_number(string_utils_pkg.char_at(p_year_qrtr, 6));
 
-        assert_pkg.is_valid_quarter(l_returnvalue, 'INVALID QUARTER RETURNED. PLEASE INVESTIGATE');
+        assert_pkg.is_true(l_returnvalue between g_min_calendar_value and g_quarters_in_year, 'INVALID QUARTER RETURNED. PLEASE INVESTIGATE');
 
         return l_returnvalue;
-
     end parse_year_qrtr_for_quarter;
 
 
@@ -285,7 +272,7 @@ as
     is
         l_returnvalue string_utils_pkg.st_bool_num;
     begin
-        assert_pkg.is_valid_quarter(p_qrtr_number, 'Invalid quarter number passed. please investigate');
+        assert_pkg.is_true(p_qrtr_number between g_min_calendar_value and g_quarters_in_year, 'Invalid quarter number passed. please investigate');
 
         l_returnvalue :=
         case parse_year_qrtr_for_quarter(p_year_qrtr)
@@ -392,16 +379,15 @@ as
 
 
     function parse_year_qrtr_for_year(p_year_qrtr infa_global.statement_prd_yr_qrtr%type)
-    return st_year
+    return number
     is
-        l_returnvalue st_year;
+        l_returnvalue number;
     begin
-        assert_pkg.is_true(string_utils_pkg.char_at(p_year_qrtr, 5) = 'Q' and length(p_year_qrtr) = 6, 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
+        assert_pkg.is_valid_year_quarter(p_year_qrtr, 'POTENTIALLY INVALID TYPE. PLEASE INVESTIGATE');
 
         l_returnvalue := to_number(substr(p_year_qrtr, 1,4));
 
         return l_returnvalue;
-
     end parse_year_qrtr_for_year;
 
 --======================================================================================================================================================================================
@@ -463,8 +449,6 @@ as
            pipe row(get_year_quarter(p_quarter, sign(p_num_of_quarters) * i));
        end loop;
 
-       return;
-
     end get_year_quarters;
 
 
@@ -490,9 +474,7 @@ as
             pipe row (l_next_date);
             l_date_after := l_next_date;
         end loop;
-
         return;
-
     end get_date_table;
 
 

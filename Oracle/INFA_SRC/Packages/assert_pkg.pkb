@@ -52,19 +52,26 @@ as
     procedure is_valid_month(p_month in number, p_error_message in varchar2)
     is
     begin
-        assert_pkg.is_true(p_month between 1 and date_utils_pkg.g_months_in_year, p_error_message);
+        assert_pkg.is_true(p_month between date_utils_pkg.g_min_calendar_value and date_utils_pkg.g_months_in_year, p_error_message);
     end is_valid_month;
 
     procedure is_valid_quarter(p_quarter in integer, p_error_message in varchar2)
     is
     begin
-        assert(p_quarter between 1 and date_utils_pkg.g_quarters_in_year, p_error_message);
+        assert(p_quarter between date_utils_pkg.g_min_calendar_value and date_utils_pkg.g_quarters_in_year, p_error_message);
     end is_valid_quarter;
+
+
+    procedure is_valid_year_quarter(p_year_quarter infa_global.statement_prd_yr_qrtr%type, p_error_message in varchar2)
+    is
+    begin
+        assert_pkg.is_true(string_utils_pkg.char_at(p_year_quarter, 5) = 'Q' and length(p_year_quarter) = 6, p_error_message);
+    end is_valid_year_quarter;
 
     procedure is_valid_month_of_quarter(p_month in integer, p_error_message in varchar2)
 	is
 	begin
-        assert(p_month between 1 and date_utils_pkg.g_months_in_quarter, p_error_message);
+        assert(p_month between date_utils_pkg.g_min_calendar_value and date_utils_pkg.g_months_in_quarter, p_error_message);
 	end is_valid_month_of_quarter;
 
 	procedure is_date_in_range(p_date_in IN DATE, p_low_date in date, p_high_date in date, p_error_message in varchar2)

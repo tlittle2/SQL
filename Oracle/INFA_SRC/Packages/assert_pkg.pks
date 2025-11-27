@@ -17,6 +17,8 @@ as
 
    procedure is_valid_quarter(p_quarter in integer, p_error_message in varchar2);
 
+   procedure is_valid_year_quarter(p_year_quarter infa_global.statement_prd_yr_qrtr%type, p_error_message in varchar2);
+
    procedure is_valid_month_of_quarter(p_month in integer, p_error_message in varchar2);
 
    procedure is_date_in_range(p_date_in IN DATE, p_low_date in date, p_high_date in date, p_error_message in varchar2);
