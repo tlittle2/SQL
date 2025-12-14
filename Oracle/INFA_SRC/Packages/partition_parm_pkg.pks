@@ -22,19 +22,23 @@ as
 
     procedure check_partition_type(p_partition_type IN partition_table_parm.partition_type%type);
 
-    function get_partition_name(p_partition_type IN partition_table_parm.partition_type%type, p_prefix in partition_table_parm.partition_prefix%type, p_date in date)
+    function get_partition_name(p_partition_type in partition_table_parm.partition_type%type
+                              , p_prefix         in partition_table_parm.partition_prefix%type
+                              , p_date           in date)
     return varchar2;
 
-    function decompose_partition_name(p_partition_type in partition_table_parm.partition_type%type, p_partition_name in varchar2, p_prefix in partition_table_parm.partition_prefix%type)
+    function decompose_partition_name(p_partition_type in partition_table_parm.partition_type%type
+                                    , p_partition_name in varchar2
+                                    , p_prefix         in partition_table_parm.partition_prefix%type)
     return varchar2;
 
-    function get_partition_for_table(p_table_owner IN partition_table_parm.table_owner%type
-                                   , p_table_name IN partition_table_parm.table_name%type
-                                   , p_run_type global_constants_pkg.flag_st := global_constants_pkg.g_regular_run)
+    function get_partition_for_table(p_table_owner in partition_table_parm.table_owner%type
+                                   , p_table_name  in partition_table_parm.table_name%type
+                                   , p_run_type    in global_constants_pkg.flag_st := global_constants_pkg.g_regular_run)
     return varchar2;
 
-    procedure create_new_partitions(p_run_type IN CHAR, p_years_to_create IN INTEGER);
+    procedure create_new_partitions(p_run_type in CHAR, p_years_to_create in INTEGER);
 
-    procedure remove_archive_partitions(p_run_type IN CHAR);
+    procedure remove_archive_partitions(p_run_type in CHAR);
 
 end partition_parm_pkg;

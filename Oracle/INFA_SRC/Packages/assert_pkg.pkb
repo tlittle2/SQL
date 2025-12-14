@@ -18,7 +18,7 @@ as
 	procedure is_not_null_nor_blank(p_val in varchar2, p_error_message in varchar2)
 	is
 	begin
-	    assert(p_val is not null or trim(p_val) <> '', p_error_message);
+	    assert(not string_utils_pkg.is_null_or_blank(p_val), p_error_message);
 	end is_not_null_nor_blank;
 
 
@@ -64,8 +64,10 @@ as
 
     procedure is_valid_year_quarter(p_year_quarter infa_global.statement_prd_yr_qrtr%type, p_error_message in varchar2)
     is
+        l_quarter integer := string_utils_pkg.char_at(p_year_quarter, 6);
     begin
         assert_pkg.is_true(string_utils_pkg.char_at(p_year_quarter, 5) = date_utils_pkg.g_year_quarter_sep and length(p_year_quarter) = 6, p_error_message);
+        assert_pkg.is_valid_quarter(l_quarter, p_error_message);
     end is_valid_year_quarter;
 
     procedure is_valid_month_of_quarter(p_month in integer, p_error_message in varchar2)
@@ -108,4 +110,3 @@ as
 	end is_less_than;
 
 end assert_pkg;
-

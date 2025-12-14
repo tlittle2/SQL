@@ -456,7 +456,7 @@ as
     return t_date_array pipelined
     is
         l_from_date    date := coalesce(p_from_date, sysdate);
-        l_to_date      date := coalesce(p_to_date, add_months(l_from_date,12));
+        l_to_date      date := coalesce(p_to_date, add_months(l_from_date,g_months_in_year));
         l_date_after   date;
         l_next_date    date;
     begin

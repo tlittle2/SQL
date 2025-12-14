@@ -18,7 +18,7 @@ AS
 			p_query.f_select := p_query.f_select || p_separator || p_name;
 		end if;
 	end add_select;
-    
+
     function get_select(p_query in t_query)
     return varchar2 deterministic
     is
@@ -36,12 +36,12 @@ AS
             STRING_UTILS_PKG.add_str_token(p_query.f_from, p_name, ','); --p_query.f_from := p_query.f_from || ', ' || p_name;
 		end if;
 	end add_from;
-    
+
     function get_from(p_query in t_query)
     return varchar2 deterministic
     is
     begin
-        return ' FROM ' || p_query.f_from;    
+        return ' FROM ' || p_query.f_from;
     end get_from;
 
 	procedure add_where(p_query in out t_query,p_name in varchar2, p_separator IN VARCHAR2)
@@ -54,27 +54,27 @@ AS
             STRING_UTILS_PKG.add_str_token(p_query.f_where, '(' || p_name || ')', p_separator);
 		end if;
 	end add_where;
-    
+
     function get_where(p_query in t_query)
     return varchar2 deterministic
     is
     begin
         return ' WHERE ' || p_query.f_where;
     end get_where;
-    
+
     function get_where_in(p_query in out t_query, p_negate IN BOOLEAN DEFAULT FALSE)
     return varchar2 deterministic
     is
     begin
         error_pkg.assert(p_query.f_select is not null, 'NO LIST OF COLUMNS TO PERFORM OPERATION ON. PLEASE INVESTIGATE');
-    
+
         sql_builder_pkg.add_where(p_query, p_query.f_select, ''); --format select to become where clause
-        
+
         if p_negate
         then
-            return get_where(p_query) || ' NOT IN ';    
+            return get_where(p_query) || ' NOT IN ';
         else
-            return get_where(p_query) || ' IN ';    
+            return get_where(p_query) || ' IN ';
         end if;
     end get_where_in;
 
@@ -89,7 +89,7 @@ AS
             STRING_UTILS_PKG.add_str_token(p_query.f_group_by,p_name, ',');  --p_query.f_group_by := p_query.f_group_by || ', ' || p_name;
 		end if;
 
-	end add_group_by; 
+	end add_group_by;
 
 
 	procedure add_order_by(p_query in out t_query,p_name in varchar2)
@@ -102,7 +102,7 @@ AS
             STRING_UTILS_PKG.add_str_token(p_query.f_order_by,p_name, ',');   --p_query.f_order_by := p_query.f_order_by || ', ' || p_name;
 		end if;
 
-	end add_order_by; 
+	end add_order_by;
 
 
 	function get_sql(p_query in t_query,

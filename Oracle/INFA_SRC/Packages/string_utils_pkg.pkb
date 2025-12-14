@@ -6,16 +6,12 @@ as
     function bool_to_str(p_value in boolean)
     return st_bool_str_len
     is
-        l_returnvalue st_bool_str_len;
     begin
-        l_returnvalue :=
-        case (p_value)
+        return case (p_value)
         when true then  'TRUE'
         when false then 'FALSE'
         else 'NULL'
         end;
-
-        return l_returnvalue;
 
     exception
         when others then
@@ -34,7 +30,6 @@ as
         end if;
 
         return l_returnvalue;
-
     exception
         when others then
         cleanup_pkg.exception_cleanup(false);
@@ -44,17 +39,12 @@ as
     function int_to_bool(p_value in integer)
     return boolean
     is
-        l_returnvalue boolean;
     begin
         assert_pkg.is_true(p_value in (g_true, g_false), 'invalid value provided. please investigate');
-
-        l_returnvalue :=
-        case p_value
+        return case (p_value)
         when g_true then true
-        else false
+        when g_false then false
         end;
-
-        return l_returnvalue;
 
     exception
         when others then
@@ -87,7 +77,6 @@ as
         end if;
 
         return l_returnvalue;
-
     end str_to_bool_str;
 
     function str_to_single_quoted_str(p_str in varchar2)
@@ -112,6 +101,9 @@ as
         return l_returnvalue;
     end char_at;
 
+
+
+
     procedure add_str_token(p_text in out varchar2, p_token in varchar2, p_separator in varchar2 := g_default_separator)
     is
     begin
@@ -121,7 +113,6 @@ as
         else
             p_text := p_text || p_separator || p_token;
         end if;
-
     end add_str_token;
 
 
@@ -320,6 +311,35 @@ as
     begin
         return regexp_replace(p_str, '[0-9,.]', '');
     end remove_numeric;
+
+    function contains(p_str in varchar2, p_seq in varchar2)
+    return boolean
+    is
+        l_value number := instr(p_str, p_seq);
+        l_returnvalue boolean := false;
+    begin
+        if l_value > 0
+        then
+            l_returnvalue := true;
+        end if;
+
+        return l_returnvalue;
+    end contains;
+
+    function is_null_or_blank(p_value in varchar2)
+    return boolean
+    is
+        l_returnvalue boolean := false;
+    begin
+        if p_value is null or trim(p_value) = ''
+        then
+            l_returnvalue := true;
+        end if;
+
+        return l_returnvalue;
+
+    end is_null_or_blank;
+
 
 
 

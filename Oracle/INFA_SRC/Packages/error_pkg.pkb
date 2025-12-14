@@ -8,8 +8,8 @@ as
             raise_application_error (-20000, p_error_message);
         end if;
     end assert;
-    
-    
+
+
     procedure print_error(p_app_info in varchar2)
     is
     begin
@@ -17,9 +17,9 @@ as
         dbms_output.put_line(SQLCODE || ' : ' || SQLERRM);
         --dbms_output.put_line(DBMS_UTILITY.FORMAT_ERROR_STACK);
     END print_error;
-    
-    
-    procedure log_error(p_app_info in varchar2) --this can be, for example, the procedure that called this 
+
+
+    procedure log_error(p_app_info in varchar2) --this can be, for example, the procedure that called this
     is
         PRAGMA AUTONOMOUS_TRANSACTION; --ensures that we don't commit changes in callback program
         c_code CONSTANT INTEGER := SQLCODE;

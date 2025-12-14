@@ -92,6 +92,12 @@ as
     function remove_numeric(p_str in varchar2)
     return varchar2;
 
+    function contains(p_str in varchar2, p_seq in varchar2)
+    return boolean;
+
+    function is_null_or_blank(p_value in varchar2)
+    return boolean;
+
 
 
     function get_str (p_msg    in varchar2,

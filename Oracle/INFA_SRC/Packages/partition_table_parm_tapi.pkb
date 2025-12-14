@@ -1,0 +1,69 @@
+  create or replace package body partition_table_parm_tapi
+is
+	-- insert
+	procedure ins(
+	 p_TABLE_OWNER      in PARTITION_TABLE_PARM.TABLE_OWNER%type
+	,p_TABLE_NAME       in PARTITION_TABLE_PARM.TABLE_NAME%type
+	,p_PARTITION_TYPE   in PARTITION_TABLE_PARM.PARTITION_TYPE%type default null
+	,p_TABLESPACE_NAME  in PARTITION_TABLE_PARM.TABLESPACE_NAME%type default null
+	,p_UPD_FLAG         in PARTITION_TABLE_PARM.UPD_FLAG%type default null
+	,p_PARTITIONED      in PARTITION_TABLE_PARM.PARTITIONED%type default null
+	,p_PARTITION_PREFIX in PARTITION_TABLE_PARM.PARTITION_PREFIX%type default null)
+	is
+	begin
+		insert into PARTITION_TABLE_PARM(
+		TABLE_NAME
+		,PARTITION_TYPE
+		,TABLESPACE_NAME
+		,TABLE_OWNER
+		,UPD_FLAG
+		,PARTITIONED
+		,PARTITION_PREFIX
+		) values (
+		 p_TABLE_NAME
+		,p_PARTITION_TYPE
+		,p_TABLESPACE_NAME
+		,p_TABLE_OWNER
+		,p_UPD_FLAG
+		,p_PARTITIONED
+		,p_PARTITION_PREFIX
+		);
+	end ins;
+
+
+	-- update
+	procedure upd (
+	 p_TABLE_OWNER      in PARTITION_TABLE_PARM.TABLE_OWNER%type
+	,p_TABLE_NAME       in PARTITION_TABLE_PARM.TABLE_NAME%type
+	,p_PARTITION_TYPE   in PARTITION_TABLE_PARM.PARTITION_TYPE%type default null
+	,p_TABLESPACE_NAME  in PARTITION_TABLE_PARM.TABLESPACE_NAME%type default null
+	,p_UPD_FLAG         in PARTITION_TABLE_PARM.UPD_FLAG%type default null
+	,p_PARTITIONED      in PARTITION_TABLE_PARM.PARTITIONED%type default null
+	,p_PARTITION_PREFIX in PARTITION_TABLE_PARM.PARTITION_PREFIX%type default null
+	)is
+	begin
+		update PARTITION_TABLE_PARM set
+		PARTITION_TYPE    = nvl(p_PARTITION_TYPE, PARTITION_TYPE)
+		,TABLESPACE_NAME  = nvl(p_TABLESPACE_NAME, TABLESPACE_NAME)
+		,UPD_FLAG         = nvl(p_UPD_FLAG, UPD_FLAG)
+		,PARTITIONED      = nvl(p_PARTITIONED, PARTITIONED)
+		,PARTITION_PREFIX = nvl(p_PARTITION_PREFIX, PARTITION_PREFIX)
+
+		where TABLE_OWNER = p_TABLE_OWNER
+		and TABLE_NAME = p_TABLE_NAME;
+
+	end upd;
+
+	-- del
+	procedure del (
+	p_TABLE_OWNER in PARTITION_TABLE_PARM.TABLE_OWNER%type
+	,p_TABLE_NAME in PARTITION_TABLE_PARM.TABLE_NAME%type)
+    is
+	begin
+		delete from PARTITION_TABLE_PARM
+		where TABLE_OWNER = p_TABLE_OWNER
+		  and TABLE_NAME = p_TABLE_NAME;
+	end del;
+
+
+end partition_table_parm_tapi;

@@ -72,7 +72,7 @@ AS
        l_rec_global infa_global%rowtype;
     begin
 
-        table_access_pkg.get_global_row_logic(l_rec_global,p_run_type);
+        l_rec_global := infa_global_tapi.get_global_row_logic(p_run_type);
 
         select PARTITION_TYPE, PARTITION_PREFIX
         into l_part_type, l_prefix
@@ -86,6 +86,15 @@ AS
 
         return get_partition_name(l_part_type, l_prefix, l_rec_global.run_dte);
 
+    exception
+        when no_data_found then
+        dbms_output.put_line('Entry Not Found. Please Investigate');
+
+        when too_many_rows then
+        dbms_output.put_line('More than 1 entry retrieved. Please Investigate');
+
+        when others then
+        raise;
     end get_partition_for_table;
 
 
@@ -137,7 +146,7 @@ AS
         l_rec_global infa_global%rowtype;
     begin
 
-        table_access_pkg.get_global_row_logic(l_rec_global, p_run_type);
+        l_rec_global := infa_global_tapi.get_global_row_logic(p_run_type);
         p_begin_cutoff_dte := l_rec_global.run_dte;
 
         assert_pkg.is_not_null_nor_blank(p_begin_cutoff_dte, 'DATE RETRIEVED IS NOT VALID PLEASE INVESTIGATE');
@@ -345,8 +354,9 @@ AS
 
         for rec_parts in partitions_to_create
         loop
-            table_access_pkg.update_partition_table_parm_2(rec_parts.table_owner,rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
+            partition_table_parm_tapi.upd(rec_parts.table_owner,rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
             sql_utils_pkg.commit;
+
             manage_create_cursor(sql_utils_pkg.c_open_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
 
             loop
@@ -357,7 +367,7 @@ AS
 
             manage_create_cursor(sql_utils_pkg.c_close_cursor, rec_parts.partition_type, g_create_begin_dte, l_create_end_dte, l_create_cursor);
 
-            table_access_pkg.update_partition_table_parm_2(rec_parts.table_owner,rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
+            partition_table_parm_tapi.upd(rec_parts.table_owner,rec_parts.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
             sql_utils_pkg.commit;
         end loop;
 
@@ -452,7 +462,6 @@ AS
             inner join archive_rules archive
             on part.table_owner = archive.table_owner
             and part.table_name = archive.table_name
-            and part.partitioned = archive.partitioned
             where part.partitioned = g_is_partitioned
             and part.upd_flag <> global_constants_pkg.g_record_is_updated
             and archive_rules_tbl_pkg.get_arch_prefix_from_tab(part.table_name) = archive_rules_tbl_pkg.g_archive_table_prefix
@@ -466,7 +475,7 @@ AS
 
             for rec_destroy in cur_dataToDestroy
             loop
-                table_access_pkg.update_partition_table_parm_2(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
+                partition_table_parm_tapi.upd(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
                 sql_utils_pkg.commit;
 
                 l_drop_archive_begin_dte := date_utils_pkg.calculate_new_date(g_drop_begin_dte, rec_destroy.years_to_keep);
@@ -481,7 +490,8 @@ AS
 
                 manage_remove_cursor(sql_utils_pkg.c_close_cursor, rec_destroy.partition_type, rec_destroy.table_owner, rec_destroy.table_name, rec_destroy.partition_prefix, l_drop_archive_begin_dte
                                    , l_archive_cursor);
-                table_access_pkg.update_partition_table_parm_2(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
+
+                partition_table_parm_tapi.upd(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_updated);
                 sql_utils_pkg.commit;
 
             end loop;

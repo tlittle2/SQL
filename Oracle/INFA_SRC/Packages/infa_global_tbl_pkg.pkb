@@ -1,6 +1,6 @@
 create or replace package body infa_global_tbl_pkg
 as
-    procedure global_resync(p_run_dte in infa_global.run_dte%type, p_run_type in global_constants_pkg.g_regular_run%type := global_constants_pkg.g_special_run)
+    procedure global_resync(p_run_dte in infa_global.run_dte%type, p_run_type in global_constants_pkg.g_regular_run%type default global_constants_pkg.g_special_run)
     is
        p_row infa_global%rowtype;
        l_quarter infa_global.statement_prd_yr_qrtr%type;
@@ -17,8 +17,8 @@ as
         p_row.last_update_dte := sysdate;
         p_row.last_updated_by :=  'GLOBAL_RESYNC';
 
-        crud_pkg.update_global_row_logic(p_row, p_run_type);
-        commit;
+        infa_global_tapi.update_global_row_logic(p_row, p_run_type);
+        sql_utils_pkg.commit;
 
     exception
         when others then

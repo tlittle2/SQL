@@ -91,6 +91,7 @@ as
             then
                 close tbls;
             end if;
+        raise;
     end truncate_table;
 
 

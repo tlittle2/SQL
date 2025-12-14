@@ -32,4 +32,26 @@ as
     end within_threshold_pct;
 
 
+    function is_even(p_number in number)
+    return boolean deterministic
+    is
+        l_returnvalue boolean := mod(p_number, 2) = 0;
+    begin
+
+        return l_returnvalue;
+
+    end is_even;
+
+    function is_odd(p_number in number)
+    return boolean deterministic
+    is
+        l_returnvalue boolean := mod(p_number, 2) = 1;
+    begin
+
+        return l_returnvalue;
+
+    end is_odd;
+
+
+
 end math_pkg;

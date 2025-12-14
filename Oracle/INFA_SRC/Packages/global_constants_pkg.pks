@@ -10,6 +10,7 @@ AS
     g_record_is_updated         constant flag_st := 'Y';
     g_record_is_not_updated     constant flag_st := 'N';
     g_record_is_being_processed constant flag_st := 'E';
+    g_record_ignore constant flag_st := 'I';
 
     function get_regular_run_flag
     return flag_st
