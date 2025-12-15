@@ -13,6 +13,14 @@ as
     begin
         return c_process_salaries;
     end get_constant_process_salary;
+    
+    function get_constant_contract_update
+    return process_ranges_parm.process_name%type
+    deterministic
+    is
+    begin
+        return c_contract_update;
+    end get_constant_contract_update;
 
     function generate_job_nbrs(p_current_value in process_ranges_parm.RUN_TOTAL%type, p_count_of_values in process_ranges_parm.RUN_TOTAL%type, p_job_runs in process_ranges_parm.RUN_TOTAL%type)
     return integer
@@ -28,8 +36,152 @@ as
     begin
         return ceil(p_number_of_values / p_job_runs);
     end get_count_per_run;
+    
+    
+    function gen_pin_preanalysis(p_process_name in process_ranges_parm.PROCESS_NAME%type, p_values in t_str_array, p_number_of_runs in process_ranges_parm.RUN_TOTAL%type)
+    return process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab
+    is
+        l_returnvalue process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab := process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab();
+        
+        cursor gen_cursor is
+           with dta as (
+               select * from (
+                   select g_min_pin as value from dual
+                   
+                   union all
+                   
+                   select distinct COLUMN_VALUE as value
+                   from table(p_values)
+                   
+                   union all
+                   
+                   select g_max_pin as value from dual
+                ) order by value asc
+            )
+        , counts as (
+            select count(distinct value) as cnt
+            from dta
+        )
+        , preanalysis as (
+            select dta.value
+            , counts.cnt
+            , process_preanalysis_pkg.generate_job_nbrs(row_number() over(order by value asc), cnt, p_number_of_runs) as job_nbr
+            from dta, counts
+        )
+         select job_nbr
+            , count(*) as run_total
+            , min(value) lower_bound
+            , max(value) upper_bound
+            from preanalysis
+            group by job_nbr;
+    begin
+       for rec in gen_cursor
+       loop
+           l_returnvalue.EXTEND;
+           l_returnvalue(l_returnvalue.COUNT).PROCESS_NAME := p_process_name;
+           l_returnvalue(l_returnvalue.COUNT).RUN_NUMBER   := rec.job_nbr;
+           l_returnvalue(l_returnvalue.COUNT).RUN_TOTAL    := rec.run_total;
+           l_returnvalue(l_returnvalue.COUNT).LOWER_BOUND  := rec.lower_bound;
+           l_returnvalue(l_returnvalue.COUNT).UPPER_BOUND  := rec.upper_bound;
+       end loop;
+       
+       return l_returnvalue;
+    
+    exception
+        when others then
+        raise;
+    end gen_pin_preanalysis;
+    
+    
+    procedure update_preanalysis_table(p_values in process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab)
+    is
+    begin
+       for rec in p_values.first..p_values.last
+       loop
+            process_ranges_parm_tapi.ins(
+             p_PROCESS_NAME => p_values(rec).process_name
+            ,p_RUN_TOTAL    => p_values(rec).run_total
+            ,p_RUN_NUMBER   => p_values(rec).run_number
+            ,p_LOWER_BOUND  => p_values(rec).lower_bound
+            ,p_UPPER_BOUND  => p_values(rec).upper_bound
+            );
+       end loop;
+    end update_preanalysis_table;
+    
+    
+    procedure insert_into_array(p_value varchar2, p_values in out t_str_array)
+    is
+    begin
+        p_values.EXTEND;
+        p_values(p_values.COUNT) := p_value;
+    end insert_into_array;
+    
+    procedure salary_processing_preanalysis(p_number_of_runs in process_ranges_parm.RUN_TOTAL%type)
+    is
+        cursor cur_salary_pins is
+        select pin as pin
+        from temp_pins;
+        
+        l_table t_str_array := t_str_array();
+        l_parm_table process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab := process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab();
+    begin
+        process_ranges_parm_tapi.del(process_preanalysis_pkg.get_constant_process_salary);
+        sql_utils_pkg.commit;    
+    
+       for rec in cur_salary_pins
+       loop
+           insert_into_array(rec.pin, l_table);
+       end loop;
+       
+       l_parm_table := gen_pin_preanalysis(p_process_name => process_preanalysis_pkg.get_constant_process_salary
+                                         , p_values => l_table
+                                         , p_number_of_runs => p_number_of_runs);
+                                         
 
+       update_preanalysis_table(l_parm_table);
+   
+       sql_utils_pkg.commit;
+                                     
+    exception
+        when others then
+        cleanup_pkg.exception_cleanup(p_rollback => true);
+        raise;
+    end salary_processing_preanalysis;
+    
+    
+    procedure update_contract_preanalysis(p_number_of_runs in process_ranges_parm.RUN_TOTAL%type)
+    is
+        cursor cur_get_contracts is
+        select contract as contract
+        from temp_contracts;
+        
+        l_table t_str_array := t_str_array();
+        l_parm_table process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab := process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab();
+    
+    begin
+        process_ranges_parm_tapi.del(process_preanalysis_pkg.c_contract_update);
+        sql_utils_pkg.commit;
+        
+       for rec in cur_get_contracts
+       loop
+           insert_into_array(rec.contract, l_table);
+       end loop;
+       
+       l_parm_table := gen_pin_preanalysis(p_process_name => process_preanalysis_pkg.c_contract_update
+                                         , p_values => l_table
+                                         , p_number_of_runs => p_number_of_runs);
+                                         
 
+       update_preanalysis_table(l_parm_table);
+   
+       sql_utils_pkg.commit;
+    exception
+        when others then
+        cleanup_pkg.exception_cleanup(p_rollback => true);
+        raise;
+    end update_contract_preanalysis;
+    
+    
     procedure archive_rules_preanalysis(p_number_of_runs in archive_rules.job_nbr%type, p_partitioned_flag in partition_table_parm.partitioned%type)
     is
         type parm_table_update_t is table of archive_rules%rowtype index by pls_integer;
@@ -92,113 +244,6 @@ as
         sql_utils_pkg.commit;
 
     END archive_rules_preanalysis;
-    
-    
-    function gen_pin_preanalysis(p_process_name in process_ranges_parm.PROCESS_NAME%type, p_values in t_str_array, p_number_of_runs in process_ranges_parm.RUN_TOTAL%type)
-    return process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab
-    is
-        l_returnvalue process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab := process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab();
-        
-        cursor gen_cursor is
-           with dta as (
-               select * from (
-                   select g_min_pin as value from dual
-                   
-                   union all
-                   
-                   select distinct COLUMN_VALUE as value
-                   from table(p_values)
-                   
-                   union all
-                   
-                   select g_max_pin as value from dual
-                ) order by value asc
-            )
-        , counts as (
-            select count(distinct value) as cnt
-            from dta
-        )
-        , preanalysis as (
-            select dta.value
-            , counts.cnt
-            , process_preanalysis_pkg.generate_job_nbrs(row_number() over(order by value asc), cnt, p_number_of_runs) as job_nbr
-            from dta, counts
-        )
-        , split as (
-            select job_nbr
-            , count(*) as run_total
-            , min(value) lower_bound
-            , max(value) upper_bound
-            from preanalysis
-            group by job_nbr
-        )
-        
-        select distinct p_process_name as process_name
-        , split.*
-        from split;
-    begin
-       for rec in gen_cursor
-       loop
-           l_returnvalue.EXTEND;
-           l_returnvalue(l_returnvalue.COUNT).PROCESS_NAME := rec.process_name;
-           l_returnvalue(l_returnvalue.COUNT).RUN_NUMBER   := rec.job_nbr;
-           l_returnvalue(l_returnvalue.COUNT).RUN_TOTAL    := rec.run_total;
-           l_returnvalue(l_returnvalue.COUNT).LOWER_BOUND  := rec.lower_bound;
-           l_returnvalue(l_returnvalue.COUNT).UPPER_BOUND  := rec.upper_bound;
-       end loop;
-       
-       return l_returnvalue;
-    
-    exception
-        when others then
-        raise;
-    end gen_pin_preanalysis;
-    
-    procedure salary_processing_preanalysis(p_number_of_runs in process_ranges_parm.RUN_TOTAL%type)
-    is
-        cursor cur_salary_pins is
-        select --distinct
-        pin as pin
-        from temp_pins;
-        
-        l_table t_str_array := t_str_array();
-        l_parm_table process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab := process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab();
-    begin
-        process_ranges_parm_tapi.del(process_preanalysis_pkg.get_constant_process_salary);
-        sql_utils_pkg.commit;    
-    
-       for rec in cur_salary_pins
-       loop
-           l_table.EXTEND;
-           l_table(l_table.COUNT) := rec.pin;
-       end loop;
-       
-       l_parm_table := gen_pin_preanalysis(p_process_name => process_preanalysis_pkg.get_constant_process_salary
-                                         , p_values => l_table
-                                         , p_number_of_runs => p_number_of_runs);
-        
-       for rec in l_parm_table.first..l_parm_table.last
-       loop
-            process_ranges_parm_tapi.ins(
-             p_PROCESS_NAME => l_parm_table(rec).process_name
-            ,p_RUN_TOTAL    => l_parm_table(rec).run_total
-            ,p_RUN_NUMBER   => l_parm_table(rec).run_number
-            ,p_LOWER_BOUND  => l_parm_table(rec).lower_bound
-            ,p_UPPER_BOUND  => l_parm_table(rec).upper_bound
-            );
-       end loop;
-       
-       check_for_overlap(p_process_name => process_preanalysis_pkg.get_constant_process_salary);
-       
-       sql_utils_pkg.commit;
-                                     
-    exception
-        when others then
-        cleanup_pkg.exception_cleanup(p_rollback => true);
-        raise;
-    end salary_processing_preanalysis;
-    
-    
     
     
     procedure check_for_overlap(p_process_name in process_ranges_parm.process_name%type)
