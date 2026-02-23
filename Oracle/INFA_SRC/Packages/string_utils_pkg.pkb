@@ -1,7 +1,7 @@
 create or replace package body string_utils_pkg
 as
 
-    m_nls_decimal_separator        varchar2(1);
+    m_nls_decimal_separator varchar2(1);
 
     function bool_to_str(p_value in boolean)
     return st_bool_str_len
@@ -16,6 +16,7 @@ as
     exception
         when others then
         cleanup_pkg.exception_cleanup(false);
+        raise;
     end bool_to_str;
 
 
@@ -33,6 +34,7 @@ as
     exception
         when others then
         cleanup_pkg.exception_cleanup(false);
+        raise;
     end bool_to_int;
 
 
@@ -49,6 +51,7 @@ as
     exception
         when others then
         cleanup_pkg.exception_cleanup(false);
+        raise;
     end int_to_bool;
 
     function str_to_bool(p_str in varchar2)
@@ -100,6 +103,15 @@ as
 
         return l_returnvalue;
     end char_at;
+
+    function char_at(p_str in varchar2, p_idx in integer, p_fail_on_null in st_flag_len default g_false)
+    return char
+    deterministic
+    is
+    begin
+       return char_at(p_str, p_idx, p_fail_on_null = g_true);
+    end char_at;
+
 
 
 
@@ -331,7 +343,7 @@ as
     is
         l_returnvalue boolean := false;
     begin
-        if p_value is null or trim(p_value) = ''
+        if p_value is null or trim(p_value) = '' or trim(p_value) is null
         then
             l_returnvalue := true;
         end if;
@@ -341,18 +353,23 @@ as
     end is_null_or_blank;
 
 
+    function extract_word(p_str in varchar2, p_word in integer)
+    return varchar2
+    is
+    begin
+        return regexp_substr(p_str, '[^ ]+', 1, p_word);
+    end extract_word;
 
-
-    function get_str (p_msg    in varchar2,
-                      p_value1 in varchar2 := null,
-                      p_value2 in varchar2 := null,
-                      p_value3 in varchar2 := null,
-                      p_value4 in varchar2 := null,
-                      p_value5 in varchar2 := null,
-                      p_value6 in varchar2 := null,
-                      p_value7 in varchar2 := null,
-                      p_value8 in varchar2 := null,
-                      p_value9 in varchar2 := null,
+    function get_str (p_msg     in varchar2,
+                      p_value1  in varchar2 := null,
+                      p_value2  in varchar2 := null,
+                      p_value3  in varchar2 := null,
+                      p_value4  in varchar2 := null,
+                      p_value5  in varchar2 := null,
+                      p_value6  in varchar2 := null,
+                      p_value7  in varchar2 := null,
+                      p_value8  in varchar2 := null,
+                      p_value9  in varchar2 := null,
                       p_value10 in varchar2 := null,
                       p_value11 in varchar2 := null,
                       p_value12 in varchar2 := null,
@@ -391,6 +408,67 @@ as
         l_returnvalue := replace_str(p_value15, '%15');
 
         return l_returnvalue;
+    exception
+        when others then
+        raise;
     end get_str;
+
+    function concat_ws (p_sep     in varchar2,
+                        p_value1  in varchar2,
+                        p_value2  in varchar2  := g_concat_ws_default,
+                        p_value3  in varchar2  := g_concat_ws_default,
+                        p_value4  in varchar2  := g_concat_ws_default,
+                        p_value5  in varchar2  := g_concat_ws_default,
+                        p_value6  in varchar2  := g_concat_ws_default,
+                        p_value7  in varchar2  := g_concat_ws_default,
+                        p_value8  in varchar2  := g_concat_ws_default,
+                        p_value9  in varchar2  := g_concat_ws_default,
+                        p_value10 in varchar2  := g_concat_ws_default,
+                        p_value11 in varchar2  := g_concat_ws_default,
+                        p_value12 in varchar2  := g_concat_ws_default,
+                        p_value13 in varchar2  := g_concat_ws_default,
+                        p_value14 in varchar2  := g_concat_ws_default,
+                        p_value15 in varchar2  := g_concat_ws_default,
+                        p_value16 in varchar2  := g_concat_ws_default,
+                        p_value17 in varchar2  := g_concat_ws_default,
+                        p_value18 in varchar2  := g_concat_ws_default,
+                        p_value19 in varchar2  := g_concat_ws_default,
+                        p_value20 in varchar2  := g_concat_ws_default
+                      )
+    return varchar2
+    is
+       l_num integer;
+       l_values t_str_array := t_str_array(p_value1, p_value2, p_value3, p_value4, p_value5, p_value6, p_value7, p_value8, p_value9, p_value10, p_value11, p_value12, p_value13, p_value14, p_value15, p_value16, p_value17, p_value18, p_value19, p_value20);
+       l_returnvalue st_max_pl_varchar2;
+    begin
+
+        select nvl(count(column_value), 0)
+        into l_num
+        from table(l_values)
+        where column_value is null;
+
+        if l_num >= 1
+        then
+            return null;
+        end if;
+
+
+        for i in l_values.first..l_values.last
+        loop
+            if trim(l_values(i)) <> g_concat_ws_default
+            then
+                l_returnvalue := l_returnvalue || l_values(i) || p_sep;
+            end if;
+        end loop;
+
+        l_returnvalue := substr(l_returnvalue, 1, length(l_returnvalue) - length(p_sep));
+
+        return l_returnvalue;
+
+    exception
+        when others then
+        raise;
+    end concat_ws;
+
 
 end string_utils_pkg;
