@@ -1,5 +1,7 @@
 create or replace package archive_rules_tapi
 is
+    type archive_rules_update_tapi_tab is table of archive_rules%rowtype index by pls_integer;
+
     -- insert
     procedure ins (
      p_TABLE_OWNER in ARCHIVE_RULES.TABLE_OWNER%type

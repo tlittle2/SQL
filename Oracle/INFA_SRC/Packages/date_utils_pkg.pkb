@@ -41,7 +41,7 @@ as
     is
         l_year number := extract(year from p_date);
         l_quarter number := get_quarter(p_date);
-        l_returnvalue infa_global.statement_prd_yr_qrtr%type :=format_year_quarter(l_year, l_quarter);
+        l_returnvalue infa_global.statement_prd_yr_qrtr%type := format_year_quarter(l_year, l_quarter);
     begin
         return l_returnvalue;
 
@@ -448,6 +448,8 @@ as
        loop
            pipe row(get_year_quarter(p_quarter, sign(p_num_of_quarters) * i));
        end loop;
+
+       return;
 
     end get_year_quarters;
 

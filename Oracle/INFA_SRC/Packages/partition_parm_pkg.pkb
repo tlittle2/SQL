@@ -1,7 +1,5 @@
 create or replace package body partition_parm_pkg
 AS
-    g_default_date_format CONSTANT VARCHAR2(9) := 'DD-MON-RR';
-
     procedure debug_print_or_execute(p_sql IN VARCHAR2)
     is
     begin
@@ -24,10 +22,17 @@ AS
         assert_pkg.is_true(p_partition_type in (g_daily_partition_flag, g_monthly_partition_flag, g_quarterly_partition_flag, g_annual_partition_flag), 'UNSUPPORTED PARTITION FLAG. PLEASE INVESTIGATE');
     end check_partition_type;
 
-    function get_partition_name(p_partition_type IN partition_table_parm.partition_type%type, p_prefix in partition_table_parm.partition_prefix%type, p_date in date)
-    return varchar2
+    function format_partition_name(p_prefix in partition_table_parm.partition_prefix%type, p_suffix in varchar2)
+    return varchar2 deterministic
     is
-        l_date_suffix varchar2(8);
+    begin
+        return concat(p_prefix, p_suffix);
+    end format_partition_name;
+
+    function get_partition_name(p_partition_type IN partition_table_parm.partition_type%type, p_prefix in partition_table_parm.partition_prefix%type, p_date in date)
+    return st_part_len_max
+    is
+        l_date_suffix st_part_len_max;
     begin
         check_partition_type(p_partition_type);
 
@@ -38,14 +43,14 @@ AS
         when g_annual_partition_flag    then l_date_suffix:= to_char(to_date(p_date,g_default_date_format), g_annual_partition_date_format);
         end case;
 
-        return p_prefix || l_date_suffix;
+        return format_partition_name(p_prefix, l_date_suffix);
     end get_partition_name;
 
 
     function decompose_partition_name(p_partition_type in partition_table_parm.partition_type%type, p_partition_name in varchar2, p_prefix in partition_table_parm.partition_prefix%type)
-    return varchar2
+    return st_part_len_max
     is
-        l_returnvalue varchar2(length(g_daily_partition_date_format)); --varchar length of the longest constant date format available to us
+        l_returnvalue st_part_len_max;
     begin
         partition_parm_pkg.check_partition_type(p_partition_type);
 
@@ -65,7 +70,7 @@ AS
     function get_partition_for_table(p_table_owner IN partition_table_parm.table_owner%type
                                    , p_table_name IN partition_table_parm.table_name%type
                                    , p_run_type global_constants_pkg.flag_st := global_constants_pkg.g_regular_run)
-    return varchar2
+    return st_part_len_max
     is
        l_prefix partition_table_parm.partition_prefix%type;
        l_part_type partition_table_parm.partition_type%type;
@@ -140,16 +145,15 @@ AS
     end check_indexes;
 
 
-    procedure retrieve_cutoff_dates(p_run_type          in char
-                                  , p_begin_cutoff_dte out date)
+    function retrieve_cutoff_dates(p_run_type in char)
+    return infa_global.run_dte%type
     is
-        l_rec_global infa_global%rowtype;
+        l_returnvalue infa_global.run_dte%type;
     begin
 
-        l_rec_global := infa_global_tapi.get_global_row_logic(p_run_type);
-        p_begin_cutoff_dte := l_rec_global.run_dte;
-
-        assert_pkg.is_not_null_nor_blank(p_begin_cutoff_dte, 'DATE RETRIEVED IS NOT VALID PLEASE INVESTIGATE');
+        l_returnvalue := infa_global_tapi.get_global_row_logic(p_run_type).run_dte;
+        assert_pkg.is_not_null_nor_blank(l_returnvalue, 'DATE RETRIEVED IS NOT VALID PLEASE INVESTIGATE');
+        return l_returnvalue;
 
     exception
         when others then
@@ -158,10 +162,10 @@ AS
     end retrieve_cutoff_dates;
 
 
-    procedure create_new_partitions(p_run_type IN CHAR, p_years_to_create IN INTEGER)
+    procedure create_new_partitions(p_run_type IN global_constants_pkg.flag_st, p_years_to_create IN INTEGER)
     is
-        g_create_begin_dte DATE;
-        g_create_end_dte DATE;
+        g_create_begin_dte infa_global.run_dte%type;
+        g_create_end_dte   infa_global.run_dte%type;
 
         type partition_creation_t is record(
             partition_key DATE,
@@ -188,10 +192,9 @@ AS
         begin
             if p_partition_type = g_quarterly_partition_flag
             then
-                return p_partition_prefix || substr(p_high_value,2,2) || g_max_part_suffix;
+                return format_partition_name(p_partition_prefix, substr(p_high_value,2,2) || g_max_part_suffix);
             else
-                return p_partition_prefix || g_max_part_suffix;
-
+                return format_partition_name(p_partition_prefix, g_max_part_suffix);
             end if;
         end transform_max;
 
@@ -236,7 +239,10 @@ AS
             else
                 return false;
             end if;
-
+        exception
+            when others then
+            error_pkg.print_error('partition_previously_created');
+            raise;
         end partition_previously_created;
 
         procedure create_partition_statement(p_part_create_row in partition_creation_t, p_parm_table_row in partition_table_parm%rowtype)
@@ -269,7 +275,7 @@ AS
         end create_partition_statement;
 
 
-        procedure manage_create_cursor(p_cur_op_flag IN CHAR
+        procedure manage_create_cursor(p_cur_op_flag IN sql_utils_pkg.st_cursor_flag
                                      , p_partition_type IN partition_table_parm.partition_type%type
                                      , p_begin_dte IN DATE
                                      , p_end_dte IN DATE
@@ -319,8 +325,8 @@ AS
                     when g_annual_partition_flag then
                         open io_cursor for
                          select partition_key, high_value from (
-                            select distinct trunc(last_day(to_date(a.column_value, g_default_date_format)), 'YYYY') as partition_key
-                            ,               trunc(last_day(to_date(b.column_value, g_default_date_format)), 'YYYY') as high_value
+                            select distinct trunc(last_day(to_date(a.column_value, g_default_date_format)), g_annual_partition_date_format) as partition_key
+                            ,               trunc(last_day(to_date(b.column_value, g_default_date_format)), g_annual_partition_date_format) as high_value
                                   from date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) a
                             inner join date_utils_pkg.get_dates_between(p_begin_dte, p_end_dte) b
                             on a.column_value + 1 = b.column_value
@@ -338,11 +344,10 @@ AS
             cleanup_pkg.close_cursor(io_cursor);
             error_pkg.print_error('manage_create_cursor');
             raise;
-
         end manage_create_cursor;
 
     begin
-        retrieve_cutoff_dates(p_run_type, g_create_begin_dte);
+        g_create_begin_dte := retrieve_cutoff_dates(p_run_type);
 
         if p_run_type = global_constants_pkg.g_regular_run
         then
@@ -381,20 +386,19 @@ AS
     end create_new_partitions;
 
 
-    procedure remove_archive_partitions(p_run_type IN CHAR)
+    procedure remove_archive_partitions(p_run_type IN global_constants_pkg.flag_st)
     is
         g_drop_begin_dte DATE;
 
-        procedure manage_remove_cursor(p_cur_op_flag    in char
+        procedure manage_remove_cursor(p_cur_op_flag    in sql_utils_pkg.st_cursor_flag
                                      , p_partition_type in partition_table_parm.partition_type%type
                                      , p_table_owner    in partition_table_parm.table_owner%type
                                      , p_table_name     in partition_table_parm.table_name%type
                                      , p_prefix         in partition_table_parm.partition_prefix%type
                                      , p_cutoff_dte     in date
-                                     , io_cursor        in out sql_utils_pkg.ref_cursor_t
-                                      )
+                                     , io_cursor        in out sql_utils_pkg.ref_cursor_t)
         is
-            l_partition_date_container varchar2(8);
+            --l_partition_date_container varchar2(8);
         begin
             check_partition_type(p_partition_type);
 
@@ -429,7 +433,7 @@ AS
                         where table_owner = p_table_owner
                         and table_name = p_table_name
                         and not regexp_like(partition_name, g_max_part_suffix_regex)
-                        and decompose_partition_name(g_quarterly_partition_flag, partition_name, p_prefix) < to_char(to_date(p_cutoff_dte, g_default_date_format), 'YYYYQ');
+                        and decompose_partition_name(g_quarterly_partition_flag, partition_name, p_prefix) < to_char(to_date(p_cutoff_dte, g_default_date_format), g_quarterly_partition_date_format);
 
                     when g_annual_partition_flag
                     then
@@ -475,8 +479,8 @@ AS
 
             for rec_destroy in cur_dataToDestroy
             loop
-                partition_table_parm_tapi.upd(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
-                sql_utils_pkg.commit;
+                /*partition_table_parm_tapi.upd(rec_destroy.table_owner,rec_destroy.table_name, p_upd_flag => global_constants_pkg.g_record_is_being_processed);
+                sql_utils_pkg.commit;*/
 
                 l_drop_archive_begin_dte := date_utils_pkg.calculate_new_date(g_drop_begin_dte, rec_destroy.years_to_keep);
 
@@ -507,14 +511,13 @@ AS
         end remove_data_from_archive_partitions;
 
     begin
-        retrieve_cutoff_dates(p_run_type, g_drop_begin_dte);
+        g_drop_begin_dte := retrieve_cutoff_dates(p_run_type);
         remove_data_from_archive_partitions;
 
     exception
         when others then
             error_pkg.print_error('remove_archive_partitions');
             raise;
-
     end remove_archive_partitions;
 
 end partition_parm_pkg;

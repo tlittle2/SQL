@@ -59,7 +59,8 @@ as
     begin
         error_pkg.assert(last_timing is not null, 'No time to compare against!');
 
-        return mod(l_end_time - last_timing + power(2, 32), power(2, 32));
+        return mod(l_end_time - last_timing + power(2, 32), power(2, 32)) / 100
+        ;
 
     end show_elapsed_time;
 

@@ -4,8 +4,10 @@ as
 
     type ref_cursor_t is ref cursor;
 
-    c_open_cursor    constant char(1) := 'O'; --open ref/sys_refcursor
-    c_close_cursor   constant char(1) := 'C'; --close ref/sys_refcursor
+    subtype st_cursor_flag is char(1);
+
+    c_open_cursor    constant st_cursor_flag := 'O'; --open ref/sys_refcursor
+    c_close_cursor   constant st_cursor_flag := 'C'; --close ref/sys_refcursor
 
     function get_full_table_name(p_owner in all_tables.owner%type,p_table_name in all_tables.table_name%type)
     return varchar2
@@ -30,6 +32,8 @@ as
     procedure toggle_trigger(p_trigger_name in varchar2, p_turn_on in boolean default false);
 
     procedure create_synonym(p_object_name all_objects.object_name%type);
+
+    procedure restart_sequence(p_sequence_name user_sequences.sequence_name%type);
 
     procedure recompile;
 

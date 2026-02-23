@@ -2,6 +2,7 @@ create or replace package body report_utils_pkg
 AS
     type report_header_t is record(
         rpt_name string_utils_pkg.st_max_db_varchar2,
+        rpt_desc string_utils_pkg.st_max_db_varchar2,
         rpt_date string_utils_pkg.st_max_db_varchar2,
         rpt_line1 string_utils_pkg.st_max_db_varchar2,
         rpt_columns string_utils_pkg.st_max_db_varchar2,
@@ -38,7 +39,10 @@ AS
             raise;
     end get_report_parms;
 
-    function generate_header(p_title in varchar2, p_pad in integer, p_col_list in column_list_t)
+    function generate_header(p_title    in report_creation_parms.report_name%type
+                           , p_pad      in report_creation_parms.padding%type
+                           , p_col_list in column_list_t
+                           , p_desc     in report_creation_parms.report_description%type)
     return report_header_t
     is
         l_returnvalue report_header_t;
@@ -53,10 +57,11 @@ AS
         function center_content(p_input_str in varchar2)
         return varchar2 deterministic
         is
-            l_total_pad  integer := g_row_length - length(p_input_str);
+            l_len        integer := length(p_input_str);
+            l_total_pad  integer := g_row_length - l_len;
             l_left_pad   integer := floor(l_total_pad / 2);
         begin
-            return rpad(lpad(p_input_str, length(p_input_str) + (l_left_pad),c_space_separator), g_row_length,c_space_separator);
+            return rpad(lpad(p_input_str, l_len + (l_left_pad),c_space_separator), g_row_length,c_space_separator);
         end center_content;
 
     begin
@@ -70,6 +75,7 @@ AS
         g_row_length := length(l_returnvalue.rpt_columns);
 
         l_returnvalue.rpt_name := center_content(concat('Report Name: ', p_title));
+        l_returnvalue.rpt_desc := center_content(concat('Report Description: ', p_desc));
         l_returnvalue.rpt_date := center_content(concat('Report Date: ', TO_CHAR(SYSDATE, 'MM/DD/YYYY HH:MI:SS AM')));
         l_returnvalue.rpt_line1 := header_separator;
         l_returnvalue.rpt_line2 := header_separator;
@@ -166,7 +172,7 @@ AS
 
 --===========================================================================================================================================================================
 
-    function general_report(p_report_title in report_creation_parms.report_name%type)
+    function generate_report(p_report_title in report_creation_parms.report_name%type)
     return report_tab_t pipelined
     is
         l_cursor_id number;
@@ -238,7 +244,7 @@ AS
             elsif is_date(l_desc_tab(i).col_type)
             then
                 dbms_sql.column_value(l_cursor_id, i, l_col_date);
-                l_returnvalue := concat(l_output_str, rpad(l_col_date, l_report_parms.padding, c_space_separator));
+                l_returnvalue := concat(l_output_str, lpad(l_col_date, l_report_parms.padding, c_space_separator));
             end if;
 
             return l_returnvalue;
@@ -247,13 +253,14 @@ AS
                 raise;
         end format_output;
 
-    begin --general_report
+    begin --generate_report
         l_report_parms := get_report_parms(p_report_title);
 
         setup_and_define_columns;
 
-        l_report_header := generate_header(p_report_title,l_report_parms.padding,l_column_names);
+        l_report_header := generate_header(p_report_title,l_report_parms.padding,l_column_names,l_report_parms.report_description);
         pipe row(l_report_header.rpt_name);
+        pipe row(l_report_header.rpt_desc);
         pipe row(l_report_header.rpt_date);
         pipe row(l_report_header.rpt_line1);
         pipe row(l_report_header.rpt_columns);
@@ -283,6 +290,8 @@ AS
         pipe row (null);
         pipe row (l_report_header.rpt_footer);
 
+        g_rolling_header := 1;
+
         return;
     exception
         when no_data_found then
@@ -296,7 +305,57 @@ AS
             then
                 dbms_sql.close_cursor(l_cursor_id);
             end if;
-    end general_report;
+            raise;
+    end generate_report;
+--===========================================================================================================================================================================
+
+   procedure create_control_report(p_report_title in report_creation_parms.report_name%type, p_bulk_limit in integer default 10000)
+   is
+       cursor cur_report is
+        SELECT p_report_title as rep_id
+       , ROWNUM       AS seq_number
+       , sysdate      AS created_date
+       , column_value AS text_line
+       from TABLE (report_utils_pkg.generate_report(p_report_title));
+
+       l_table control_reps_tapi.control_reps_tapi_tab := control_reps_tapi.control_reps_tapi_tab();
+   begin
+       control_reps_tapi.del(p_report_title);
+       sql_utils_pkg.commit;
+
+       open cur_report;
+       loop
+           fetch cur_report bulk collect into l_table limit p_bulk_limit;
+           exit when l_table.count = 0;
+
+           control_reps_tapi.ins_bulk(l_table);
+           sql_utils_pkg.commit;
+       end loop;
+       close cur_report;
+
+   exception
+       when others then
+           cleanup_pkg.exception_cleanup(p_rollback => true);
+
+           if cur_report%isopen
+           then
+               close cur_report;
+           end if;
+       raise;
+   end create_control_report;
+
+   procedure create_control_report(p_reports in t_str_array)
+   is
+   begin
+       for rpt in p_reports.first..p_reports.last
+       loop
+           report_utils_pkg.create_control_report(p_reports(rpt));
+       end loop;
+   exception
+       when others then
+       raise;
+   end create_control_report;
+
 --===========================================================================================================================================================================
 
    function f_tablespace_report
@@ -304,7 +363,7 @@ AS
    deterministic
    is
    begin
-       return 'QR1036D2';
+       return c_tablespace_report;
    end f_tablespace_report;
 
    function f_astrology_report
@@ -312,7 +371,7 @@ AS
    deterministic
    is
    begin
-       return 'QR1307D1';
+       return c_astrology_report;
    end f_astrology_report;
 
    function f_salary_data_report
@@ -320,8 +379,18 @@ AS
    deterministic
    is
    begin
-       return 'QR1031D1';
+       return c_salary_data_report;
    end f_salary_data_report;
 
+    function f_glob_bin_report
+    return report_creation_parms.report_name%type
+    deterministic
+    is
+    begin
+        return c_glob_bin_report;
+    end f_glob_bin_report;
+
+
 --===========================================================================================================================================================================
+
 end report_utils_pkg;

@@ -1,5 +1,6 @@
 create or replace package assert_pkg
 as
+   g_assert_error_cde number(5,0) := -20000;
 
    procedure is_valid_run_mode(p_run_mode in char, p_error_message in varchar2);
 
@@ -25,6 +26,8 @@ as
 
    procedure is_equal_to(p_val_1 in number, p_val_2 in number, p_error_message in varchar2);
 
+   procedure is_equal_to(p_val_1 in varchar2, p_val_2 in varchar2, p_error_message in varchar2);
+
    procedure is_equal_to_zero(p_val_1 in number,p_error_message in varchar2);
 
    procedure is_greater_than(p_val_1 in number, p_val_2 in number, p_error_message in varchar2);
@@ -32,4 +35,3 @@ as
    procedure is_less_than(p_val_1 in number, p_val_2 in number, p_error_message in varchar2);
 
 end assert_pkg;
-

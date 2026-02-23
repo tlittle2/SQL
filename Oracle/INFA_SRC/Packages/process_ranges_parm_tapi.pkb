@@ -3,9 +3,9 @@ is
     -- insert
     procedure ins (
     p_PROCESS_NAME in PROCESS_RANGES_PARM.PROCESS_NAME%type
-    ,p_RUN_TOTAL   in PROCESS_RANGES_PARM.RUN_TOTAL%type default null 
+    ,p_RUN_TOTAL   in PROCESS_RANGES_PARM.RUN_TOTAL%type default null
     ,p_RUN_NUMBER  in PROCESS_RANGES_PARM.RUN_NUMBER%type default null
-    ,p_LOWER_BOUND in PROCESS_RANGES_PARM.LOWER_BOUND%type default null 
+    ,p_LOWER_BOUND in PROCESS_RANGES_PARM.LOWER_BOUND%type default null
     ,p_UPPER_BOUND in PROCESS_RANGES_PARM.UPPER_BOUND%type default null )
     is
     begin
@@ -22,13 +22,17 @@ is
         ,p_UPPER_BOUND
         ,p_RUN_NUMBER
         );
+    exception
+        when others then
+        error_pkg.print_error('process_ranges_parm_tapi.ins');
+        raise;
     end ins;
-    
+
     -- update
     procedure upd (p_PROCESS_NAME in PROCESS_RANGES_PARM.PROCESS_NAME%type
-    ,p_RUN_TOTAL   in PROCESS_RANGES_PARM.RUN_TOTAL%type default null 
+    ,p_RUN_TOTAL   in PROCESS_RANGES_PARM.RUN_TOTAL%type default null
     ,p_RUN_NUMBER  in PROCESS_RANGES_PARM.RUN_NUMBER%type
-    ,p_LOWER_BOUND in PROCESS_RANGES_PARM.LOWER_BOUND%type default null 
+    ,p_LOWER_BOUND in PROCESS_RANGES_PARM.LOWER_BOUND%type default null
     ,p_UPPER_BOUND in PROCESS_RANGES_PARM.UPPER_BOUND%type default null)
     is
     begin
@@ -38,28 +42,56 @@ is
         ,UPPER_BOUND = nvl(p_UPPER_BOUND, upper_bound)
         where PROCESS_NAME = p_PROCESS_NAME
         and RUN_NUMBER = p_RUN_NUMBER;
+    exception
+        when others then
+        error_pkg.print_error('process_ranges_parm_tapi.upd');
+        raise;
     end upd;
-    
-    
+
+    procedure ins_bulk(p_values in process_ranges_parm_tapi.PROCESS_RANGES_PARM_tapi_tab)
+    is
+    begin
+       for rec in p_values.first..p_values.last
+       loop
+            process_ranges_parm_tapi.ins(
+             p_PROCESS_NAME => p_values(rec).process_name
+            ,p_RUN_TOTAL    => p_values(rec).run_total
+            ,p_RUN_NUMBER   => p_values(rec).run_number
+            ,p_LOWER_BOUND  => p_values(rec).lower_bound
+            ,p_UPPER_BOUND  => p_values(rec).upper_bound
+            );
+       end loop;
+    exception
+        when others then
+        error_pkg.print_error('process_ranges_parm_tapi.ins_bulk');
+        raise;
+    end ins_bulk;
+
+
     -- del
     procedure del (p_PROCESS_NAME in PROCESS_RANGES_PARM.PROCESS_NAME%type)
     is
     begin
         delete from PROCESS_RANGES_PARM
         where PROCESS_NAME = p_PROCESS_NAME;
+    exception
+        when others then
+        error_pkg.print_error('process_ranges_parm_tapi.del');
+        raise;
     end del;
 
 
 
 
-    function get_process_ranges_parm_row(p_process_name in process_ranges_parm.process_name%type, p_run_number in process_ranges_parm.run_number%type)
+    function get_row(p_process_name in process_ranges_parm.process_name%type, p_run_number in process_ranges_parm.run_number%type)
     return process_ranges_parm%rowtype
     is
         l_returnvalue process_ranges_parm%rowtype;
     begin
         assert_pkg.is_true(
             p_process_name in (
-                process_preanalysis_pkg.c_process_salaries
+                process_preanalysis_pkg.c_process_salaries,
+                process_preanalysis_pkg.c_contract_update
                 ), 'CONSTANT NOT RECOGNIZED! PLEASE INVESTIGATE!'
         );
 
@@ -77,7 +109,8 @@ is
     exception
         --TODO: do something more creative here
         when others then
-            raise;
-    end get_process_ranges_parm_row;
+        error_pkg.print_error('process_ranges_parm_tapi.get_row');
+        raise;
+    end get_row;
 
 end process_ranges_parm_tapi;

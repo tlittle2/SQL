@@ -19,7 +19,7 @@ as
     function within_threshold_pct(p_value1 in number, p_value2 in number, p_pct in number) --for example, 90 (and 110) is within 10 percent of 100
     return string_utils_pkg.st_bool_num
     is
-        l_pct_value number := nvl(p_value2, 0) * nvl(p_pct / 100, 0);
+        l_pct_value number := null_to_zero(p_value2)  * null_to_zero(p_pct / 100);
         l_returnvalue string_utils_pkg.st_bool_num := string_utils_pkg.g_false;
     begin
         if p_value1 between (p_value2 - l_pct_value) and (p_value2 + l_pct_value)
@@ -52,6 +52,12 @@ as
 
     end is_odd;
 
+    function null_to_zero(p_number in number)
+    return number
+    is
+    begin
+        return nvl(p_number, c_zero);
+    end null_to_zero;
 
 
 end math_pkg;

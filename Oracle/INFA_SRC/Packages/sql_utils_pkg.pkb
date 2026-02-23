@@ -242,6 +242,16 @@ as
     end create_synonym;
 
 
+    procedure restart_sequence(p_sequence_name user_sequences.sequence_name%type)
+    is
+    begin
+        execute immediate string_utils_pkg.get_str('alter sequence %1 restart', p_sequence_name);
+    exception
+        when others then
+        raise;
+    end restart_sequence;
+
+
     procedure recompile
     is
         cursor invalid_objects is

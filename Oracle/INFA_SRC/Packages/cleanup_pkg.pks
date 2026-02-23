@@ -6,3 +6,4 @@ as
     procedure close_cursor (p_cursor in out sys_refcursor);
 
 end cleanup_pkg;
+

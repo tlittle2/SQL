@@ -1,12 +1,12 @@
-vcreate or replace package date_utils_pkg
+create or replace package date_utils_pkg
 as
     type yr_qrtr_table_t is table of infa_global.statement_prd_yr_qrtr%type;
 
-    g_months_in_year constant number(2,0) := 12;
-    g_months_in_quarter constant number(1,0) := 3;
-    g_quarters_in_year constant number(1,0) := 4;
+    g_months_in_year constant number(2,0)     := 12;
+    g_months_in_quarter constant number(1,0)  := 3;
+    g_quarters_in_year constant number(1,0)   := 4;
     g_min_calendar_value constant number(1,0) := 1;
-    
+
     g_year_quarter_sep constant char(1) := 'Q';
 
     function get_months_in_year
@@ -48,7 +48,7 @@ as
 	return number;
 
     function get_quarter(p_month in number)
-	return number;    
+	return number;
 
     function get_month(p_date in date)
     return number;

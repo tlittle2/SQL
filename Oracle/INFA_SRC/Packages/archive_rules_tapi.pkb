@@ -4,10 +4,10 @@ is
     procedure ins (
      p_TABLE_OWNER in ARCHIVE_RULES.TABLE_OWNER%type
     ,p_TABLE_NAME in ARCHIVE_RULES.TABLE_NAME%type
-    ,p_ARCHIVE_COLUMN_KEY in ARCHIVE_RULES.ARCHIVE_COLUMN_KEY%type default null 
-    ,p_JOB_NBR in ARCHIVE_RULES.JOB_NBR%type default null 
-    ,p_UPD_FLAG in ARCHIVE_RULES.UPD_FLAG%type default null 
-    ,p_ARCHIVE_GROUP_KEY in ARCHIVE_RULES.ARCHIVE_GROUP_KEY%type default null 
+    ,p_ARCHIVE_COLUMN_KEY in ARCHIVE_RULES.ARCHIVE_COLUMN_KEY%type default null
+    ,p_JOB_NBR in ARCHIVE_RULES.JOB_NBR%type default null
+    ,p_UPD_FLAG in ARCHIVE_RULES.UPD_FLAG%type default null
+    ,p_ARCHIVE_GROUP_KEY in ARCHIVE_RULES.ARCHIVE_GROUP_KEY%type default null
     ,p_YEARS_TO_KEEP in ARCHIVE_RULES.YEARS_TO_KEEP%type default null)
     is
     begin
@@ -28,17 +28,21 @@ is
         ,p_ARCHIVE_GROUP_KEY
         ,p_YEARS_TO_KEEP
         );
+    exception
+        when others then
+        error_pkg.print_error('archive_rules_tapi.ins');
+        raise;
     end ins;
 
     -- update
     procedure upd (
      p_TABLE_OWNER in ARCHIVE_RULES.TABLE_OWNER%type
     ,p_TABLE_NAME in ARCHIVE_RULES.TABLE_NAME%type
-    ,p_ARCHIVE_COLUMN_KEY in ARCHIVE_RULES.ARCHIVE_COLUMN_KEY%type default null 
-    ,p_JOB_NBR in ARCHIVE_RULES.JOB_NBR%type default null 
-    ,p_UPD_FLAG in ARCHIVE_RULES.UPD_FLAG%type default null 
-    ,p_ARCHIVE_GROUP_KEY in ARCHIVE_RULES.ARCHIVE_GROUP_KEY%type default null 
-    ,p_YEARS_TO_KEEP in ARCHIVE_RULES.YEARS_TO_KEEP%type default null 
+    ,p_ARCHIVE_COLUMN_KEY in ARCHIVE_RULES.ARCHIVE_COLUMN_KEY%type default null
+    ,p_JOB_NBR in ARCHIVE_RULES.JOB_NBR%type default null
+    ,p_UPD_FLAG in ARCHIVE_RULES.UPD_FLAG%type default null
+    ,p_ARCHIVE_GROUP_KEY in ARCHIVE_RULES.ARCHIVE_GROUP_KEY%type default null
+    ,p_YEARS_TO_KEEP in ARCHIVE_RULES.YEARS_TO_KEEP%type default null
     ) is
     begin
         update ARCHIVE_RULES set
@@ -49,13 +53,22 @@ is
         ,YEARS_TO_KEEP = nvl(p_YEARS_TO_KEEP, YEARS_TO_KEEP)
         where TABLE_OWNER = p_TABLE_OWNER
         and TABLE_NAME = p_TABLE_NAME;
+    exception
+        when others then
+        error_pkg.print_error('archive_rules_tapi.upd');
+        raise;
     end upd;
 
     procedure reset_archive_rules
     is
     begin
         update archive_rules
-        set job_nbr = null;
+        set job_nbr = null
+        , upd_flag = global_constants_pkg.g_record_is_not_updated;
+    exception
+        when others then
+        error_pkg.print_error('archive_rules_tapi.reset_archive_rules');
+        raise;
     end reset_archive_rules;
 
 
@@ -68,8 +81,12 @@ is
         delete from ARCHIVE_RULES
         where TABLE_OWNER = p_TABLE_OWNER
         and TABLE_NAME = p_TABLE_NAME;
+    exception
+        when others then
+        error_pkg.print_error('archive_rules_tapi.del');
+        raise;
     end del;
-    
+
     function get_row(p_TABLE_OWNER in ARCHIVE_RULES.TABLE_OWNER%type,p_TABLE_NAME in ARCHIVE_RULES.TABLE_NAME%type)
     return ARCHIVE_RULES%rowtype
     is
@@ -80,9 +97,12 @@ is
         from ARCHIVE_RULES
         where TABLE_OWNER = p_TABLE_OWNER
         and TABLE_NAME = p_TABLE_NAME;
-        
-        return l_returnvalue;
 
+        return l_returnvalue;
+    exception
+        when others then
+        error_pkg.print_error('archive_rules_tapi.get_row');
+        raise;
     end get_row;
 
 
