@@ -12,6 +12,96 @@ begin
     return ' ';
 end get_concat_ws_default;
 
+function get_field(p_str in varchar2, p_occurrence in number)
+return varchar2
+is
+   l_regex varchar2(10) := '[^'|| get_sep ||']+';
+begin
+    return regexp_substr(p_str, l_regex, 1, p_occurrence);
+end get_field;
+
+function concat_ws (p_sep     in varchar2,
+                    p_value1  in varchar2,
+                    p_value2  in varchar2 := get_concat_ws_default,
+                    p_value3  in varchar2 := get_concat_ws_default)
+return varchar2
+is
+    l_num integer;
+    l_values sys.odcivarchar2list := sys.odcivarchar2list(p_value1, p_value2, p_value3);
+    l_returnvalue varchar2(32767);
+    g_concat_ws_default char(1) := get_concat_ws_default;
+begin
+    select nvl(count(column_value), 0)
+    into l_num
+    from table(l_values)
+    where column_value is null;
+    
+    if l_num >= 1
+    then
+        return null;
+    end if;
+    
+    for i in l_values.first..l_values.last
+    loop
+        if trim(l_values(i)) <> g_concat_ws_default
+        then
+            l_returnvalue := l_returnvalue || l_values(i) || p_sep;
+        end if;
+    end loop;
+    
+    l_returnvalue := substr(l_returnvalue, 1, length(l_returnvalue) - length(p_sep));
+    return l_returnvalue;
+end concat_ws;
+
+
+function get_control_table
+return sys.odcivarchar2list
+is
+    type t_tab is table of varchar2(32767);
+
+    l_tab t_tab := t_tab(
+    concat_ws(get_sep, 'file1', 1, '29-MAR-26 00:00:00'),
+    concat_ws(get_sep, 'file1', 2, '29-MAR-26 02:00:00'),
+    concat_ws(get_sep, 'file2', 1, '29-MAR-26 05:00:00')
+    );
+    
+    l_returnvalue sys.odcivarchar2list := sys.odcivarchar2list();
+begin
+     for i in 1..l_tab.count
+     loop
+         l_returnvalue.extend;
+         l_returnvalue(l_returnvalue.count) := l_tab(i);
+     end loop;
+     
+     return l_returnvalue;
+end get_control_table;
+
+ds as (
+select get_field(column_value, 1) as filename
+, to_number(get_field(column_value, 2)) as instance
+, to_date(get_field(column_value, 3), 'DD-MON-RR HH24:MI:SS') as time
+from table(get_control_table)
+)
+
+select * from ds;
+/
+
+--############################################################################
+
+with function get_sep
+return char deterministic
+is
+begin
+    return '|';
+end get_sep;
+
+function get_concat_ws_default
+return char deterministic
+is
+begin
+    return ' ';
+end get_concat_ws_default;
+
 function concat_ws (p_sep     in varchar2,
                     p_value1  in varchar2,
                     p_value2  in varchar2  := get_concat_ws_default,
